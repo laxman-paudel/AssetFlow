@@ -171,15 +171,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [toast]);
   
   const completeCurrencySetup = (selectedCurrency: string) => {
-    setIsInitialized(true);
-    setNeedsCurrencySetup(false);
-    setCurrency(selectedCurrency);
-    setTransactions([]);
     const defaultAssets: Asset[] = [
       { id: crypto.randomUUID(), name: 'Cash With Me', balance: 0 },
       { id: crypto.randomUUID(), name: 'Primary Bank Account', balance: 0 },
     ];
     setAssets(defaultAssets);
+    setTransactions([]);
+    setCurrency(selectedCurrency);
+    setIsInitialized(true);
+    setNeedsCurrencySetup(false);
+    
      toast({
         title: 'Welcome!',
         description: `Your currency has been set to ${selectedCurrency}.`
