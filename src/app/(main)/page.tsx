@@ -35,9 +35,9 @@ export default function DashboardPage() {
         <Card
           className={cn(
             'text-primary-foreground shadow-lg',
-            totalBalance >= 0
-              ? 'bg-gradient-to-br from-primary to-primary/80'
-              : 'bg-gradient-to-br from-destructive to-destructive/80'
+            totalBalance > 0 && 'bg-gradient-to-br from-primary to-primary/80',
+            totalBalance < 0 && 'bg-gradient-to-br from-destructive to-destructive/80',
+            totalBalance === 0 && 'bg-gradient-to-br from-blue-500 to-blue-500/80'
           )}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
