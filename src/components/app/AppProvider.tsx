@@ -257,7 +257,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   
   const completeCurrencySetup = (selectedCurrency: string) => {
     const initialAssets: Asset[] = [
-      { id: crypto.randomUUID(), name: 'Primary Bank', balance: 0 },
+      { id: crypto.randomUUID(), name: 'Cash In Hand', balance: 0 },
     ];
 
     const initialTransactions: Transaction[] = initialAssets.map(asset => ({
