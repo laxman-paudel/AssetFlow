@@ -10,7 +10,6 @@ import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react';
 import TransactionDialog from '@/components/app/TransactionDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionType } from '@/lib/types';
-import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
   const { totalBalance, isInitialized, currency } = useAssetFlow();
@@ -72,7 +71,7 @@ export default function DashboardPage() {
               ) : (
                 <Skeleton className="h-10 w-3/4 bg-primary-foreground/20" />
               )}
-               <p className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
+               <div className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
                 {isClient && isInitialized ? (
                   <>
                     View Assets <ChevronRight className="h-3 w-3" />
@@ -80,7 +79,7 @@ export default function DashboardPage() {
                 ) : (
                    <Skeleton className="h-4 w-20 bg-primary-foreground/20" />
                 )}
-              </p>
+              </div>
             </CardContent>
           </Card>
 
