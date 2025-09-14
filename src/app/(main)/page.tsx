@@ -9,7 +9,6 @@ import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react';
 import TransactionDialog from '@/components/app/TransactionDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionType } from '@/lib/types';
-import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
   const { totalBalance, isInitialized, currency } = useAssetFlow();
@@ -29,16 +28,32 @@ export default function DashboardPage() {
         }).format(totalBalance)
       : '...';
 
+  const getBalanceCardStyle = () => {
+    if (!isInitialized) return {};
+
+    const maxAmount = 5000; // Threshold for max color intensity
+    const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
+
+    if (totalBalance > 0) {
+      // Green: As balance increases, decrease lightness from 80% to 50%
+      const lightness = 80 - intensity * 30;
+      return { backgroundColor: `hsl(120, 60%, ${lightness}%)` };
+    }
+    if (totalBalance < 0) {
+      // Red: As balance decreases, decrease lightness from 80% to 55%
+      const lightness = 80 - intensity * 25;
+      return { backgroundColor: `hsl(0, 70%, ${lightness}%)` };
+    }
+    // Blue for zero balance
+    return { backgroundColor: 'hsl(210, 80%, 70%)' };
+  };
+
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <div className="space-y-6">
         <Card
-          className={cn(
-            'text-primary-foreground shadow-lg',
-            totalBalance > 0 && 'bg-gradient-to-br from-primary to-primary/80',
-            totalBalance < 0 && 'bg-gradient-to-br from-destructive to-destructive/80',
-            totalBalance === 0 && 'bg-gradient-to-br from-blue-500 to-blue-500/80'
-          )}
+          className='text-primary-foreground shadow-lg transition-colors duration-500'
+          style={getBalanceCardStyle()}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
