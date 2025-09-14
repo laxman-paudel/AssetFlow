@@ -29,7 +29,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Popover,
   PopoverContent,
@@ -185,13 +185,11 @@ export default function StatementPage() {
                 className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg'
                 style={getBalanceCardStyle()}
             >
-                <CardHeader className="flex-row items-center justify-between py-2 px-4">
-                    <CardTitle className="text-xs font-medium">Total Balance</CardTitle>
-                </CardHeader>
-                <CardContent className="py-0 px-4 pb-2">
-                    <div className="text-xl font-bold tracking-tighter">
+                <CardContent className="p-3 flex items-center justify-between">
+                    <p className="text-sm font-medium">Total Balance</p>
+                    <p className="text-lg font-bold tracking-tighter">
                         {formatCurrency(totalBalance)}
-                    </div>
+                    </p>
                 </CardContent>
             </Card>
         </Link>
