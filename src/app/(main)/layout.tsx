@@ -1,7 +1,9 @@
 import BottomNav from '@/components/app/BottomNav';
-import { PiggyBank } from 'lucide-react';
+import { PiggyBank, Settings } from 'lucide-react';
 import CurrencySelector from '@/components/app/CurrencySelector';
 import ResetButton from '@/components/app/ResetButton';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function MainLayout({
   children,
@@ -20,6 +22,11 @@ export default function MainLayout({
           </div>
           <div className="flex items-center gap-2">
             <CurrencySelector />
+            <Button asChild variant="ghost" size="icon" className="text-muted-foreground">
+               <Link href="/settings">
+                  <Settings className="h-4 w-4" />
+               </Link>
+            </Button>
             <ResetButton />
           </div>
         </div>
