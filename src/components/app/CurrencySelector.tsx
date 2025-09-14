@@ -11,11 +11,11 @@ import {
 
 const currencies = [
   { value: 'USD', label: '$ USD' },
+  { value: 'NPR', label: 'रू NPR' },
   { value: 'EUR', label: '€ EUR' },
   { value: 'JPY', label: '¥ JPY' },
   { value: 'GBP', label: '£ GBP' },
   { value: 'INR', label: '₹ INR' },
-  { value: 'NPR', label: 'रू NPR' },
 ];
 
 export default function CurrencySelector() {
