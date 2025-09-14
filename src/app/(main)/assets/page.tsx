@@ -29,18 +29,25 @@ import { Asset } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
 export default function AssetsPage() {
-  const { assets, deleteAsset, isInitialized, currency, totalBalance } = useAssetFlow();
+  const store = useAssetFlow();
+  const [assets, setAssets] = useState<Asset[] | null>(null);
+  const [totalBalance, setTotalBalance] = useState<number | null>(null);
+  const [currency, setCurrency] = useState<string | null>(null);
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
-  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (store.isInitialized) {
+      setAssets(store.assets);
+      setTotalBalance(store.totalBalance);
+      setCurrency(store.currency);
+    }
+  }, [store.isInitialized, store.assets, store.totalBalance, store.currency]);
 
   const formatCurrency = (amount: number) => {
-    if (!currency) return '...';
+    if (currency === null) return '...';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
@@ -62,6 +69,7 @@ export default function AssetsPage() {
   };
 
   const getBalanceCardStyle = () => {
+    if (totalBalance === null) return {};
     const maxAmount = 5000;
     const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
 
@@ -86,7 +94,7 @@ export default function AssetsPage() {
         </Button>
       </div>
       
-      {isClient && isInitialized && assets.length === 0 ? (
+      {assets !== null && assets.length === 0 ? (
         <div className="flex flex-col items-center justify-center text-center py-20 border-2 border-dashed rounded-lg">
           <div className="p-4 bg-primary/10 rounded-full mb-4">
             <Wallet className="h-12 w-12 text-primary" />
@@ -105,12 +113,12 @@ export default function AssetsPage() {
           <div className="block mb-6">
               <Card 
                   className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer'
-                  style={isClient && isInitialized ? getBalanceCardStyle() : undefined}
+                  style={getBalanceCardStyle()}
                   onClick={() => router.push('/')}
               >
                   <CardContent className="p-3 flex items-center justify-between">
                       <p className="text-sm font-medium">Total Balance</p>
-                      {isClient && isInitialized ? (
+                      {totalBalance !== null && currency !== null ? (
                         <p className="text-lg font-bold tracking-tighter">
                             {formatCurrency(totalBalance)}
                         </p>
@@ -121,7 +129,7 @@ export default function AssetsPage() {
               </Card>
           </div>
           <div className="space-y-4">
-            {!isClient || !isInitialized ? (
+            {assets === null ? (
               <>
                 <Skeleton className="h-28 w-full" />
                 <Skeleton className="h-28 w-full" />
@@ -156,7 +164,7 @@ export default function AssetsPage() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => deleteAsset(asset.id)} className="bg-destructive hover:bg-destructive/90">
+                                    <AlertDialogAction onClick={() => store.deleteAsset(asset.id)} className="bg-destructive hover:bg-destructive/90">
                                         Delete
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -172,7 +180,7 @@ export default function AssetsPage() {
                 </Card>
               ))
             )}
-            {isClient && isInitialized && assets.length > 0 && (
+            {assets !== null && assets.length > 0 && (
                 <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
                     <div className="p-4 bg-secondary rounded-full mb-4">
                         <PlusCircle className="h-10 w-10 text-muted-foreground" />

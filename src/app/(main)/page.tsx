@@ -11,17 +11,22 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionType } from '@/lib/types';
 
 export default function DashboardPage() {
-  const { totalBalance, isInitialized, currency } = useAssetFlow();
+  const store = useAssetFlow();
+  const [totalBalance, setTotalBalance] = useState<number | null>(null);
+  const [currency, setCurrency] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<TransactionType>('income');
-  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (store.isInitialized) {
+      setTotalBalance(store.totalBalance);
+      setCurrency(store.currency);
+    }
+  }, [store.isInitialized, store.totalBalance, store.currency]);
 
   const getBalanceCardStyle = () => {
+    if (totalBalance === null) return {};
     const maxAmount = 5000;
     const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
 
@@ -46,14 +51,14 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <Card
           className="text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
-          style={isClient && isInitialized ? getBalanceCardStyle() : undefined}
+          style={getBalanceCardStyle()}
           onClick={() => router.push('/assets')}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            {isClient && isInitialized ? (
+            {totalBalance !== null && currency !== null ? (
               <div className="text-4xl font-bold tracking-tighter">
                 {new Intl.NumberFormat('en-US', {
                   style: 'currency',
@@ -64,7 +69,7 @@ export default function DashboardPage() {
               <Skeleton className="h-10 w-3/4 bg-primary-foreground/20" />
             )}
             <div className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
-              {isClient && isInitialized ? (
+              {totalBalance !== null ? (
                 <>
                   View Assets <ChevronRight className="h-3 w-3" />
                 </>

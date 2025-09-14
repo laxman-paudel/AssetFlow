@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useAssetFlow } from '@/lib/store';
-import { Transaction } from '@/lib/types';
+import { Transaction, Asset } from '@/lib/types';
 import {
   ArrowDown,
   ArrowDownUp,
@@ -45,19 +45,29 @@ import EditTransactionDialog from '@/components/app/EditTransactionDialog';
 import ExportButton from '@/components/app/ExportButton';
 
 export default function StatementPage() {
-  const { transactions, assets, isInitialized, currency, deleteTransaction, totalBalance } = useAssetFlow();
+  const store = useAssetFlow();
+  const [transactions, setTransactions] = useState<Transaction[] | null>(null);
+  const [assets, setAssets] = useState<Asset[] | null>(null);
+  const [totalBalance, setTotalBalance] = useState<number | null>(null);
+  const [currency, setCurrency] = useState<string | null>(null);
+  
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [showAssetCreations, setShowAssetCreations] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
   
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    if (store.isInitialized) {
+      setTransactions(store.transactions);
+      setAssets(store.assets);
+      setTotalBalance(store.totalBalance);
+      setCurrency(store.currency);
+    }
+  }, [store.isInitialized, store.transactions, store.assets, store.totalBalance, store.currency]);
 
   const filteredTransactions = useMemo(() => {
+    if (transactions === null) return null;
     let items = [...transactions];
 
     if (!showAssetCreations) {
@@ -73,7 +83,7 @@ export default function StatementPage() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - a.date;
     });
 
     return items;
@@ -88,7 +98,7 @@ export default function StatementPage() {
   };
 
   const formatCurrency = (amount: number) => {
-    if (!currency) return '...';
+    if (currency === null) return '...';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
@@ -96,6 +106,7 @@ export default function StatementPage() {
   };
   
   const getBalanceCardStyle = () => {
+    if (totalBalance === null) return {};
     const maxAmount = 5000;
     const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
 
@@ -140,7 +151,7 @@ export default function StatementPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Statements</h1>
         <div className="flex items-center gap-2">
-           <ExportButton minimal transactions={filteredTransactions} />
+           <ExportButton minimal transactions={filteredTransactions ?? []} />
           <Button
             variant="outline"
             size="icon"
@@ -158,7 +169,7 @@ export default function StatementPage() {
               <div className="space-y-4">
                 <h4 className="font-medium leading-none">Filter by Asset</h4>
                 <div className="space-y-2">
-                  {assets.map((asset) => (
+                  {assets?.map((asset) => (
                     <div key={asset.id} className="flex items-center space-x-2">
                       <Checkbox
                         id={asset.id}
@@ -168,7 +179,7 @@ export default function StatementPage() {
                       <Label htmlFor={asset.id}>{asset.name}</Label>
                     </div>
                   ))}
-                  {assets.length === 0 && (
+                  {assets?.length === 0 && (
                     <p className="text-sm text-muted-foreground">
                       No assets to filter.
                     </p>
@@ -188,12 +199,12 @@ export default function StatementPage() {
        <div className="block mb-6">
           <Card 
               className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer'
-              style={isClient && isInitialized ? getBalanceCardStyle() : undefined}
+              style={getBalanceCardStyle()}
               onClick={() => router.push('/')}
           >
               <CardContent className="p-3 flex items-center justify-between">
                   <p className="text-sm font-medium">Total Balance</p>
-                  {isClient && isInitialized ? (
+                  {totalBalance !== null && currency !== null ? (
                     <p className="text-lg font-bold tracking-tighter">
                         {formatCurrency(totalBalance)}
                     </p>
@@ -205,7 +216,7 @@ export default function StatementPage() {
       </div>
 
       <div className="space-y-3">
-        {!isClient || !isInitialized ? (
+        {filteredTransactions === null ? (
           <>
             <Skeleton className="h-20 w-full" />
             <Skeleton className="h-20 w-full" />
@@ -312,7 +323,7 @@ export default function StatementPage() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => deleteTransaction(t.id)} className="bg-destructive hover:bg-destructive/90">
+                                    <AlertDialogAction onClick={() => store.deleteTransaction(t.id)} className="bg-destructive hover:bg-destructive/90">
                                         Delete
                                     </AlertDialogAction>
                                 </AlertDialogFooter>

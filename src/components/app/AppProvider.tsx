@@ -32,62 +32,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (storedTransactions) {
           setTransactions(JSON.parse(storedTransactions));
         }
-         setIsInitialized(true);
       } else {
-        // This block handles the case after a reset or for a new user
         setNeedsCurrencySetup(true);
-        setCurrency('');
-        setAssets([]);
-        setTransactions([]);
-        setIsInitialized(true);
       }
     } catch (error) {
       console.error('Failed to initialize app state from localStorage', error);
       toast({
         title: 'Initialization Error',
-        description: 'Could not load your data. Starting fresh.',
+        description: 'Could not load your data. Please clear your site data and try again.',
         variant: 'destructive',
       });
-      localStorage.removeItem(ASSETS_STORAGE_KEY);
-      localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
-      localStorage.removeItem(CURRENCY_STORAGE_KEY);
       setNeedsCurrencySetup(true);
-      setIsInitialized(true);
+    } finally {
+        setIsInitialized(true);
     }
   }, [toast]);
 
   useEffect(() => {
-    if (isInitialized && !needsCurrencySetup) {
+    if (isInitialized) {
       try {
         localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify(assets));
+        localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
+        if (currency) {
+            localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(currency));
+        }
       } catch (error) {
-        console.error('Failed to save assets to localStorage', error);
+        console.error('Failed to save state to localStorage', error);
       }
     }
-  }, [assets, isInitialized, needsCurrencySetup]);
+  }, [assets, transactions, currency, isInitialized]);
 
-  useEffect(() => {
-    if (isInitialized && !needsCurrencySetup) {
-      try {
-        localStorage.setItem(
-          TRANSACTIONS_STORAGE_KEY,
-          JSON.stringify(transactions)
-        );
-      } catch (error) {
-        console.error('Failed to save transactions to localStorage', error);
-      }
-    }
-  }, [transactions, isInitialized, needsCurrencySetup]);
-  
-  useEffect(() => {
-    if (isInitialized && currency && !needsCurrencySetup) {
-      try {
-        localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(currency));
-      } catch (error) {
-        console.error('Failed to save currency to localStorage', error);
-      }
-    }
-  }, [currency, isInitialized, needsCurrencySetup]);
 
   const addAsset = useCallback((name: string, initialBalance: number): Asset => {
     const newAsset: Asset = {
@@ -291,12 +265,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   
   const completeCurrencySetup = (selectedCurrency: string) => {
     try {
-        // Persist to localStorage first
-        localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(selectedCurrency));
-        localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify([]));
-        localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify([]));
-
-        // Then update the state
         setCurrency(selectedCurrency);
         setAssets([]);
         setTransactions([]);
