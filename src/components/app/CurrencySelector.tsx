@@ -15,6 +15,7 @@ const currencies = [
   { value: 'JPY', label: '¥ JPY' },
   { value: 'GBP', label: '£ GBP' },
   { value: 'INR', label: '₹ INR' },
+  { value: 'NPR', label: 'रू NPR' },
 ];
 
 export default function CurrencySelector() {
