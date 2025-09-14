@@ -87,7 +87,7 @@ export default function AssetsPage() {
                         <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete your asset and its balance. The transaction history will be preserved.
+                               This action cannot be undone. This will permanently delete your asset and its balance. The transaction history will be preserved.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
