@@ -11,7 +11,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Popover,
   PopoverContent,
@@ -19,8 +19,8 @@ import {
 } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 export default function StatementPage() {
   const { transactions, assets, getAssetById, isInitialized, currency } = useAssetFlow();
@@ -119,15 +119,15 @@ export default function StatementPage() {
             const asset = getAssetById(t.assetId);
             const isIncome = t.type === 'income';
             return (
-              <div key={t.id} className="flex items-center gap-4 p-4 rounded-lg bg-card border">
+              <div key={t.id} className={cn("flex items-center gap-4 p-4 rounded-lg bg-card border", !asset && "opacity-70")}>
                 <div className={`p-2 rounded-full ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                     {isIncome ? <ArrowDown className="h-5 w-5" /> : <ArrowUp className="h-5 w-5" />}
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold">{t.remarks || 'Transaction'}</p>
                   <div className='flex items-center gap-2'>
-                    {asset && getAssetIcon(asset.name)}
-                    <p className="text-sm text-muted-foreground">{asset?.name || 'Unknown Asset'}</p>
+                    {asset ? getAssetIcon(asset.name) : <Wallet className="h-5 w-5 text-muted-foreground" />}
+                    <p className="text-sm text-muted-foreground">{asset?.name || 'Deleted Asset'}</p>
                   </div>
                 </div>
                 <div className="text-right">

@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -79,8 +78,7 @@ export default function AssetsPage() {
                         <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete your asset.
-                                You can only delete assets with no transactions.
+                                This action cannot be undone. This will permanently delete your asset and its balance. The transaction history will be preserved.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

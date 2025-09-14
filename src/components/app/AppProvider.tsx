@@ -102,20 +102,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [toast]);
 
   const deleteAsset = useCallback((id: string) => {
-    if (transactions.some(t => t.assetId === id)) {
-        toast({
-            title: 'Cannot Delete Asset',
-            description: 'This asset has transactions associated with it and cannot be deleted.',
-            variant: 'destructive',
-        });
-        return;
-    }
     setAssets((prev) => prev.filter((asset) => asset.id !== id));
     toast({
       title: 'Asset Deleted',
-      description: 'The asset has been successfully deleted.',
+      description: 'The asset and its balance have been removed. Transaction history is preserved.',
     });
-  }, [toast, transactions]);
+  }, [toast]);
 
   const addTransaction = useCallback(
     (
