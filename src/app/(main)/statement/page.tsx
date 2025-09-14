@@ -176,7 +176,7 @@ export default function StatementPage() {
 
             if (isAssetCreation) {
                 return (
-                     <div key={t.id} className="flex items-center gap-4 p-4 rounded-lg bg-card border">
+                     <div key={t.id} className="flex items-center gap-4 p-4 rounded-lg bg-card border border-l-4 border-l-blue-500">
                         <div className="p-2 rounded-full bg-blue-100 text-blue-700">
                            <PlusSquare className="h-5 w-5" />
                         </div>
@@ -198,7 +198,8 @@ export default function StatementPage() {
               <div
                 key={t.id}
                 className={cn(
-                  'group flex items-center gap-4 p-4 rounded-lg bg-card border',
+                  'group flex items-center gap-4 p-4 rounded-lg bg-card border border-l-4',
+                  isIncome ? 'border-l-green-500' : 'border-l-red-500',
                   t.isOrphaned && 'opacity-60'
                 )}
               >

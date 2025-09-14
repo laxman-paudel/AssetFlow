@@ -71,7 +71,7 @@ export default function AssetsPage() {
           </>
         ) : (
           assets.map((asset) => (
-            <Card key={asset.id} className="transition-all hover:shadow-lg hover:-translate-y-1 duration-300 group">
+            <Card key={asset.id} className="transition-all hover:shadow-lg hover:-translate-y-1 duration-300 group border-l-4 border-l-primary/20 hover:border-l-primary/60">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div className="flex items-center gap-4">
                    {getAssetIcon(asset.name)}
