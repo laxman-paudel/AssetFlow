@@ -107,7 +107,7 @@ export default function AssetsPage() {
           <div className="block mb-6">
               <Card 
                   className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer'
-                  style={getBalanceCardStyle()}
+                  style={isClient && isInitialized ? getBalanceCardStyle() : undefined}
                   onClick={() => router.push('/')}
               >
                   <CardContent className="p-3 flex items-center justify-between">

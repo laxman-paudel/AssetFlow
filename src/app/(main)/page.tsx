@@ -48,7 +48,7 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <Card
             className='text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer'
-            style={getBalanceCardStyle()}
+            style={isClient && isInitialized ? getBalanceCardStyle() : undefined}
             onClick={() => router.push('/assets')}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">

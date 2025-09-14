@@ -1,5 +1,5 @@
 'use client';
-
+import { useState, useEffect } from 'react';
 import { useAssetFlow } from '@/lib/store';
 import {
   Select,
@@ -21,8 +21,13 @@ const currencies = [
 
 export default function CurrencySelector() {
   const { currency, setCurrency, isInitialized } = useAssetFlow();
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  if (!isInitialized || !currency) {
+  if (!isClient || !isInitialized || !currency) {
     return <Skeleton className="h-10 w-28" />;
   }
 
