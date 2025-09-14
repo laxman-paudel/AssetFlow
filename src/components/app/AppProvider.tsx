@@ -20,35 +20,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const storedAssets = localStorage.getItem(ASSETS_STORAGE_KEY);
-      const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
-      const storedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
+      // Clear localStorage for a fresh start
+      localStorage.removeItem(ASSETS_STORAGE_KEY);
+      localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
+      localStorage.removeItem(CURRENCY_STORAGE_KEY);
 
-      if (storedAssets) {
-        setAssets(JSON.parse(storedAssets));
-      } else {
-        // Initialize with default assets if none are stored
-        setAssets([
-          { id: 'cash', name: 'Cash', balance: 1000 },
-          { id: 'bank', name: 'Main Bank Account', balance: 5000 },
-        ]);
-      }
-
-      if (storedTransactions) {
-        setTransactions(JSON.parse(storedTransactions));
-      }
+      // Initialize with default assets since it's a fresh start
+      setAssets([
+        { id: 'cash', name: 'Cash', balance: 1000 },
+        { id: 'bank', name: 'Main Bank Account', balance: 5000 },
+      ]);
+      setTransactions([]);
       
-      if (storedCurrency) {
-        setCurrency(JSON.parse(storedCurrency));
-        setIsInitialized(true);
-      } else {
-        setNeedsCurrencySetup(true);
-      }
+      // Force currency setup
+      setNeedsCurrencySetup(true);
+
     } catch (error) {
-      console.error('Failed to load data from localStorage', error);
+      console.error('Failed to initialize app state', error);
       toast({
         title: 'Error',
-        description: 'Could not load saved data.',
+        description: 'Could not initialize the application.',
         variant: 'destructive',
       });
       setIsInitialized(true); // Still initialize to avoid blocking UI
@@ -108,7 +99,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setAssets((prev) => prev.filter((asset) => asset.id !== id));
     setTransactions(prev => 
       prev.map(t => 
-        t.assetId === id ? { ...t, isOrphaned: true } : t
+        t.assetId === id ? { ...t, isOrphaned: true, assetName: t.assetName } : t
       )
     );
     toast({
@@ -200,7 +191,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AssetFlowContext.Provider value={value}>
-      {isInitialized ? children : null}
+      {isInitialized || needsCurrencySetup ? children : null}
       <CurrencySetupDialog open={needsCurrencySetup} onCurrencySelect={completeCurrencySetup} />
     </AssetFlowContext.Provider>
   );
