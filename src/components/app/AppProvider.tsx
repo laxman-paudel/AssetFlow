@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { AssetFlowContext } from '@/lib/store';
 import type { Asset, Transaction } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import CurrencySetupDialog from './CurrencySetupDialog';
 
 const ASSETS_STORAGE_KEY = 'assetflow-assets';
 const TRANSACTIONS_STORAGE_KEY = 'assetflow-transactions';
@@ -11,9 +12,10 @@ const CURRENCY_STORAGE_KEY = 'assetflow-currency';
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
+  const [needsCurrencySetup, setNeedsCurrencySetup] = useState(false);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [currency, setCurrency] = useState<string>('USD');
+  const [currency, setCurrency] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -38,6 +40,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       
       if (storedCurrency) {
         setCurrency(JSON.parse(storedCurrency));
+        setIsInitialized(true);
+      } else {
+        setNeedsCurrencySetup(true);
       }
     } catch (error) {
       console.error('Failed to load data from localStorage', error);
@@ -46,8 +51,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         description: 'Could not load saved data.',
         variant: 'destructive',
       });
-    } finally {
-      setIsInitialized(true);
+      setIsInitialized(true); // Still initialize to avoid blocking UI
     }
   }, [toast]);
 
@@ -75,7 +79,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [transactions, isInitialized]);
   
   useEffect(() => {
-    if (isInitialized) {
+    if (isInitialized && currency) {
       try {
         localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(currency));
       } catch (error) {
@@ -166,6 +170,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         description: `Currency has been set to ${newCurrency}.`
     });
   }, [toast]);
+  
+  const completeCurrencySetup = (selectedCurrency: string) => {
+    setCurrency(selectedCurrency);
+    setNeedsCurrencySetup(false);
+    setIsInitialized(true);
+     toast({
+        title: 'Currency Set',
+        description: `Your currency has been set to ${selectedCurrency}.`
+    });
+  };
 
   const value = {
     assets,
@@ -182,7 +196,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AssetFlowContext.Provider value={value}>
-      {children}
+      {isInitialized ? children : null}
+      <CurrencySetupDialog open={needsCurrencySetup} onCurrencySelect={completeCurrencySetup} />
     </AssetFlowContext.Provider>
   );
 }
