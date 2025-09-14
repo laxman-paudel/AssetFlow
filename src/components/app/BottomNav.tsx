@@ -15,11 +15,18 @@ const navItems = [
   { href: '/assets', icon: Wallet, label: 'Assets' },
 ];
 
-export default function BottomNav() {
+interface BottomNavProps {
+    isVisible: boolean;
+}
+
+export default function BottomNav({ isVisible }: BottomNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background/95 backdrop-blur-sm">
+    <nav className={cn(
+        "fixed bottom-0 left-0 right-0 z-10 border-t bg-background/95 backdrop-blur-sm transition-transform duration-300 ease-in-out",
+        isVisible ? "translate-y-0" : "translate-y-full"
+    )}>
       <div className="container mx-auto grid h-16 max-w-md grid-cols-3">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
