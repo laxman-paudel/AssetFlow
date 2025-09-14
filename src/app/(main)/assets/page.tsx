@@ -21,11 +21,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { PlusCircle, Trash2, Landmark, Wallet, CreditCard, HelpCircle, Pencil } from 'lucide-react';
+import { PlusCircle, Trash2, Landmark, Wallet, CreditCard, HelpCircle, Pencil, ChevronRight } from 'lucide-react';
 import AssetDialog from '@/components/app/AssetDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import EditAssetDialog from '@/components/app/EditAssetDialog';
 import { Asset } from '@/lib/types';
+import Link from 'next/link';
 
 export default function AssetsPage() {
   const { assets, deleteAsset, isInitialized, currency, totalBalance } = useAssetFlow();
@@ -54,6 +55,26 @@ export default function AssetsPage() {
     return <HelpCircle className="h-6 w-6 text-muted-foreground" />;
   };
 
+  const getBalanceCardStyle = () => {
+    if (!isInitialized) return {};
+
+    const maxAmount = 5000; // Threshold for max color intensity
+    const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
+
+    if (totalBalance > 0) {
+      // Green: As balance increases, decrease lightness from 80% to 50%
+      const lightness = 80 - intensity * 30;
+      return { backgroundColor: `hsl(120, 60%, ${lightness}%)` };
+    }
+    if (totalBalance < 0) {
+      // Red: As balance decreases, decrease lightness from 80% to 55%
+      const lightness = 80 - intensity * 25;
+      return { backgroundColor: `hsl(0, 70%, ${lightness}%)` };
+    }
+    // Blue for zero balance
+    return { backgroundColor: 'hsl(210, 80%, 70%)' };
+  };
+
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
@@ -64,12 +85,24 @@ export default function AssetsPage() {
         </Button>
       </div>
       {isInitialized && assets.length > 0 && (
-        <Card className="mb-6 bg-secondary">
-            <CardHeader className="flex-row items-center justify-between p-4">
-                <CardTitle className="text-base font-medium">Total Balance</CardTitle>
-                <CardDescription className="text-2xl font-bold text-foreground">{formatCurrency(totalBalance)}</CardDescription>
-            </CardHeader>
-        </Card>
+        <Link href="/" className="block mb-6">
+            <Card 
+                className='text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1'
+                style={getBalanceCardStyle()}
+            >
+                <CardHeader className="flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-3xl font-bold tracking-tighter">
+                        {formatCurrency(totalBalance)}
+                    </div>
+                    <p className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-1">
+                        View Dashboard <ChevronRight className="h-3 w-3" />
+                    </p>
+                </CardContent>
+            </Card>
+        </Link>
       )}
       <div className="space-y-4">
         {!isInitialized ? (
