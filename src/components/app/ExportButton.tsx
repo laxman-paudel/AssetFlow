@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-export default function ExportButton() {
+export default function ExportButton({ minimal = false }: { minimal?: boolean }) {
   const { transactions } = useAssetFlow();
   const { toast } = useToast();
 
@@ -46,6 +46,14 @@ export default function ExportButton() {
         description: 'Your transaction data has been downloaded as a CSV file.',
     });
   };
+
+  if (minimal) {
+    return (
+      <Button onClick={handleExport} variant="outline" size="icon">
+        <Download className="h-4 w-4" />
+      </Button>
+    )
+  }
 
   return (
     <Button onClick={handleExport} variant="outline">

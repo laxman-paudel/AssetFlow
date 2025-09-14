@@ -42,6 +42,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import EditTransactionDialog from '@/components/app/EditTransactionDialog';
+import ExportButton from '@/components/app/ExportButton';
 
 export default function StatementPage() {
   const { transactions, assets, isInitialized, currency, deleteTransaction, totalBalance } = useAssetFlow();
@@ -135,6 +136,7 @@ export default function StatementPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Statements</h1>
         <div className="flex items-center gap-2">
+           <ExportButton minimal />
           <Button
             variant="outline"
             size="icon"
