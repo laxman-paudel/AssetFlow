@@ -45,8 +45,8 @@ export default function AssetsPage() {
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">My Assets</h1>
-        <Button onClick={() => setDialogOpen(true)}>
+        <h1 className="text-2xl font-bold tracking-tight">My Assets</h1>
+        <Button onClick={() => setDialogOpen(true)} className='h-11'>
           <PlusCircle className="mr-2 h-4 w-4" />
           New Asset
         </Button>
@@ -59,18 +59,18 @@ export default function AssetsPage() {
           </>
         ) : assets.length > 0 ? (
           assets.map((asset) => (
-            <Card key={asset.id} className="transition-all hover:shadow-md">
+            <Card key={asset.id} className="transition-all hover:shadow-lg hover:-translate-y-1 duration-300">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div className="flex items-center gap-4">
                    {getAssetIcon(asset.name)}
                    <div>
-                      <CardTitle>{asset.name}</CardTitle>
+                      <CardTitle className="tracking-tight">{asset.name}</CardTitle>
                       <CardDescription>Available Balance</CardDescription>
                    </div>
                 </div>
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
-                       <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                       <Button variant="ghost" size="icon" className="text-destructive/60 hover:text-destructive hover:bg-destructive/10">
                           <Trash2 className="h-4 w-4" />
                        </Button>
                     </AlertDialogTrigger>
@@ -98,10 +98,10 @@ export default function AssetsPage() {
             </Card>
           ))
         ) : (
-          <Card className="text-center py-10">
+          <Card className="text-center py-10 border-dashed">
             <CardContent>
               <p className="text-muted-foreground">No assets found.</p>
-              <p className="text-muted-foreground">Click "New Asset" to get started.</p>
+              <p className="text-muted-foreground mt-1">Click "New Asset" to get started.</p>
             </CardContent>
           </Card>
         )}

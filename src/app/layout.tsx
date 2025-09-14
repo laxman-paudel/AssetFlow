@@ -3,12 +3,7 @@ import './globals.css';
 import { AppProvider } from '@/components/app/AppProvider';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
-import { Inter } from 'next/font/google';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-sans',
-});
+import { GeistSans } from 'geist/font/sans';
 
 export const metadata: Metadata = {
   title: 'AssetFlow',
@@ -26,7 +21,7 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-screen bg-background font-sans antialiased',
-          inter.variable
+          GeistSans.variable
         )}
       >
         <AppProvider>{children}</AppProvider>
