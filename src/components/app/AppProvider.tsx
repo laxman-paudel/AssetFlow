@@ -34,9 +34,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
          setIsInitialized(true);
       } else {
-        localStorage.removeItem(ASSETS_STORAGE_KEY);
-        localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
+        // This block handles the case after a reset or for a new user
         setNeedsCurrencySetup(true);
+        setCurrency('');
+        setAssets([]);
+        setTransactions([]);
         setIsInitialized(true);
       }
     } catch (error) {
