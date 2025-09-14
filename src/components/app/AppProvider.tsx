@@ -114,6 +114,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       description: `New asset "${name}" has been created.`,
     });
   }, [toast]);
+  
+  const editAsset = useCallback((id: string, newName: string) => {
+    const assetExists = assets.some(a => a.id === id);
+    if (!assetExists) {
+        toast({
+            title: 'Edit Failed',
+            description: 'Asset not found.',
+            variant: 'destructive'
+        });
+        return;
+    }
+
+    setAssets(prevAssets => prevAssets.map(asset => {
+        if (asset.id === id) {
+            return { ...asset, name: newName };
+        }
+        return asset;
+    }));
+
+    setTransactions(prevTxs => prevTxs.map(t => {
+        if (t.assetId === id) {
+            return { ...t, assetName: newName };
+        }
+        return t;
+    }));
+    
+    toast({
+        title: 'Asset Updated',
+        description: 'The asset has been successfully renamed.',
+    });
+}, [assets, toast]);
 
   const deleteAsset = useCallback((id: string) => {
     const assetToDelete = assets.find(asset => asset.id === id);
@@ -288,6 +319,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     assets,
     transactions,
     addAsset,
+    editAsset,
     deleteAsset,
     addTransaction,
     editTransaction,

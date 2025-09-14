@@ -21,13 +21,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { PlusCircle, Trash2, Landmark, Wallet, CreditCard, HelpCircle } from 'lucide-react';
+import { PlusCircle, Trash2, Landmark, Wallet, CreditCard, HelpCircle, Pencil } from 'lucide-react';
 import AssetDialog from '@/components/app/AssetDialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import EditAssetDialog from '@/components/app/EditAssetDialog';
+import { Asset } from '@/lib/types';
 
 export default function AssetsPage() {
   const { assets, deleteAsset, isInitialized, currency } = useAssetFlow();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
 
   const formatCurrency = (amount: number) => {
     if (!currency) return '...';
@@ -68,7 +71,7 @@ export default function AssetsPage() {
           </>
         ) : (
           assets.map((asset) => (
-            <Card key={asset.id} className="transition-all hover:shadow-lg hover:-translate-y-1 duration-300">
+            <Card key={asset.id} className="transition-all hover:shadow-lg hover:-translate-y-1 duration-300 group">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div className="flex items-center gap-4">
                    {getAssetIcon(asset.name)}
@@ -77,27 +80,32 @@ export default function AssetsPage() {
                       <CardDescription>Available Balance</CardDescription>
                    </div>
                 </div>
-                 <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                       <Button variant="ghost" size="icon" className="text-destructive/60 hover:text-destructive hover:bg-destructive/10">
-                          <Trash2 className="h-4 w-4" />
-                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                               This action cannot be undone. This will permanently delete your asset and its balance. The transaction history will be preserved.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteAsset(asset.id)} className="bg-destructive hover:bg-destructive/90">
-                                Delete
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground" onClick={() => setEditingAsset(asset)}>
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/60 hover:text-destructive hover:bg-destructive/10">
+                              <Trash2 className="h-4 w-4" />
+                           </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                   This action cannot be undone. This will permanently delete your asset and its balance. The transaction history will be preserved.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteAsset(asset.id)} className="bg-destructive hover:bg-destructive/90">
+                                    Delete
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
               </CardHeader>
               <CardContent className="pl-16">
                 <p className="text-3xl font-bold tracking-tight">
@@ -137,6 +145,14 @@ export default function AssetsPage() {
         )}
       </div>
       <AssetDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      {editingAsset && (
+        <EditAssetDialog
+          key={editingAsset.id}
+          asset={editingAsset}
+          open={!!editingAsset}
+          onOpenChange={(open) => !open && setEditingAsset(null)}
+        />
+      )}
     </div>
   );
 }

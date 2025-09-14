@@ -5,6 +5,7 @@ interface AssetFlowState {
   assets: Asset[];
   transactions: Transaction[];
   addAsset: (name: string, initialBalance: number) => void;
+  editAsset: (id: string, newName: string) => void;
   deleteAsset: (id: string) => void;
   addTransaction: (
     type: 'income' | 'expenditure',
