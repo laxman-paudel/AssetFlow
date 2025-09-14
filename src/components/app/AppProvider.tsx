@@ -34,11 +34,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
         setIsInitialized(true);
       } else {
-        // This is a true first-time setup
         localStorage.removeItem(ASSETS_STORAGE_KEY);
         localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
         setNeedsCurrencySetup(true);
-        setIsInitialized(false); // Ensure we don't try to save anything until setup is complete
+        setIsInitialized(false);
       }
     } catch (error) {
       console.error('Failed to initialize app state from localStorage', error);
@@ -47,7 +46,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         description: 'Could not load your data. Starting fresh.',
         variant: 'destructive',
       });
-      // Force a clean slate if something goes wrong
       localStorage.removeItem(ASSETS_STORAGE_KEY);
       localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
       localStorage.removeItem(CURRENCY_STORAGE_KEY);
@@ -95,7 +93,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       name,
       balance: initialBalance,
     };
+    
+    const newTransaction: Transaction = {
+      id: crypto.randomUUID(),
+      type: 'asset_creation',
+      amount: initialBalance,
+      assetId: newAsset.id,
+      assetName: newAsset.name,
+      date: new Date().toISOString(),
+      remarks: `Asset "${newAsset.name}" created`,
+    };
+
     setAssets((prev) => [...prev, newAsset]);
+    setTransactions(prev => [newTransaction, ...prev]);
+
     toast({
       title: 'Asset Added',
       description: `New asset "${name}" has been created.`,
@@ -178,22 +189,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   
   const completeCurrencySetup = (selectedCurrency: string) => {
     try {
-      const defaultAsset: Asset = {
-        id: crypto.randomUUID(),
-        name: 'Primary Bank',
-        balance: 0,
-      };
-      const initialAssets = [defaultAsset];
-
       localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(selectedCurrency));
-      localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify(initialAssets));
+      localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify([]));
       localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify([]));
 
       setCurrency(selectedCurrency);
-      setAssets(initialAssets);
+      setAssets([]);
       setTransactions([]);
-      setIsInitialized(true);
       setNeedsCurrencySetup(false);
+      setIsInitialized(true);
       
       toast({
           title: 'Welcome!',

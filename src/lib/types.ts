@@ -4,7 +4,7 @@ export type Asset = {
   balance: number;
 };
 
-export type TransactionType = 'income' | 'expenditure';
+export type TransactionType = 'income' | 'expenditure' | 'asset_creation';
 
 export type Transaction = {
   id: string;

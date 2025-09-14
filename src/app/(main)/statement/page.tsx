@@ -12,6 +12,7 @@ import {
   CreditCard,
   HelpCircle,
   BookText,
+  PlusSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,27 +26,35 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { Separator } from '@/components/ui/separator';
 
 export default function StatementPage() {
   const { transactions, assets, isInitialized, currency } = useAssetFlow();
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
+  const [showAssetCreations, setShowAssetCreations] = useState(false);
 
   const filteredTransactions = useMemo(() => {
     let items = [...transactions];
 
+    if (!showAssetCreations) {
+      items = items.filter((t) => t.type !== 'asset_creation');
+    }
+
     if (selectedAssets.length > 0) {
-      items = items.filter((t) => selectedAssets.includes(t.assetId));
+      items = items.filter(
+        (t) => t.type === 'asset_creation' || selectedAssets.includes(t.assetId)
+      );
     }
 
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - a;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
     return items;
-  }, [transactions, sortOrder, selectedAssets]);
+  }, [transactions, sortOrder, selectedAssets, showAssetCreations]);
 
   const handleAssetFilterChange = (assetId: string) => {
     setSelectedAssets((prev) =>
@@ -54,22 +63,22 @@ export default function StatementPage() {
         : [...prev, assetId]
     );
   };
-  
+
   const formatCurrency = (amount: number) => {
     if (!currency) return '...';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
     }).format(amount);
-  }
-  
+  };
+
   const formatDate = (dateString: string) => {
-      const date = new Date(dateString);
-      return date.toLocaleString(undefined, {
-          dateStyle: 'medium',
-          timeStyle: 'short'
-      });
-  }
+    const date = new Date(dateString);
+    return date.toLocaleString(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  };
 
   const getAssetIcon = (assetName: string) => {
     if (!assetName) {
@@ -79,7 +88,7 @@ export default function StatementPage() {
     if (lowerCaseName.includes('bank')) {
       return <Landmark className="h-5 w-5 text-muted-foreground" />;
     }
-     if (lowerCaseName.includes('card') || lowerCaseName.includes('credit')) {
+    if (lowerCaseName.includes('card') || lowerCaseName.includes('credit')) {
       return <CreditCard className="h-5 w-5 text-muted-foreground" />;
     }
     if (lowerCaseName.includes('cash') || lowerCaseName.includes('wallet')) {
@@ -110,13 +119,26 @@ export default function StatementPage() {
               <div className="space-y-4">
                 <h4 className="font-medium leading-none">Filter by Asset</h4>
                 <div className="space-y-2">
-                    {assets.map(asset => (
-                         <div key={asset.id} className="flex items-center space-x-2">
-                            <Checkbox id={asset.id} checked={selectedAssets.includes(asset.id)} onCheckedChange={() => handleAssetFilterChange(asset.id)} />
-                            <Label htmlFor={asset.id}>{asset.name}</Label>
-                        </div>
-                    ))}
-                    {assets.length === 0 && <p className='text-sm text-muted-foreground'>No assets to filter.</p>}
+                  {assets.map((asset) => (
+                    <div key={asset.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={asset.id}
+                        checked={selectedAssets.includes(asset.id)}
+                        onCheckedChange={() => handleAssetFilterChange(asset.id)}
+                      />
+                      <Label htmlFor={asset.id}>{asset.name}</Label>
+                    </div>
+                  ))}
+                  {assets.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      No assets to filter.
+                    </p>
+                  )}
+                </div>
+                <Separator />
+                 <div className="flex items-center space-x-2">
+                    <Checkbox id="show-asset-creations" checked={showAssetCreations} onCheckedChange={(checked) => setShowAssetCreations(!!checked)} />
+                    <Label htmlFor="show-asset-creations">Show Asset Creations</Label>
                 </div>
               </div>
             </PopoverContent>
@@ -125,7 +147,7 @@ export default function StatementPage() {
       </div>
 
       <div className="space-y-3">
-      {!isInitialized ? (
+        {!isInitialized ? (
           <>
             <Skeleton className="h-20 w-full" />
             <Skeleton className="h-20 w-full" />
@@ -134,36 +156,84 @@ export default function StatementPage() {
         ) : filteredTransactions.length > 0 ? (
           filteredTransactions.map((t) => {
             const isIncome = t.type === 'income';
+            const isAssetCreation = t.type === 'asset_creation';
+
+            if (isAssetCreation) {
+                return (
+                     <div key={t.id} className="flex items-center gap-4 p-4 rounded-lg bg-card border">
+                        <div className="p-2 rounded-full bg-blue-100 text-blue-700">
+                           <PlusSquare className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold">{t.remarks}</p>
+                           <p className="text-sm text-muted-foreground">Initial Balance</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-blue-600">
+                             + {formatCurrency(t.amount)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                        </div>
+                      </div>
+                )
+            }
+
             return (
-              <div key={t.id} className={cn("flex items-center gap-4 p-4 rounded-lg bg-card border", t.isOrphaned && "opacity-60")}>
-                <div className={`p-2 rounded-full ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {isIncome ? <ArrowDown className="h-5 w-5" /> : <ArrowUp className="h-5 w-5" />}
+              <div
+                key={t.id}
+                className={cn(
+                  'flex items-center gap-4 p-4 rounded-lg bg-card border',
+                  t.isOrphaned && 'opacity-60'
+                )}
+              >
+                <div
+                  className={`p-2 rounded-full ${
+                    isIncome
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}
+                >
+                  {isIncome ? (
+                    <ArrowDown className="h-5 w-5" />
+                  ) : (
+                    <ArrowUp className="h-5 w-5" />
+                  )}
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold">{t.remarks || 'Transaction'}</p>
-                  <div className='flex items-center gap-2'>
+                  <div className="flex items-center gap-2">
                     {getAssetIcon(t.assetName)}
-                    <p className="text-sm text-muted-foreground">{t.assetName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t.assetName}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`font-bold text-lg ${isIncome ? 'text-green-600' : 'text-red-600'}`}>
+                  <p
+                    className={`font-bold text-lg ${
+                      isIncome ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
                     {isIncome ? '+' : '-'} {formatCurrency(t.amount)}
                   </p>
-                  <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatDate(t.date)}
+                  </p>
                 </div>
               </div>
             );
           })
         ) : (
           <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
-             <div className="p-4 bg-secondary rounded-full mb-4">
-               <BookText className="h-10 w-10 text-muted-foreground" />
+            <div className="p-4 bg-secondary rounded-full mb-4">
+              <BookText className="h-10 w-10 text-muted-foreground" />
             </div>
             <h3 className="text-xl font-semibold mb-2">No Transactions Yet</h3>
-            <p className="text-muted-foreground mb-4">Your transaction history will appear here.</p>
+            <p className="text-muted-foreground mb-4">
+              Your transaction history will appear here.
+            </p>
             <Button asChild>
-                <Link href="/">Record First Transaction</Link>
+              <Link href="/">Record First Transaction</Link>
             </Button>
           </div>
         )}
