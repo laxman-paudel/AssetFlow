@@ -73,12 +73,9 @@ export default function DashboardPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-            <Button asChild variant="secondary" className='text-base'>
+        <div>
+            <Button asChild variant="secondary" className='text-base w-full'>
                 <Link href="/statement">View Statement</Link>
-            </Button>
-            <Button asChild variant="secondary" className='text-base'>
-                <Link href="/insights">AI Insights</Link>
             </Button>
         </div>
       </div>
