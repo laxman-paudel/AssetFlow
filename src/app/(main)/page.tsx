@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAssetFlow } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,52 +10,51 @@ import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react';
 import TransactionDialog from '@/components/app/TransactionDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionType } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
   const { totalBalance, isInitialized, currency } = useAssetFlow();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<TransactionType>('income');
+  const [isClient, setIsClient] = useState(false);
+  const [balanceCardStyle, setBalanceCardStyle] = useState({});
+  const router = useRouter();
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (isInitialized && isClient) {
+      let style = {};
+      const maxAmount = 5000;
+      const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
+
+      if (totalBalance > 0) {
+        const lightness = 80 - intensity * 30;
+        style = { backgroundColor: `hsl(120, 60%, ${lightness}%)` };
+      } else if (totalBalance < 0) {
+        const lightness = 80 - intensity * 25;
+        style = { backgroundColor: `hsl(0, 70%, ${lightness}%)` };
+      } else {
+        style = { backgroundColor: 'hsl(210, 80%, 70%)' };
+      }
+      setBalanceCardStyle(style);
+    }
+  }, [totalBalance, isInitialized, isClient]);
 
   const openDialog = (type: TransactionType) => {
     setDialogType(type);
     setDialogOpen(true);
   };
 
-  const formattedBalance =
-    isInitialized && currency
-      ? new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: currency,
-        }).format(totalBalance)
-      : '...';
-
-  const getBalanceCardStyle = () => {
-    if (!isInitialized) return {};
-
-    const maxAmount = 5000; // Threshold for max color intensity
-    const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
-
-    if (totalBalance > 0) {
-      // Green: As balance increases, decrease lightness from 80% to 50%
-      const lightness = 80 - intensity * 30;
-      return { backgroundColor: `hsl(120, 60%, ${lightness}%)` };
-    }
-    if (totalBalance < 0) {
-      // Red: As balance decreases, decrease lightness from 80% to 55%
-      const lightness = 80 - intensity * 25;
-      return { backgroundColor: `hsl(0, 70%, ${lightness}%)` };
-    }
-    // Blue for zero balance
-    return { backgroundColor: 'hsl(210, 80%, 70%)' };
-  };
-
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <div className="space-y-6">
-        <Link href="/assets" className="block">
-          <Card
-            className='text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1'
-            style={getBalanceCardStyle()}
+        <Card
+            className='text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer'
+            style={isClient ? balanceCardStyle : {}}
+            onClick={() => router.push('/assets')}
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
@@ -62,19 +62,27 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {isInitialized && currency ? (
+              {isClient && isInitialized && currency ? (
                 <div className="text-4xl font-bold tracking-tighter">
-                  {formattedBalance}
+                   {new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: currency,
+                    }).format(totalBalance)}
                 </div>
               ) : (
                 <Skeleton className="h-10 w-3/4 bg-primary-foreground/20" />
               )}
-                <p className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
-                  View Assets <ChevronRight className="h-3 w-3" />
-                </p>
+               <p className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
+                {isClient && isInitialized ? (
+                  <>
+                    View Assets <ChevronRight className="h-3 w-3" />
+                  </>
+                ) : (
+                   <Skeleton className="h-4 w-20 bg-primary-foreground/20" />
+                )}
+              </p>
             </CardContent>
           </Card>
-        </Link>
 
         <div className="grid grid-cols-2 gap-4">
           <Button

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useAssetFlow } from '@/lib/store';
 import { Transaction } from '@/lib/types';
 import {
@@ -50,6 +50,11 @@ export default function StatementPage() {
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [showAssetCreations, setShowAssetCreations] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const filteredTransactions = useMemo(() => {
     let items = [...transactions];
@@ -67,7 +72,7 @@ export default function StatementPage() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - a.date.localeCompare(b.date);
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
     return items;
@@ -90,9 +95,9 @@ export default function StatementPage() {
   };
   
   const getBalanceCardStyle = () => {
-    if (!isInitialized) return {};
+    if (!isClient || !isInitialized) return {};
 
-    const maxAmount = 5000; // Threshold for max color intensity
+    const maxAmount = 5000;
     const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
 
     if (totalBalance > 0) {
@@ -181,7 +186,7 @@ export default function StatementPage() {
         </div>
       </div>
       
-       {isInitialized && (
+       {isClient && isInitialized && (
         <Link href="/" className="block mb-6">
             <Card 
                 className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg'
@@ -198,7 +203,7 @@ export default function StatementPage() {
       )}
 
       <div className="space-y-3">
-        {!isInitialized ? (
+        {!isClient || !isInitialized ? (
           <>
             <Skeleton className="h-20 w-full" />
             <Skeleton className="h-20 w-full" />
@@ -233,25 +238,37 @@ export default function StatementPage() {
               <div
                 key={t.id}
                 className={cn(
-                  'group flex items-center gap-4 p-4 rounded-lg bg-card border border-l-4',
+                  'group flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 p-4 rounded-lg bg-card border border-l-4',
                   isIncome ? 'border-l-green-500' : 'border-l-red-500',
                   t.isOrphaned && 'opacity-60'
                 )}
               >
-                <div
-                  className={`p-2 rounded-full ${
-                    isIncome
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'
-                  }`}
-                >
-                  {isIncome ? (
-                    <ArrowDown className="h-5 w-5" />
-                  ) : (
-                    <ArrowUp className="h-5 w-5" />
-                  )}
+                <div className="flex items-center gap-4">
+                    <div
+                      className={`p-2 rounded-full ${
+                        isIncome
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {isIncome ? (
+                        <ArrowDown className="h-5 w-5" />
+                      ) : (
+                        <ArrowUp className="h-5 w-5" />
+                      )}
+                    </div>
+                    <div className="flex-1 md:hidden">
+                      <p className="font-semibold">{t.remarks || 'Transaction'}</p>
+                       <div className="flex items-center gap-2">
+                        {getAssetIcon(t.assetName)}
+                        <p className="text-sm text-muted-foreground">
+                          {t.assetName}
+                        </p>
+                      </div>
+                    </div>
                 </div>
-                <div className="flex-1">
+
+                <div className="hidden md:flex flex-1 flex-col">
                   <p className="font-semibold">{t.remarks || 'Transaction'}</p>
                   <div className="flex items-center gap-2">
                     {getAssetIcon(t.assetName)}
@@ -260,43 +277,46 @@ export default function StatementPage() {
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p
-                    className={`font-bold text-lg ${
-                      isIncome ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
-                    {isIncome ? '+' : '-'} {formatCurrency(t.amount)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDate(t.date)}
-                  </p>
-                </div>
-                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground" onClick={() => setEditingTransaction(t)}>
-                        <Pencil className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/60 hover:text-destructive hover:bg-destructive/10">
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                   This action cannot be undone. This will permanently delete this transaction and update the asset balance.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => deleteTransaction(t.id)} className="bg-destructive hover:bg-destructive/90">
-                                    Delete
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+
+                <div className="flex items-center justify-between w-full md:w-auto">
+                    <div className="text-right md:text-right ml-14 md:ml-0">
+                      <p
+                        className={`font-bold text-lg ${
+                          isIncome ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      >
+                        {isIncome ? '+' : '-'} {formatCurrency(t.amount)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDate(t.date)}
+                      </p>
+                    </div>
+                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground" onClick={() => setEditingTransaction(t)}>
+                            <Pencil className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/60 hover:text-destructive hover:bg-destructive/10">
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                       This action cannot be undone. This will permanently delete this transaction and update the asset balance.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => deleteTransaction(t.id)} className="bg-destructive hover:bg-destructive/90">
+                                        Delete
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
                 </div>
               </div>
             );

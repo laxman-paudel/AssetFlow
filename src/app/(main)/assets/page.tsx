@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAssetFlow } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,6 +32,11 @@ export default function AssetsPage() {
   const { assets, deleteAsset, isInitialized, currency, totalBalance } = useAssetFlow();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const formatCurrency = (amount: number) => {
     if (!currency) return '...';
@@ -56,22 +61,19 @@ export default function AssetsPage() {
   };
 
   const getBalanceCardStyle = () => {
-    if (!isInitialized) return {};
+    if (!isClient || !isInitialized) return {};
 
-    const maxAmount = 5000; // Threshold for max color intensity
+    const maxAmount = 5000;
     const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
 
     if (totalBalance > 0) {
-      // Green: As balance increases, decrease lightness from 80% to 50%
       const lightness = 80 - intensity * 30;
       return { backgroundColor: `hsl(120, 60%, ${lightness}%)` };
     }
     if (totalBalance < 0) {
-      // Red: As balance decreases, decrease lightness from 80% to 55%
       const lightness = 80 - intensity * 25;
       return { backgroundColor: `hsl(0, 70%, ${lightness}%)` };
     }
-    // Blue for zero balance
     return { backgroundColor: 'hsl(210, 80%, 70%)' };
   };
 
@@ -84,7 +86,7 @@ export default function AssetsPage() {
           New Asset
         </Button>
       </div>
-      {isInitialized && assets.length > 0 && (
+      {isClient && isInitialized && assets.length > 0 && (
         <Link href="/" className="block mb-6">
             <Card 
                 className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg'
@@ -100,7 +102,7 @@ export default function AssetsPage() {
         </Link>
       )}
       <div className="space-y-4">
-        {!isInitialized ? (
+        {!isClient || !isInitialized ? (
           <>
             <Skeleton className="h-28 w-full" />
             <Skeleton className="h-28 w-full" />
@@ -151,7 +153,7 @@ export default function AssetsPage() {
             </Card>
           ))
         )}
-        {isInitialized && assets.length > 0 && (
+        {isClient && isInitialized && assets.length > 0 && (
             <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
                 <div className="p-4 bg-secondary rounded-full mb-4">
                     <PlusCircle className="h-10 w-10 text-muted-foreground" />
@@ -164,7 +166,7 @@ export default function AssetsPage() {
                 </Button>
             </div>
         )}
-         {isInitialized && assets.length === 0 && (
+         {isClient && isInitialized && assets.length === 0 && (
           <div className="flex flex-col items-center justify-center text-center py-20 border-2 border-dashed rounded-lg">
             <div className="p-4 bg-primary/10 rounded-full mb-4">
               <Wallet className="h-12 w-12 text-primary" />
