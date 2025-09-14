@@ -1,0 +1,142 @@
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAssetFlow } from '@/lib/store';
+import { TransactionType } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+const formSchema = z.object({
+  amount: z.coerce.number().positive('Amount must be positive.'),
+  assetId: z.string().min(1, 'Please select an asset.'),
+  remarks: z.string().max(100, 'Remarks are too long.'),
+});
+
+interface TransactionDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  type: TransactionType;
+}
+
+export default function TransactionDialog({
+  open,
+  onOpenChange,
+  type,
+}: TransactionDialogProps) {
+  const { assets, addTransaction } = useAssetFlow();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      amount: 0,
+      assetId: '',
+      remarks: '',
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    addTransaction(type, values.amount, values.assetId, values.remarks);
+    onOpenChange(false);
+    form.reset();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>
+            Record {type === 'income' ? 'Income' : 'Expense'}
+          </DialogTitle>
+          <DialogDescription>
+            Enter the details of your transaction below.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Amount</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0.00" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="assetId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Asset</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an asset" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {assets.map((asset) => (
+                        <SelectItem key={asset.id} value={asset.id}>
+                          {asset.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="remarks"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Remarks</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="e.g., Purchased coffee" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button type="submit">Save Transaction</Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
