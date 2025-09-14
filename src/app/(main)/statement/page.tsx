@@ -29,7 +29,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Popover,
   PopoverContent,
@@ -44,7 +44,7 @@ import { Separator } from '@/components/ui/separator';
 import EditTransactionDialog from '@/components/app/EditTransactionDialog';
 
 export default function StatementPage() {
-  const { transactions, assets, isInitialized, currency, deleteTransaction } = useAssetFlow();
+  const { transactions, assets, isInitialized, currency, deleteTransaction, totalBalance } = useAssetFlow();
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [showAssetCreations, setShowAssetCreations] = useState(false);
@@ -86,6 +86,23 @@ export default function StatementPage() {
       style: 'currency',
       currency: currency,
     }).format(amount);
+  };
+  
+  const getBalanceCardStyle = () => {
+    if (!isInitialized) return {};
+
+    const maxAmount = 5000; // Threshold for max color intensity
+    const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
+
+    if (totalBalance > 0) {
+      const lightness = 80 - intensity * 30;
+      return { backgroundColor: `hsl(120, 60%, ${lightness}%)` };
+    }
+    if (totalBalance < 0) {
+      const lightness = 80 - intensity * 25;
+      return { backgroundColor: `hsl(0, 70%, ${lightness}%)` };
+    }
+    return { backgroundColor: 'hsl(210, 80%, 70%)' };
   };
 
   const formatDate = (dateString: string) => {
@@ -161,6 +178,24 @@ export default function StatementPage() {
           </Popover>
         </div>
       </div>
+      
+       {isInitialized && (
+        <Link href="/" className="block mb-6">
+            <Card 
+                className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg'
+                style={getBalanceCardStyle()}
+            >
+                <CardHeader className="flex-row items-center justify-between py-2 px-4">
+                    <CardTitle className="text-xs font-medium">Total Balance</CardTitle>
+                </CardHeader>
+                <CardContent className="py-0 px-4 pb-2">
+                    <div className="text-xl font-bold tracking-tighter">
+                        {formatCurrency(totalBalance)}
+                    </div>
+                </CardContent>
+            </Card>
+        </Link>
+      )}
 
       <div className="space-y-3">
         {!isInitialized ? (
