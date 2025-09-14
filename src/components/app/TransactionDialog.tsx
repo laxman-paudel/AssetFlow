@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/select';
 import { PlusCircle } from 'lucide-react';
 import NestedAssetDialog from './NestedAssetDialog';
+import { Separator } from '../ui/separator';
 
 const formSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive.'),
@@ -125,21 +126,21 @@ export default function TransactionDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {assets.length > 0 ? (
-                        assets.map((asset) => (
+                      {assets.map((asset) => (
                           <SelectItem key={asset.id} value={asset.id}>
                             {asset.name}
                           </SelectItem>
-                        ))
-                      ) : (
-                        <div className="p-4 text-center text-sm text-muted-foreground">
-                            No assets found.
-                            <Button variant="outline" className="w-full mt-2" type="button" onClick={() => setAssetDialogOpen(true)}>
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Create New Asset
-                            </Button>
-                        </div>
-                      )}
+                        ))}
+                      {(assets.length > 0) && <Separator className="my-1" />}
+                      <Button
+                            variant="ghost"
+                            className="w-full justify-start font-normal"
+                            type="button"
+                            onClick={() => setAssetDialogOpen(true)}
+                        >
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Create New Asset
+                        </Button>
                     </SelectContent>
                   </Select>
                   <FormMessage />
