@@ -22,7 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle, Trash2, Landmark, Wallet } from 'lucide-react';
 import AssetDialog from '@/components/app/AssetDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -35,6 +35,13 @@ export default function AssetsPage() {
       style: 'currency',
       currency: 'USD',
     }).format(amount);
+  
+  const getAssetIcon = (assetName: string) => {
+    if (assetName.toLowerCase().includes('bank')) {
+      return <Landmark className="h-6 w-6 text-muted-foreground" />;
+    }
+    return <Wallet className="h-6 w-6 text-muted-foreground" />;
+  };
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -48,16 +55,19 @@ export default function AssetsPage() {
       <div className="space-y-4">
         {!isInitialized ? (
           <>
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-28 w-full" />
           </>
         ) : assets.length > 0 ? (
           assets.map((asset) => (
-            <Card key={asset.id}>
-              <CardHeader className="flex flex-row items-start justify-between">
-                <div>
-                  <CardTitle>{asset.name}</CardTitle>
-                  <CardDescription>Available Balance</CardDescription>
+            <Card key={asset.id} className="transition-all hover:shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div className="flex items-center gap-4">
+                   {getAssetIcon(asset.name)}
+                   <div>
+                      <CardTitle>{asset.name}</CardTitle>
+                      <CardDescription>Available Balance</CardDescription>
+                   </div>
                 </div>
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -82,7 +92,7 @@ export default function AssetsPage() {
                     </AlertDialogContent>
                 </AlertDialog>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pl-16">
                 <p className="text-3xl font-bold tracking-tight">
                   {formatCurrency(asset.balance)}
                 </p>

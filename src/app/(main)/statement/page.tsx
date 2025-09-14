@@ -7,6 +7,8 @@ import {
   ArrowDownUp,
   ArrowUp,
   Filter,
+  Landmark,
+  Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -63,6 +65,13 @@ export default function StatementPage() {
       });
   }
 
+  const getAssetIcon = (assetName: string) => {
+    if (assetName.toLowerCase().includes('bank')) {
+      return <Landmark className="h-5 w-5 text-muted-foreground" />;
+    }
+    return <Wallet className="h-5 w-5 text-muted-foreground" />;
+  };
+
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
@@ -98,34 +107,36 @@ export default function StatementPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
       {!isInitialized ? (
           <>
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
           </>
         ) : filteredTransactions.length > 0 ? (
           filteredTransactions.map((t) => {
             const asset = getAssetById(t.assetId);
             const isIncome = t.type === 'income';
             return (
-              <Card key={t.id}>
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-semibold">{t.remarks || 'Transaction'}</p>
-                      <p className="text-sm text-muted-foreground">{asset?.name || 'Unknown Asset'}</p>
-                      <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`font-bold text-lg ${isIncome ? 'text-green-600' : 'text-red-600'}`}>
-                        {isIncome ? '+' : '-'} {formatCurrency(t.amount)}
-                      </p>
-                    </div>
+              <div key={t.id} className="flex items-center gap-4 p-4 rounded-lg bg-card border">
+                <div className={`p-2 rounded-full ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    {isIncome ? <ArrowDown className="h-5 w-5" /> : <ArrowUp className="h-5 w-5" />}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold">{t.remarks || 'Transaction'}</p>
+                  <div className='flex items-center gap-2'>
+                    {asset && getAssetIcon(asset.name)}
+                    <p className="text-sm text-muted-foreground">{asset?.name || 'Unknown Asset'}</p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                <div className="text-right">
+                  <p className={`font-bold text-lg ${isIncome ? 'text-green-600' : 'text-red-600'}`}>
+                    {isIncome ? '+' : '-'} {formatCurrency(t.amount)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{formatDate(t.date).split(',')[0]}</p>
+                </div>
+              </div>
             );
           })
         ) : (

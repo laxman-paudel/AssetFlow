@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAssetFlow } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowDownCircle, ArrowUpCircle, ChevronRight } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react';
 import TransactionDialog from '@/components/app/TransactionDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionType } from '@/lib/types';
@@ -22,19 +22,17 @@ export default function DashboardPage() {
 
   const formattedBalance = new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD', // This can be made dynamic in a real app
+    currency: 'USD',
   }).format(totalBalance);
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <div className="space-y-6">
-        <Link href="/assets">
-          <Card className="cursor-pointer transition-shadow hover:shadow-lg">
+        <Card className="bg-primary text-primary-foreground">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium">
                 Total Balance
               </CardTitle>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               {isInitialized ? (
@@ -42,14 +40,15 @@ export default function DashboardPage() {
                   {formattedBalance}
                 </div>
               ) : (
-                <Skeleton className="h-10 w-3/4" />
+                <Skeleton className="h-10 w-3/4 bg-primary-foreground/20" />
               )}
-              <p className="text-xs text-muted-foreground pt-2">
-                Click to view asset details
-              </p>
+               <Link href="/assets" className='block mt-2'>
+                <p className="text-xs text-primary-foreground/80 flex items-center gap-1">
+                    View Assets <ChevronRight className="h-3 w-3" />
+                </p>
+               </Link>
             </CardContent>
           </Card>
-        </Link>
 
         <div className="grid grid-cols-2 gap-4">
           <Button
@@ -57,25 +56,29 @@ export default function DashboardPage() {
             className="h-24 flex-col gap-2 text-lg"
             onClick={() => openDialog('income')}
           >
-            <ArrowDownCircle className="h-8 w-8 text-green-500" />
-            <span>INCOME</span>
+            <div className='bg-green-100 text-green-700 rounded-full p-2'>
+              <ArrowDown className="h-6 w-6" />
+            </div>
+            <span>Income</span>
           </Button>
           <Button
             variant="outline"
             className="h-24 flex-col gap-2 text-lg"
             onClick={() => openDialog('expenditure')}
           >
-            <ArrowUpCircle className="h-8 w-8 text-red-500" />
-            <span>EXPENSE</span>
+             <div className='bg-red-100 text-red-700 rounded-full p-2'>
+              <ArrowUp className="h-6 w-6" />
+            </div>
+            <span>Expense</span>
           </Button>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-            <Button asChild variant="secondary">
+            <Button asChild variant="secondary" className='text-base'>
                 <Link href="/statement">View Statement</Link>
             </Button>
-            <Button asChild variant="secondary">
-                <Link href="/assets">Manage Assets</Link>
+            <Button asChild variant="secondary" className='text-base'>
+                <Link href="/insights">AI Insights</Link>
             </Button>
         </div>
       </div>
