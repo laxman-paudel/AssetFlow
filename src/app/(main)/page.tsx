@@ -38,7 +38,7 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {isInitialized ? (
+              {isInitialized && currency ? (
                 <div className="text-4xl font-bold tracking-tighter">
                   {formattedBalance}
                 </div>
@@ -56,7 +56,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-4">
             <Button
               variant="outline"
-              className="h-28 flex-col gap-2 text-lg border-dashed border-2 hover:border-solid hover:bg-green-50/50"
+              className="h-28 flex-col gap-2 text-lg border-dashed border-2 hover:border-solid hover:bg-green-500/10"
               onClick={() => openDialog('income')}
             >
               <div className='bg-green-100 text-green-700 rounded-full p-2.5'>
@@ -66,7 +66,7 @@ export default function DashboardPage() {
             </Button>
             <Button
               variant="outline"
-              className="h-28 flex-col gap-2 text-lg border-dashed border-2 hover:border-solid hover:bg-red-50/50"
+              className="h-28 flex-col gap-2 text-lg border-dashed border-2 hover:border-solid hover:bg-red-500/10"
               onClick={() => openDialog('expenditure')}
             >
                <div className='bg-red-100 text-red-700 rounded-full p-2.5'>

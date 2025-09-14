@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { PlusCircle, Trash2, Landmark, Wallet } from 'lucide-react';
+import { PlusCircle, Trash2, Landmark, Wallet, CreditCard, HelpCircle } from 'lucide-react';
 import AssetDialog from '@/components/app/AssetDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -38,10 +38,17 @@ export default function AssetsPage() {
   }
   
   const getAssetIcon = (assetName: string) => {
-    if (assetName.toLowerCase().includes('bank')) {
+    const lowerCaseName = assetName.toLowerCase();
+    if (lowerCaseName.includes('bank')) {
       return <Landmark className="h-6 w-6 text-muted-foreground" />;
     }
-    return <Wallet className="h-6 w-6 text-muted-foreground" />;
+     if (lowerCaseName.includes('card') || lowerCaseName.includes('credit')) {
+      return <CreditCard className="h-6 w-6 text-muted-foreground" />;
+    }
+    if (lowerCaseName.includes('cash') || lowerCaseName.includes('wallet')) {
+      return <Wallet className="h-6 w-6 text-muted-foreground" />;
+    }
+    return <HelpCircle className="h-6 w-6 text-muted-foreground" />;
   };
 
   return (
@@ -100,12 +107,17 @@ export default function AssetsPage() {
             </Card>
           ))
         ) : (
-          <Card className="text-center py-10 border-dashed">
-            <CardContent>
-              <p className="text-muted-foreground">No assets found.</p>
-              <p className="text-muted-foreground mt-1">Click "New Asset" to get started.</p>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
+             <div className="p-4 bg-secondary rounded-full mb-4">
+               <Wallet className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">No Assets Found</h3>
+            <p className="text-muted-foreground mb-4">Get started by creating your first financial asset.</p>
+            <Button onClick={() => setDialogOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create First Asset
+            </Button>
+          </div>
         )}
       </div>
       <AssetDialog open={dialogOpen} onOpenChange={setDialogOpen} />

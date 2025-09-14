@@ -3,7 +3,13 @@ import './globals.css';
 import { AppProvider } from '@/components/app/AppProvider';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
-import { GeistSans } from 'geist/font/sans';
+import { PT_Sans } from 'next/font/google';
+
+const ptSans = PT_Sans({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-sans',
+});
 
 export const metadata: Metadata = {
   title: 'AssetFlow',
@@ -21,7 +27,7 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-screen bg-background font-sans antialiased',
-          GeistSans.variable
+          ptSans.variable
         )}
       >
         <AppProvider>{children}</AppProvider>

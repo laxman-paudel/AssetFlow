@@ -9,6 +9,9 @@ import {
   Filter,
   Landmark,
   Wallet,
+  CreditCard,
+  HelpCircle,
+  BookText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +24,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 export default function StatementPage() {
   const { transactions, assets, isInitialized, currency } = useAssetFlow();
@@ -69,12 +73,19 @@ export default function StatementPage() {
 
   const getAssetIcon = (assetName: string) => {
     if (!assetName) {
-      return <Wallet className="h-5 w-5 text-muted-foreground" />;
+      return <HelpCircle className="h-5 w-5 text-muted-foreground" />;
     }
-    if (assetName.toLowerCase().includes('bank')) {
+    const lowerCaseName = assetName.toLowerCase();
+    if (lowerCaseName.includes('bank')) {
       return <Landmark className="h-5 w-5 text-muted-foreground" />;
     }
-    return <Wallet className="h-5 w-5 text-muted-foreground" />;
+     if (lowerCaseName.includes('card') || lowerCaseName.includes('credit')) {
+      return <CreditCard className="h-5 w-5 text-muted-foreground" />;
+    }
+    if (lowerCaseName.includes('cash') || lowerCaseName.includes('wallet')) {
+      return <Wallet className="h-5 w-5 text-muted-foreground" />;
+    }
+    return <HelpCircle className="h-5 w-5 text-muted-foreground" />;
   };
 
   return (
@@ -105,6 +116,7 @@ export default function StatementPage() {
                             <Label htmlFor={asset.id}>{asset.name}</Label>
                         </div>
                     ))}
+                    {assets.length === 0 && <p className='text-sm text-muted-foreground'>No assets to filter.</p>}
                 </div>
               </div>
             </PopoverContent>
@@ -144,12 +156,16 @@ export default function StatementPage() {
             );
           })
         ) : (
-          <Card className="text-center py-10">
-            <CardContent>
-              <p className="text-muted-foreground">No transactions found.</p>
-              <p className="text-muted-foreground">Start by recording income or an expense.</p>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
+             <div className="p-4 bg-secondary rounded-full mb-4">
+               <BookText className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">No Transactions Yet</h3>
+            <p className="text-muted-foreground mb-4">Your transaction history will appear here.</p>
+            <Button asChild>
+                <Link href="/">Record First Transaction</Link>
+            </Button>
+          </div>
         )}
       </div>
     </div>
