@@ -66,6 +66,9 @@ export default function StatementPage() {
   }
 
   const getAssetIcon = (assetName: string) => {
+    if (!assetName) {
+      return <Wallet className="h-5 w-5 text-muted-foreground" />;
+    }
     if (assetName.toLowerCase().includes('bank')) {
       return <Landmark className="h-5 w-5 text-muted-foreground" />;
     }
