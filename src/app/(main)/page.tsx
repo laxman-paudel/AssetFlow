@@ -17,6 +17,11 @@ export default function DashboardPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<TransactionType>('income');
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (store.isInitialized) {
@@ -51,14 +56,14 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <Card
           className="text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
-          style={getBalanceCardStyle()}
+          style={isClient ? getBalanceCardStyle() : {}}
           onClick={() => router.push('/assets')}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            {totalBalance !== null && currency !== null ? (
+            {isClient && totalBalance !== null && currency !== null ? (
               <div className="text-4xl font-bold tracking-tighter">
                 {new Intl.NumberFormat('en-US', {
                   style: 'currency',
@@ -69,7 +74,7 @@ export default function DashboardPage() {
               <Skeleton className="h-10 w-3/4 bg-primary-foreground/20" />
             )}
             <div className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
-              {totalBalance !== null ? (
+              {isClient && totalBalance !== null ? (
                 <>
                   View Assets <ChevronRight className="h-3 w-3" />
                 </>
