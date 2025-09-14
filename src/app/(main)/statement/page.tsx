@@ -39,7 +39,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import EditTransactionDialog from '@/components/app/EditTransactionDialog';
 import ExportButton from '@/components/app/ExportButton';
@@ -51,6 +51,7 @@ export default function StatementPage() {
   const [showAssetCreations, setShowAssetCreations] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const router = useRouter();
   
   useEffect(() => {
     setIsClient(true);
@@ -186,10 +187,11 @@ export default function StatementPage() {
         </div>
       </div>
       
-       <Link href="/" className="block mb-6">
+       <div className="block mb-6">
           <Card 
-              className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg'
+              className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer'
               style={getBalanceCardStyle()}
+              onClick={() => router.push('/')}
           >
               <CardContent className="p-3 flex items-center justify-between">
                   <p className="text-sm font-medium">Total Balance</p>
@@ -202,7 +204,7 @@ export default function StatementPage() {
                   )}
               </CardContent>
           </Card>
-      </Link>
+      </div>
 
       <div className="space-y-3">
         {!isClient || !isInitialized ? (
@@ -333,7 +335,7 @@ export default function StatementPage() {
               Your transaction history will appear here.
             </p>
             <Button asChild>
-              <Link href="/">Record First Transaction</Link>
+              <span onClick={() => router.push('/')} className="cursor-pointer">Record First Transaction</span>
             </Button>
           </div>
         )}

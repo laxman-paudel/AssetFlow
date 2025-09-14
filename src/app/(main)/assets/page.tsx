@@ -26,13 +26,14 @@ import AssetDialog from '@/components/app/AssetDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import EditAssetDialog from '@/components/app/EditAssetDialog';
 import { Asset } from '@/lib/types';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function AssetsPage() {
   const { assets, deleteAsset, isInitialized, currency, totalBalance } = useAssetFlow();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const router = useRouter();
   
   useEffect(() => {
     setIsClient(true);
@@ -103,10 +104,11 @@ export default function AssetsPage() {
         </div>
       ) : (
         <>
-          <Link href="/" className="block mb-6">
+          <div className="block mb-6">
               <Card 
-                  className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg'
+                  className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer'
                   style={getBalanceCardStyle()}
+                  onClick={() => router.push('/')}
               >
                   <CardContent className="p-3 flex items-center justify-between">
                       <p className="text-sm font-medium">Total Balance</p>
@@ -119,7 +121,7 @@ export default function AssetsPage() {
                       )}
                   </CardContent>
               </Card>
-          </Link>
+          </div>
           <div className="space-y-4">
             {!isClient || !isInitialized ? (
               <>

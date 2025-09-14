@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAssetFlow } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -105,7 +104,7 @@ export default function DashboardPage() {
 
         <div>
           <Button asChild variant="secondary" className="text-base w-full h-12 font-semibold">
-            <Link href="/statement">View Statement</Link>
+            <span onClick={() => router.push('/statement')} className="cursor-pointer">View Statement</span>
           </Button>
         </div>
       </div>
