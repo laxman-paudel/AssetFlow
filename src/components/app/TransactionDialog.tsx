@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -31,6 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { PlusCircle } from 'lucide-react';
+import NestedAssetDialog from './NestedAssetDialog';
 
 const formSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive.'),
@@ -50,6 +53,8 @@ export default function TransactionDialog({
   type,
 }: TransactionDialogProps) {
   const { assets, addTransaction } = useAssetFlow();
+  const [assetDialogOpen, setAssetDialogOpen] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,12 +63,25 @@ export default function TransactionDialog({
       remarks: '',
     },
   });
+  
+  const lastAssetId = assets.length > 0 ? assets[assets.length - 1].id : '';
+  useEffect(() => {
+    if (assets.length === 1 && form.getValues('assetId') === '') {
+        form.setValue('assetId', assets[0].id);
+    }
+  }, [assets, form]);
+
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     addTransaction(type, values.amount, values.assetId, values.remarks);
     onOpenChange(false);
     form.reset();
   };
+  
+  const handleAssetCreated = (newAssetId: string) => {
+    form.setValue('assetId', newAssetId);
+    setAssetDialogOpen(false);
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -99,7 +117,7 @@ export default function TransactionDialog({
                   <FormLabel>Asset</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -107,11 +125,21 @@ export default function TransactionDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {assets.map((asset) => (
-                        <SelectItem key={asset.id} value={asset.id}>
-                          {asset.name}
-                        </SelectItem>
-                      ))}
+                      {assets.length > 0 ? (
+                        assets.map((asset) => (
+                          <SelectItem key={asset.id} value={asset.id}>
+                            {asset.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-4 text-center text-sm text-muted-foreground">
+                            No assets found.
+                            <Button variant="outline" className="w-full mt-2" type="button" onClick={() => setAssetDialogOpen(true)}>
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Create New Asset
+                            </Button>
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -137,6 +165,11 @@ export default function TransactionDialog({
           </form>
         </Form>
       </DialogContent>
+       <NestedAssetDialog 
+        open={assetDialogOpen} 
+        onOpenChange={setAssetDialogOpen}
+        onAssetCreated={handleAssetCreated}
+      />
     </Dialog>
   );
 }

@@ -89,7 +89,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [currency, isInitialized, needsCurrencySetup]);
 
-  const addAsset = useCallback((name: string, initialBalance: number) => {
+  const addAsset = useCallback((name: string, initialBalance: number): Asset => {
     const newAsset: Asset = {
       id: crypto.randomUUID(),
       name,
@@ -113,6 +113,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       title: 'Asset Added',
       description: `New asset "${name}" has been created.`,
     });
+    return newAsset;
   }, [toast]);
   
   const editAsset = useCallback((id: string, newName: string) => {

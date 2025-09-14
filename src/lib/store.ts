@@ -4,7 +4,7 @@ import type { Asset, Transaction } from '@/lib/types';
 interface AssetFlowState {
   assets: Asset[];
   transactions: Transaction[];
-  addAsset: (name: string, initialBalance: number) => void;
+  addAsset: (name: string, initialBalance: number) => Asset;
   editAsset: (id: string, newName: string) => void;
   deleteAsset: (id: string) => void;
   addTransaction: (
