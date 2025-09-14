@@ -107,7 +107,7 @@ export default function AssetsPage() {
             </Card>
           ))
         )}
-        {isInitialized && (
+        {isInitialized && assets.length > 0 && (
             <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
                 <div className="p-4 bg-secondary rounded-full mb-4">
                     <PlusCircle className="h-10 w-10 text-muted-foreground" />
@@ -119,6 +119,21 @@ export default function AssetsPage() {
                     Create New Asset
                 </Button>
             </div>
+        )}
+         {isInitialized && assets.length === 0 && (
+          <div className="flex flex-col items-center justify-center text-center py-20 border-2 border-dashed rounded-lg">
+            <div className="p-4 bg-primary/10 rounded-full mb-4">
+              <Wallet className="h-12 w-12 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Create Your First Asset</h3>
+            <p className="text-muted-foreground mb-6 max-w-sm">
+              Start by adding a bank account, credit card, or cash to track your balance.
+            </p>
+            <Button onClick={() => setDialogOpen(true)} size="lg">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Add First Asset
+            </Button>
+          </div>
         )}
       </div>
       <AssetDialog open={dialogOpen} onOpenChange={setDialogOpen} />
