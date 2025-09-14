@@ -71,11 +71,9 @@ export default function SettingsPage() {
               certain before proceeding.
             </CardDescription>
           </CardHeader>
-          <CardFooter>
-            <div className='flex justify-between items-center w-full'>
+          <CardFooter className='flex justify-between items-center w-full'>
               <p className="text-sm font-medium">Reset Application</p>
               <ResetButton />
-            </div>
           </CardFooter>
         </Card>
       </div>
