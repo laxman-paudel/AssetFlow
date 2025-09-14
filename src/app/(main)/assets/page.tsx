@@ -28,7 +28,7 @@ import EditAssetDialog from '@/components/app/EditAssetDialog';
 import { Asset } from '@/lib/types';
 
 export default function AssetsPage() {
-  const { assets, deleteAsset, isInitialized, currency } = useAssetFlow();
+  const { assets, deleteAsset, isInitialized, currency, totalBalance } = useAssetFlow();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
 
@@ -66,8 +66,8 @@ export default function AssetsPage() {
       {isInitialized && assets.length > 0 && (
         <Card className="mb-6 bg-secondary">
             <CardHeader className="flex-row items-center justify-between p-4">
-                <CardTitle className="text-base font-medium">Total Assets</CardTitle>
-                <CardDescription className="text-2xl font-bold text-foreground">{assets.length}</CardDescription>
+                <CardTitle className="text-base font-medium">Total Balance</CardTitle>
+                <CardDescription className="text-2xl font-bold text-foreground">{formatCurrency(totalBalance)}</CardDescription>
             </CardHeader>
         </Card>
       )}
