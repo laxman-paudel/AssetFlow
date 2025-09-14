@@ -20,28 +20,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
+      const storedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
       const storedAssets = localStorage.getItem(ASSETS_STORAGE_KEY);
       const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
-      const storedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
 
-      if (storedAssets && storedTransactions && storedCurrency) {
-        setAssets(JSON.parse(storedAssets));
-        setTransactions(JSON.parse(storedTransactions));
+      if (storedCurrency) {
         setCurrency(JSON.parse(storedCurrency));
+        if (storedAssets) {
+          setAssets(JSON.parse(storedAssets));
+        }
+        if (storedTransactions) {
+          setTransactions(JSON.parse(storedTransactions));
+        }
         setIsInitialized(true);
       } else {
         // First time setup
         localStorage.removeItem(ASSETS_STORAGE_KEY);
         localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
         localStorage.removeItem(CURRENCY_STORAGE_KEY);
-        
-        const defaultAssets: Asset[] = [
-          { id: crypto.randomUUID(), name: 'Cash With Me', balance: 0 },
-          { id: crypto.randomUUID(), name: 'Primary Bank Account', balance: 0 },
-        ];
-        
-        setAssets(defaultAssets);
-        setTransactions([]);
         setNeedsCurrencySetup(true);
       }
     } catch (error) {
@@ -175,11 +171,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [toast]);
   
   const completeCurrencySetup = (selectedCurrency: string) => {
+    const defaultAssets: Asset[] = [
+      { id: crypto.randomUUID(), name: 'Cash With Me', balance: 0 },
+      { id: crypto.randomUUID(), name: 'Primary Bank Account', balance: 0 },
+    ];
+    setAssets(defaultAssets);
+    setTransactions([]);
     setCurrency(selectedCurrency);
     setNeedsCurrencySetup(false);
     setIsInitialized(true);
      toast({
-        title: 'Currency Set',
+        title: 'Welcome!',
         description: `Your currency has been set to ${selectedCurrency}.`
     });
   };
