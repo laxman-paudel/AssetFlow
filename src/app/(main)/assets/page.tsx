@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { PlusCircle, Trash2, Landmark, Wallet, CreditCard, HelpCircle, Pencil, ChevronRight } from 'lucide-react';
+import { PlusCircle, Trash2, Landmark, Wallet, CreditCard, HelpCircle, Pencil } from 'lucide-react';
 import AssetDialog from '@/components/app/AssetDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import EditAssetDialog from '@/components/app/EditAssetDialog';
@@ -90,16 +90,13 @@ export default function AssetsPage() {
                 className='text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1'
                 style={getBalanceCardStyle()}
             >
-                <CardHeader className="flex-row items-center justify-between pb-2">
+                <CardHeader className="flex-row items-center justify-between py-3 px-4">
                     <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-bold tracking-tighter">
+                <CardContent className="py-0 px-4 pb-3">
+                    <div className="text-2xl font-bold tracking-tighter">
                         {formatCurrency(totalBalance)}
                     </div>
-                    <p className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-1">
-                        View Dashboard <ChevronRight className="h-3 w-3" />
-                    </p>
                 </CardContent>
             </Card>
         </Link>
