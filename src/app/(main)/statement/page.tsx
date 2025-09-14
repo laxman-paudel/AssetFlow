@@ -136,7 +136,7 @@ export default function StatementPage() {
                   <p className={`font-bold text-lg ${isIncome ? 'text-green-600' : 'text-red-600'}`}>
                     {isIncome ? '+' : '-'} {formatCurrency(t.amount)}
                   </p>
-                  <p className="text-xs text-muted-foreground">{formatDate(t.date).split(',')[0]}</p>
+                  <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
                 </div>
               </div>
             );
