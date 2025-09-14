@@ -186,21 +186,23 @@ export default function StatementPage() {
         </div>
       </div>
       
-       {isClient && isInitialized && (
-        <Link href="/" className="block mb-6">
-            <Card 
-                className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg'
-                style={getBalanceCardStyle()}
-            >
-                <CardContent className="p-3 flex items-center justify-between">
-                    <p className="text-sm font-medium">Total Balance</p>
+       <Link href="/" className="block mb-6">
+          <Card 
+              className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg'
+              style={getBalanceCardStyle()}
+          >
+              <CardContent className="p-3 flex items-center justify-between">
+                  <p className="text-sm font-medium">Total Balance</p>
+                  {isClient && isInitialized ? (
                     <p className="text-lg font-bold tracking-tighter">
                         {formatCurrency(totalBalance)}
                     </p>
-                </CardContent>
-            </Card>
-        </Link>
-      )}
+                  ) : (
+                    <Skeleton className="h-6 w-24 bg-primary-foreground/20" />
+                  )}
+              </CardContent>
+          </Card>
+      </Link>
 
       <div className="space-y-3">
         {!isClient || !isInitialized ? (
