@@ -20,10 +20,13 @@ export default function DashboardPage() {
     setDialogOpen(true);
   };
 
-  const formattedBalance = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-  }).format(totalBalance);
+  const formattedBalance =
+    isInitialized && currency
+      ? new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: currency,
+        }).format(totalBalance)
+      : '...';
 
   return (
     <div className="container mx-auto p-4 sm:p-6">

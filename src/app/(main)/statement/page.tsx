@@ -37,7 +37,7 @@ export default function StatementPage() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - a;
     });
 
     return items;
@@ -51,11 +51,13 @@ export default function StatementPage() {
     );
   };
   
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-US', {
+  const formatCurrency = (amount: number) => {
+    if (!currency) return '...';
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
     }).format(amount);
+  }
   
   const formatDate = (dateString: string) => {
       const date = new Date(dateString);

@@ -29,11 +29,13 @@ export default function AssetsPage() {
   const { assets, deleteAsset, isInitialized, currency } = useAssetFlow();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-US', {
+  const formatCurrency = (amount: number) => {
+    if (!currency) return '...';
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
     }).format(amount);
+  }
   
   const getAssetIcon = (assetName: string) => {
     if (assetName.toLowerCase().includes('bank')) {
