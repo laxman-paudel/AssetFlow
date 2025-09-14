@@ -63,6 +63,14 @@ export default function AssetsPage() {
           New Asset
         </Button>
       </div>
+      {isInitialized && assets.length > 0 && (
+        <Card className="mb-6 bg-secondary">
+            <CardHeader className="flex-row items-center justify-between p-4">
+                <CardTitle className="text-base font-medium">Total Assets</CardTitle>
+                <CardDescription className="text-2xl font-bold text-foreground">{assets.length}</CardDescription>
+            </CardHeader>
+        </Card>
+      )}
       <div className="space-y-4">
         {!isInitialized ? (
           <>
