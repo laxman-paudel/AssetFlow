@@ -256,30 +256,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [toast]);
   
   const completeCurrencySetup = (selectedCurrency: string) => {
-    const initialAsset: Asset = { id: crypto.randomUUID(), name: 'Cash In Hand', balance: 0 };
-    const initialAssets: Asset[] = [initialAsset];
-
-    const initialTransaction: Transaction = {
-        id: crypto.randomUUID(),
-        type: 'asset_creation',
-        amount: initialAsset.balance,
-        assetId: initialAsset.id,
-        assetName: initialAsset.name,
-        date: new Date().toISOString(),
-        remarks: `Asset "${initialAsset.name}" created`,
-    };
-    const initialTransactions: Transaction[] = [initialTransaction];
-    
     try {
         // Persist to localStorage first
         localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(selectedCurrency));
-        localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify(initialAssets));
-        localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(initialTransactions));
+        localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify([]));
+        localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify([]));
 
         // Then update the state
         setCurrency(selectedCurrency);
-        setAssets(initialAssets);
-        setTransactions(initialTransactions);
+        setAssets([]);
+        setTransactions([]);
         setNeedsCurrencySetup(false);
       
         toast({
