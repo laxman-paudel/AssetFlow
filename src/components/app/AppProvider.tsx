@@ -102,12 +102,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [toast]);
 
   const deleteAsset = useCallback((id: string) => {
+    const assetToDelete = assets.find(asset => asset.id === id);
+    if (!assetToDelete) return;
+    
     setAssets((prev) => prev.filter((asset) => asset.id !== id));
+    setTransactions(prev => 
+      prev.map(t => 
+        t.assetId === id ? { ...t, isOrphaned: true } : t
+      )
+    );
     toast({
       title: 'Asset Deleted',
       description: 'The asset and its balance have been removed. Transaction history is preserved.',
     });
-  }, [toast]);
+  }, [assets, toast]);
 
   const addTransaction = useCallback(
     (
@@ -116,13 +124,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       assetId: string,
       remarks: string
     ) => {
+      const asset = assets.find(a => a.id === assetId);
+      if (!asset) return;
+
       const newTransaction: Transaction = {
         id: crypto.randomUUID(),
         type,
         amount,
         assetId,
-        remarks,
+        assetName: asset.name,
         date: new Date().toISOString(),
+        remarks,
       };
 
       setTransactions((prev) => [newTransaction, ...prev]);
@@ -143,7 +155,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         description: `Your ${type} of ${amount.toFixed(2)} has been recorded.`,
       });
     },
-    [toast]
+    [assets, toast]
   );
   
   const getAssetById = useCallback((id: string) => {

@@ -23,7 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 export default function StatementPage() {
-  const { transactions, assets, getAssetById, isInitialized, currency } = useAssetFlow();
+  const { transactions, assets, isInitialized, currency } = useAssetFlow();
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
 
@@ -116,18 +116,17 @@ export default function StatementPage() {
           </>
         ) : filteredTransactions.length > 0 ? (
           filteredTransactions.map((t) => {
-            const asset = getAssetById(t.assetId);
             const isIncome = t.type === 'income';
             return (
-              <div key={t.id} className={cn("flex items-center gap-4 p-4 rounded-lg bg-card border", !asset && "opacity-70")}>
+              <div key={t.id} className={cn("flex items-center gap-4 p-4 rounded-lg bg-card border", t.isOrphaned && "opacity-60")}>
                 <div className={`p-2 rounded-full ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                     {isIncome ? <ArrowDown className="h-5 w-5" /> : <ArrowUp className="h-5 w-5" />}
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold">{t.remarks || 'Transaction'}</p>
                   <div className='flex items-center gap-2'>
-                    {asset ? getAssetIcon(asset.name) : <Wallet className="h-5 w-5 text-muted-foreground" />}
-                    <p className="text-sm text-muted-foreground">{asset?.name || 'Deleted Asset'}</p>
+                    {getAssetIcon(t.assetName)}
+                    <p className="text-sm text-muted-foreground">{t.assetName}</p>
                   </div>
                 </div>
                 <div className="text-right">
