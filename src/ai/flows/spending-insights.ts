@@ -48,10 +48,32 @@ const spendingInsightsFlow = ai.defineFlow(
     inputSchema: SpendingInsightsInputSchema,
     outputSchema: SpendingInsightsOutputSchema,
   },
-  async input => {
-    const {output} = await spendingInsightsPrompt(input);
-    return output!;
+  async (input, streamingCallback) => {
+    let retries = 3;
+    let delay = 1000;
+    while (retries > 0) {
+      try {
+        const {output} = await spendingInsightsPrompt(input);
+        return output!;
+      } catch (e: any) {
+        if (e.status === 503 && retries > 1) {
+          retries--;
+          if (streamingCallback) {
+            streamingCallback(
+              `Model is overloaded. Retrying in ${delay / 1000}s... (${
+                3 - retries
+              }/2)`
+            );
+          }
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2; // Exponential backoff
+        } else {
+          throw e;
+        }
+      }
+    }
+    // This part should not be reached if retries are configured correctly,
+    // but as a fallback, we throw an error.
+    throw new Error('Failed to get insights after multiple retries.');
   }
 );
-
-

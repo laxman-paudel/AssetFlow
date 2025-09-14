@@ -14,11 +14,13 @@ export default function InsightsGenerator() {
   const [loading, setLoading] = useState(false);
   const [insights, setInsights] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [streamingMessage, setStreamingMessage] = useState<string | null>(null);
 
   const handleGenerateInsights = async () => {
     setLoading(true);
     setInsights(null);
     setError(null);
+    setStreamingMessage('Analyzing your transactions...');
 
     const transactionsForAI: SpendingInsightsInput['transactions'] = transactions.map(t => {
       const asset = assets.find(a => a.id === t.assetId);
@@ -34,13 +36,17 @@ export default function InsightsGenerator() {
     });
 
     try {
-      const result = await getSpendingInsights({ transactions: transactionsForAI });
+      const result = await getSpendingInsights({ transactions: transactionsForAI }, (message: string) => {
+        setStreamingMessage(message);
+      }
+      );
       setInsights(result.insights);
     } catch (e) {
         console.error(e);
         setError('Failed to generate insights. Please try again later.');
     } finally {
         setLoading(false);
+        setStreamingMessage(null);
     }
   };
 
@@ -72,6 +78,7 @@ export default function InsightsGenerator() {
 
         {loading && (
           <div className="space-y-2 pt-4">
+            {streamingMessage && <p className="text-sm text-muted-foreground">{streamingMessage}</p>}
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-3/4" />
