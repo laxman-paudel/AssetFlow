@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AppProvider } from '@/components/app/AppProvider';
+import { ThemeProvider } from '@/components/app/ThemeProvider';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { PT_Sans } from 'next/font/google';
@@ -30,8 +31,15 @@ export default function RootLayout({
           ptSans.variable
         )}
       >
-        <AppProvider>{children}</AppProvider>
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AppProvider>{children}</AppProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

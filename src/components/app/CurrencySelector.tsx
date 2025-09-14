@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '../ui/skeleton';
 
 const currencies = [
   { value: 'USD', label: '$ USD' },
@@ -21,11 +22,13 @@ const currencies = [
 export default function CurrencySelector() {
   const { currency, setCurrency, isInitialized } = useAssetFlow();
 
-  if (!isInitialized) return null;
+  if (!isInitialized || !currency) {
+    return <Skeleton className="h-10 w-28" />;
+  }
 
   return (
     <Select value={currency} onValueChange={setCurrency}>
-      <SelectTrigger className="w-auto border-none bg-transparent shadow-none text-muted-foreground focus:ring-0">
+      <SelectTrigger className="w-auto min-w-[110px] shadow-none focus:ring-0">
         <SelectValue placeholder="Currency" />
       </SelectTrigger>
       <SelectContent>
