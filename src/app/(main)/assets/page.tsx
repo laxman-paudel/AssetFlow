@@ -27,13 +27,13 @@ import AssetDialog from '@/components/app/AssetDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AssetsPage() {
-  const { assets, deleteAsset, isInitialized } = useAssetFlow();
+  const { assets, deleteAsset, isInitialized, currency } = useAssetFlow();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
     }).format(amount);
   
   const getAssetIcon = (assetName: string) => {

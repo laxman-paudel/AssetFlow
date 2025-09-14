@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionType } from '@/lib/types';
 
 export default function DashboardPage() {
-  const { totalBalance, isInitialized } = useAssetFlow();
+  const { totalBalance, isInitialized, currency } = useAssetFlow();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<TransactionType>('income');
 
@@ -22,7 +22,7 @@ export default function DashboardPage() {
 
   const formattedBalance = new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: currency,
   }).format(totalBalance);
 
   return (

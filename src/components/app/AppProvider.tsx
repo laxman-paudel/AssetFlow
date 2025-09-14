@@ -7,17 +7,20 @@ import { useToast } from '@/hooks/use-toast';
 
 const ASSETS_STORAGE_KEY = 'assetflow-assets';
 const TRANSACTIONS_STORAGE_KEY = 'assetflow-transactions';
+const CURRENCY_STORAGE_KEY = 'assetflow-currency';
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [currency, setCurrency] = useState<string>('USD');
   const { toast } = useToast();
 
   useEffect(() => {
     try {
       const storedAssets = localStorage.getItem(ASSETS_STORAGE_KEY);
       const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
+      const storedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
 
       if (storedAssets) {
         setAssets(JSON.parse(storedAssets));
@@ -31,6 +34,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       if (storedTransactions) {
         setTransactions(JSON.parse(storedTransactions));
+      }
+      
+      if (storedCurrency) {
+        setCurrency(JSON.parse(storedCurrency));
       }
     } catch (error) {
       console.error('Failed to load data from localStorage', error);
@@ -66,6 +73,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, [transactions, isInitialized]);
+  
+  useEffect(() => {
+    if (isInitialized) {
+      try {
+        localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(currency));
+      } catch (error) {
+        console.error('Failed to save currency to localStorage', error);
+      }
+    }
+  }, [currency, isInitialized]);
 
   const addAsset = useCallback((name: string, initialBalance: number) => {
     const newAsset: Asset = {
@@ -141,6 +158,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     () => assets.reduce((sum, asset) => sum + asset.balance, 0),
     [assets]
   );
+  
+  const handleSetCurrency = useCallback((newCurrency: string) => {
+    setCurrency(newCurrency);
+    toast({
+        title: 'Currency Updated',
+        description: `Currency has been set to ${newCurrency}.`
+    });
+  }, [toast]);
 
   const value = {
     assets,
@@ -151,6 +176,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     getAssetById,
     totalBalance,
     isInitialized,
+    currency,
+    setCurrency: handleSetCurrency
   };
 
   return (

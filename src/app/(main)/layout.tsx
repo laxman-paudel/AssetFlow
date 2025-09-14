@@ -1,5 +1,6 @@
 import BottomNav from '@/components/app/BottomNav';
 import { PiggyBank } from 'lucide-react';
+import CurrencySelector from '@/components/app/CurrencySelector';
 
 export default function MainLayout({
   children,
@@ -16,6 +17,7 @@ export default function MainLayout({
               AssetFlow
             </h1>
           </div>
+          <CurrencySelector />
         </div>
       </header>
       <main className="flex-1 pb-24">{children}</main>

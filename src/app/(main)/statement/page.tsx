@@ -23,7 +23,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function StatementPage() {
-  const { transactions, assets, getAssetById, isInitialized } = useAssetFlow();
+  const { transactions, assets, getAssetById, isInitialized, currency } = useAssetFlow();
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
 
@@ -54,7 +54,7 @@ export default function StatementPage() {
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
     }).format(amount);
   
   const formatDate = (dateString: string) => {

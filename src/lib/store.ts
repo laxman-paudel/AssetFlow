@@ -15,6 +15,8 @@ interface AssetFlowState {
   getAssetById: (id: string) => Asset | undefined;
   totalBalance: number;
   isInitialized: boolean;
+  currency: string;
+  setCurrency: (currency: string) => void;
 }
 
 export const AssetFlowContext = createContext<AssetFlowState | undefined>(
