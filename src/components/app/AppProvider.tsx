@@ -21,32 +21,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const storedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
-      const storedAssets = localStorage.getItem(ASSETS_STORAGE_KEY);
-      const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
-
+      
       if (storedCurrency) {
         setCurrency(JSON.parse(storedCurrency));
+        const storedAssets = localStorage.getItem(ASSETS_STORAGE_KEY);
         if (storedAssets) {
           setAssets(JSON.parse(storedAssets));
         }
+        const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
         if (storedTransactions) {
           setTransactions(JSON.parse(storedTransactions));
         }
         setIsInitialized(true);
       } else {
-        // First time setup
+        // This is a true first-time setup
         localStorage.removeItem(ASSETS_STORAGE_KEY);
         localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
-        localStorage.removeItem(CURRENCY_STORAGE_KEY);
         setNeedsCurrencySetup(true);
+        setIsInitialized(false); // Ensure we don't try to save anything until setup is complete
       }
     } catch (error) {
-      console.error('Failed to initialize app state', error);
+      console.error('Failed to initialize app state from localStorage', error);
       toast({
-        title: 'Error',
-        description: 'Could not initialize the application.',
+        title: 'Initialization Error',
+        description: 'Could not load your data. Starting fresh.',
         variant: 'destructive',
       });
+      // Force a clean slate if something goes wrong
+      localStorage.removeItem(ASSETS_STORAGE_KEY);
+      localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
+      localStorage.removeItem(CURRENCY_STORAGE_KEY);
+      setNeedsCurrencySetup(true);
+      setIsInitialized(false);
     }
   }, [toast]);
 
@@ -171,20 +177,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [toast]);
   
   const completeCurrencySetup = (selectedCurrency: string) => {
-    const defaultAssets: Asset[] = [
-      { id: crypto.randomUUID(), name: 'Cash With Me', balance: 0 },
-      { id: crypto.randomUUID(), name: 'Primary Bank Account', balance: 0 },
-    ];
-    setAssets(defaultAssets);
-    setTransactions([]);
-    setCurrency(selectedCurrency);
-    setIsInitialized(true);
-    setNeedsCurrencySetup(false);
-    
-     toast({
-        title: 'Welcome!',
-        description: `Your currency has been set to ${selectedCurrency}.`
-    });
+    try {
+      const defaultAssets: Asset[] = [
+        { id: crypto.randomUUID(), name: 'Cash With Me', balance: 0 },
+        { id: crypto.randomUUID(), name: 'Primary Bank Account', balance: 0 },
+      ];
+      
+      // Save directly to localStorage to ensure persistence
+      localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(selectedCurrency));
+      localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify(defaultAssets));
+      localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify([]));
+
+      // Then update the state
+      setCurrency(selectedCurrency);
+      setAssets(defaultAssets);
+      setTransactions([]);
+      setIsInitialized(true);
+      setNeedsCurrencySetup(false);
+      
+      toast({
+          title: 'Welcome!',
+          description: `Your currency has been set to ${selectedCurrency}.`
+      });
+    } catch(error) {
+       console.error('Failed to complete currency setup', error);
+        toast({
+            title: 'Setup Failed',
+            description: 'There was an error during initial setup. Please refresh the page.',
+            variant: 'destructive',
+        });
+    }
   };
 
   const value = {
