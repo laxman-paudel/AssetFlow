@@ -25,11 +25,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
       localStorage.removeItem(CURRENCY_STORAGE_KEY);
 
-      // Initialize with default assets since it's a fresh start
-      setAssets([
-        { id: 'cash', name: 'Cash', balance: 1000 },
-        { id: 'bank', name: 'Main Bank Account', balance: 5000 },
-      ]);
+      // Initialize with no assets for a fresh start
+      setAssets([]);
       setTransactions([]);
       
       // Force currency setup
