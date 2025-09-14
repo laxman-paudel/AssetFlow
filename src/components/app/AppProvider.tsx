@@ -32,12 +32,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (storedTransactions) {
           setTransactions(JSON.parse(storedTransactions));
         }
+         setIsInitialized(true);
       } else {
         localStorage.removeItem(ASSETS_STORAGE_KEY);
         localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
         setNeedsCurrencySetup(true);
+        setIsInitialized(true);
       }
-      setIsInitialized(true);
     } catch (error) {
       console.error('Failed to initialize app state from localStorage', error);
       toast({
@@ -49,22 +50,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
       localStorage.removeItem(CURRENCY_STORAGE_KEY);
       setNeedsCurrencySetup(true);
-      setIsInitialized(false);
+      setIsInitialized(true);
     }
   }, [toast]);
 
   useEffect(() => {
-    if (isInitialized) {
+    if (isInitialized && !needsCurrencySetup) {
       try {
         localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify(assets));
       } catch (error) {
         console.error('Failed to save assets to localStorage', error);
       }
     }
-  }, [assets, isInitialized]);
+  }, [assets, isInitialized, needsCurrencySetup]);
 
   useEffect(() => {
-    if (isInitialized) {
+    if (isInitialized && !needsCurrencySetup) {
       try {
         localStorage.setItem(
           TRANSACTIONS_STORAGE_KEY,
@@ -74,17 +75,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         console.error('Failed to save transactions to localStorage', error);
       }
     }
-  }, [transactions, isInitialized]);
+  }, [transactions, isInitialized, needsCurrencySetup]);
   
   useEffect(() => {
-    if (isInitialized && currency) {
+    if (isInitialized && currency && !needsCurrencySetup) {
       try {
         localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(currency));
       } catch (error) {
         console.error('Failed to save currency to localStorage', error);
       }
     }
-  }, [currency, isInitialized]);
+  }, [currency, isInitialized, needsCurrencySetup]);
 
   const addAsset = useCallback((name: string, initialBalance: number) => {
     const newAsset: Asset = {
@@ -169,6 +170,43 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [assets, toast]
   );
   
+  const editTransaction = useCallback((id: string, newAmount: number, newRemarks: string) => {
+    const tx = transactions.find(t => t.id === id);
+    if (!tx || tx.type === 'asset_creation') {
+        toast({
+            title: 'Edit Failed',
+            description: 'Asset creation events cannot be edited.',
+            variant: 'destructive'
+        });
+        return;
+    }
+
+    const amountDifference = newAmount - tx.amount;
+
+    // Update asset balance
+    setAssets(prevAssets => prevAssets.map(asset => {
+        if (asset.id === tx.assetId) {
+            const balanceAdjustment = tx.type === 'income' ? amountDifference : -amountDifference;
+            return { ...asset, balance: asset.balance + balanceAdjustment };
+        }
+        return asset;
+    }));
+
+    // Update the transaction
+    setTransactions(prevTxs => prevTxs.map(t => {
+        if (t.id === id) {
+            return { ...t, amount: newAmount, remarks: newRemarks, date: new Date().toISOString() };
+        }
+        return t;
+    }));
+    
+    toast({
+        title: 'Transaction Updated',
+        description: 'The transaction has been successfully updated.',
+    });
+}, [transactions, toast]);
+
+
   const deleteTransaction = useCallback((id: string) => {
     const tx = transactions.find(t => t.id === id);
     if (!tx || tx.type === 'asset_creation') {
@@ -218,20 +256,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [toast]);
   
   const completeCurrencySetup = (selectedCurrency: string) => {
-    try {
-      localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(selectedCurrency));
-      localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify([]));
-      localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify([]));
+    const initialAssets: Asset[] = [
+      { id: crypto.randomUUID(), name: 'Primary Bank', balance: 0 },
+    ];
 
-      setCurrency(selectedCurrency);
-      setAssets([]);
-      setTransactions([]);
-      setNeedsCurrencySetup(false);
+    const initialTransactions: Transaction[] = initialAssets.map(asset => ({
+        id: crypto.randomUUID(),
+        type: 'asset_creation',
+        amount: asset.balance,
+        assetId: asset.id,
+        assetName: asset.name,
+        date: new Date().toISOString(),
+        remarks: `Asset "${asset.name}" created`,
+    }));
+    
+    try {
+        localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(selectedCurrency));
+        localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify(initialAssets));
+        localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(initialTransactions));
+
+        setCurrency(selectedCurrency);
+        setAssets(initialAssets);
+        setTransactions(initialTransactions);
+        setNeedsCurrencySetup(false);
       
-      toast({
+        toast({
           title: 'Welcome!',
           description: `Your currency has been set to ${selectedCurrency}.`
-      });
+        });
     } catch(error) {
        console.error('Failed to complete currency setup', error);
         toast({
@@ -241,13 +293,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         });
     }
   };
-
+  
   const value = {
     assets,
     transactions,
     addAsset,
     deleteAsset,
     addTransaction,
+    editTransaction,
     deleteTransaction,
     getAssetById,
     totalBalance,

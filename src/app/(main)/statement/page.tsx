@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useAssetFlow } from '@/lib/store';
+import { Transaction } from '@/lib/types';
 import {
   ArrowDown,
   ArrowDownUp,
@@ -13,7 +14,8 @@ import {
   HelpCircle,
   BookText,
   PlusSquare,
-  Trash2
+  Trash2,
+  Pencil
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -39,12 +41,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
+import EditTransactionDialog from '@/components/app/EditTransactionDialog';
 
 export default function StatementPage() {
   const { transactions, assets, isInitialized, currency, deleteTransaction } = useAssetFlow();
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [showAssetCreations, setShowAssetCreations] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   const filteredTransactions = useMemo(() => {
     let items = [...transactions];
@@ -232,27 +236,32 @@ export default function StatementPage() {
                     {formatDate(t.date)}
                   </p>
                 </div>
-                 <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                         <Button variant="ghost" size="icon" className="ml-2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-destructive/60 hover:text-destructive hover:bg-destructive/10">
-                            <Trash2 className="h-4 w-4" />
-                         </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                               This action cannot be undone. This will permanently delete this transaction and update the asset balance.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => deleteTransaction(t.id)} className="bg-destructive hover:bg-destructive/90">
-                                Delete
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground" onClick={() => setEditingTransaction(t)}>
+                        <Pencil className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/60 hover:text-destructive hover:bg-destructive/10">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                   This action cannot be undone. This will permanently delete this transaction and update the asset balance.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteTransaction(t.id)} className="bg-destructive hover:bg-destructive/90">
+                                    Delete
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
               </div>
             );
           })
@@ -271,6 +280,18 @@ export default function StatementPage() {
           </div>
         )}
       </div>
+      {editingTransaction && (
+          <EditTransactionDialog
+            key={editingTransaction.id}
+            transaction={editingTransaction}
+            open={!!editingTransaction}
+            onOpenChange={(open) => {
+                if (!open) {
+                    setEditingTransaction(null);
+                }
+            }}
+          />
+      )}
     </div>
   );
 }
