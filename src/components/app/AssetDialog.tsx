@@ -80,7 +80,7 @@ export default function AssetDialog({ open, onOpenChange }: AssetDialogProps) {
                 <FormItem>
                   <FormLabel>Initial Balance</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="0.00" {...field} />
+                    <Input type="number" step="0.01" placeholder="0.00" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
