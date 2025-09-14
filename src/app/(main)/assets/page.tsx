@@ -66,7 +66,7 @@ export default function AssetsPage() {
             <Skeleton className="h-28 w-full" />
             <Skeleton className="h-28 w-full" />
           </>
-        ) : assets.length > 0 ? (
+        ) : (
           assets.map((asset) => (
             <Card key={asset.id} className="transition-all hover:shadow-lg hover:-translate-y-1 duration-300">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -106,18 +106,19 @@ export default function AssetsPage() {
               </CardContent>
             </Card>
           ))
-        ) : (
-          <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
-             <div className="p-4 bg-secondary rounded-full mb-4">
-               <Wallet className="h-10 w-10 text-muted-foreground" />
+        )}
+        {isInitialized && (
+            <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
+                <div className="p-4 bg-secondary rounded-full mb-4">
+                    <PlusCircle className="h-10 w-10 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Add Another Asset</h3>
+                <p className="text-muted-foreground mb-4">You can add more accounts, like credit cards or other savings.</p>
+                <Button onClick={() => setDialogOpen(true)}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Create New Asset
+                </Button>
             </div>
-            <h3 className="text-xl font-semibold mb-2">No Assets Found</h3>
-            <p className="text-muted-foreground mb-4">Get started by creating your first financial asset.</p>
-            <Button onClick={() => setDialogOpen(true)}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create First Asset
-            </Button>
-          </div>
         )}
       </div>
       <AssetDialog open={dialogOpen} onOpenChange={setDialogOpen} />

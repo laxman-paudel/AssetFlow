@@ -20,18 +20,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      // Clear localStorage for a fresh start
-      localStorage.removeItem(ASSETS_STORAGE_KEY);
-      localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
-      localStorage.removeItem(CURRENCY_STORAGE_KEY);
+      const storedAssets = localStorage.getItem(ASSETS_STORAGE_KEY);
+      const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
+      const storedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
 
-      // Initialize with no assets for a fresh start
-      setAssets([]);
-      setTransactions([]);
-      
-      // Force currency setup
-      setNeedsCurrencySetup(true);
-
+      if (storedAssets && storedTransactions && storedCurrency) {
+        setAssets(JSON.parse(storedAssets));
+        setTransactions(JSON.parse(storedTransactions));
+        setCurrency(JSON.parse(storedCurrency));
+        setIsInitialized(true);
+      } else {
+        // First time setup
+        localStorage.removeItem(ASSETS_STORAGE_KEY);
+        localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
+        localStorage.removeItem(CURRENCY_STORAGE_KEY);
+        
+        const defaultAssets: Asset[] = [
+          { id: crypto.randomUUID(), name: 'Cash With Me', balance: 0 },
+          { id: crypto.randomUUID(), name: 'Primary Bank Account', balance: 0 },
+        ];
+        
+        setAssets(defaultAssets);
+        setTransactions([]);
+        setNeedsCurrencySetup(true);
+      }
     } catch (error) {
       console.error('Failed to initialize app state', error);
       toast({
@@ -39,7 +51,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         description: 'Could not initialize the application.',
         variant: 'destructive',
       });
-      setIsInitialized(true); // Still initialize to avoid blocking UI
     }
   }, [toast]);
 
@@ -188,7 +199,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AssetFlowContext.Provider value={value}>
-      {isInitialized || needsCurrencySetup ? children : null}
+      {children}
       <CurrencySetupDialog open={needsCurrencySetup} onCurrencySelect={completeCurrencySetup} />
     </AssetFlowContext.Provider>
   );
