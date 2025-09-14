@@ -13,7 +13,19 @@ import {
   HelpCircle,
   BookText,
   PlusSquare,
+  Trash2
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -29,7 +41,7 @@ import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 
 export default function StatementPage() {
-  const { transactions, assets, isInitialized, currency } = useAssetFlow();
+  const { transactions, assets, isInitialized, currency, deleteTransaction } = useAssetFlow();
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [showAssetCreations, setShowAssetCreations] = useState(false);
@@ -50,7 +62,7 @@ export default function StatementPage() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - a.date.localeCompare(b.date);
     });
 
     return items;
@@ -182,7 +194,7 @@ export default function StatementPage() {
               <div
                 key={t.id}
                 className={cn(
-                  'flex items-center gap-4 p-4 rounded-lg bg-card border',
+                  'group flex items-center gap-4 p-4 rounded-lg bg-card border',
                   t.isOrphaned && 'opacity-60'
                 )}
               >
@@ -220,6 +232,27 @@ export default function StatementPage() {
                     {formatDate(t.date)}
                   </p>
                 </div>
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                         <Button variant="ghost" size="icon" className="ml-2 h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-destructive/60 hover:text-destructive hover:bg-destructive/10">
+                            <Trash2 className="h-4 w-4" />
+                         </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                               This action cannot be undone. This will permanently delete this transaction and update the asset balance.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteTransaction(t.id)} className="bg-destructive hover:bg-destructive/90">
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
               </div>
             );
           })

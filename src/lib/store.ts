@@ -12,6 +12,7 @@ interface AssetFlowState {
     assetId: string,
     remarks: string
   ) => void;
+  deleteTransaction: (id: string) => void;
   getAssetById: (id: string) => Asset | undefined;
   totalBalance: number;
   isInitialized: boolean;

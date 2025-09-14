@@ -32,13 +32,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (storedTransactions) {
           setTransactions(JSON.parse(storedTransactions));
         }
-        setIsInitialized(true);
       } else {
         localStorage.removeItem(ASSETS_STORAGE_KEY);
         localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
         setNeedsCurrencySetup(true);
-        setIsInitialized(false);
       }
+      setIsInitialized(true);
     } catch (error) {
       console.error('Failed to initialize app state from localStorage', error);
       toast({
@@ -170,6 +169,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [assets, toast]
   );
   
+  const deleteTransaction = useCallback((id: string) => {
+    const tx = transactions.find(t => t.id === id);
+    if (!tx || tx.type === 'asset_creation') {
+        toast({
+            title: 'Deletion Failed',
+            description: 'Asset creation events cannot be deleted.',
+            variant: 'destructive'
+        });
+        return;
+    };
+    
+    // Reverse the balance change
+    setAssets(prevAssets => prevAssets.map(asset => {
+        if (asset.id === tx.assetId) {
+            const newBalance = tx.type === 'income'
+                ? asset.balance - tx.amount
+                : asset.balance + tx.amount;
+            return { ...asset, balance: newBalance };
+        }
+        return asset;
+    }));
+
+    // Remove the transaction
+    setTransactions(prevTxs => prevTxs.filter(t => t.id !== id));
+    
+    toast({
+        title: 'Transaction Deleted',
+        description: 'The transaction has been removed and the asset balance is updated.',
+    });
+}, [transactions, toast]);
+
   const getAssetById = useCallback((id: string) => {
     return assets.find(a => a.id === id);
   }, [assets]);
@@ -197,7 +227,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setAssets([]);
       setTransactions([]);
       setNeedsCurrencySetup(false);
-      setIsInitialized(true);
       
       toast({
           title: 'Welcome!',
@@ -219,6 +248,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addAsset,
     deleteAsset,
     addTransaction,
+    deleteTransaction,
     getAssetById,
     totalBalance,
     isInitialized,
