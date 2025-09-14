@@ -42,7 +42,7 @@ export default function SettingsPage() {
                 <CardDescription>
                     Manage your application-wide settings.
                 </CardDescription>
-            </Header>
+            </CardHeader>
             <CardContent>
                 <div className="flex items-center justify-between">
                     <Label>Primary Currency</Label>
