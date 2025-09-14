@@ -4,13 +4,21 @@ import { useAssetFlow } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import type { Transaction } from '@/lib/types';
 
-export default function ExportButton({ minimal = false }: { minimal?: boolean }) {
-  const { transactions } = useAssetFlow();
+interface ExportButtonProps {
+  minimal?: boolean;
+  transactions?: Transaction[];
+}
+
+export default function ExportButton({ minimal = false, transactions: transactionsToExport }: ExportButtonProps) {
+  const { transactions: allTransactions } = useAssetFlow();
   const { toast } = useToast();
 
   const handleExport = () => {
-    if (transactions.length === 0) {
+    const dataToExport = transactionsToExport ?? allTransactions;
+
+    if (dataToExport.length === 0) {
       toast({
         title: 'No Data to Export',
         description: 'There are no transactions to export.',
@@ -18,18 +26,25 @@ export default function ExportButton({ minimal = false }: { minimal?: boolean })
       return;
     }
 
-    const header = ['ID', 'Date', 'Type', 'Amount', 'Asset ID', 'Asset Name', 'Remarks'];
-    const rows = transactions.map(t => 
-      [
-        t.id,
-        new Date(t.date).toLocaleString(),
+    const header = ['Date', 'Time', 'Type', 'Amount', 'Asset', 'Remarks'];
+    const rows = dataToExport.map(t => {
+      const date = new Date(t.date);
+      const rowDate = date.toLocaleDateString();
+      const rowTime = date.toLocaleTimeString();
+      let amount = t.amount;
+      if (t.type === 'expenditure') {
+          amount = -amount;
+      }
+      
+      return [
+        rowDate,
+        rowTime,
         t.type,
-        t.amount,
-        t.assetId,
+        amount,
         `"${t.assetName.replace(/"/g, '""')}"`,
-        `"${t.remarks.replace(/"/g, '""')}"`
-      ].join(',')
-    );
+        `"${(t.remarks || '').replace(/"/g, '""')}"`
+      ].join(',');
+    });
 
     const csvContent = [header.join(','), ...rows].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -58,7 +73,7 @@ export default function ExportButton({ minimal = false }: { minimal?: boolean })
   return (
     <Button onClick={handleExport} variant="outline">
       <Download className="mr-2 h-4 w-4" />
-      Export Transactions
+      Export All Transactions
     </Button>
   );
 }

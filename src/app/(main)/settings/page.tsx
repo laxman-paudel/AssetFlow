@@ -42,7 +42,7 @@ export default function SettingsPage() {
                 <CardDescription>
                     Manage your application-wide settings.
                 </CardDescription>
-            </CardHeader>
+            </Header>
             <CardContent>
                 <div className="flex items-center justify-between">
                     <Label>Primary Currency</Label>
@@ -72,8 +72,10 @@ export default function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardFooter>
-            <p className="text-sm font-medium flex-1">Reset Application</p>
-            <ResetButton />
+            <div className='flex justify-between items-center w-full'>
+              <p className="text-sm font-medium">Reset Application</p>
+              <ResetButton />
+            </div>
           </CardFooter>
         </Card>
       </div>
