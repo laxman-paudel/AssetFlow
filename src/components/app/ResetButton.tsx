@@ -19,7 +19,7 @@ export default function ResetButton() {
     localStorage.removeItem('assetflow-assets');
     localStorage.removeItem('assetflow-transactions');
     localStorage.removeItem('assetflow-currency');
-    window.location.reload();
+    window.location.href = '/';
   };
 
   return (
