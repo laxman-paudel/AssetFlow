@@ -25,8 +25,9 @@ export default function ResetButton() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
-          <RotateCcw className="h-4 w-4" />
+        <Button variant="destructive">
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Reset App
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
