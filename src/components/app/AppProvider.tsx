@@ -178,19 +178,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   
   const completeCurrencySetup = (selectedCurrency: string) => {
     try {
-      const defaultAssets: Asset[] = [
-        { id: crypto.randomUUID(), name: 'Cash With Me', balance: 0 },
-        { id: crypto.randomUUID(), name: 'Primary Bank Account', balance: 0 },
-      ];
-      
-      // Save directly to localStorage to ensure persistence
       localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(selectedCurrency));
-      localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify(defaultAssets));
+      localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify([]));
       localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify([]));
 
-      // Then update the state
       setCurrency(selectedCurrency);
-      setAssets(defaultAssets);
+      setAssets([]);
       setTransactions([]);
       setIsInitialized(true);
       setNeedsCurrencySetup(false);
