@@ -21,13 +21,8 @@ const currencies = [
 
 export default function CurrencySelector() {
   const { currency, setCurrency, isInitialized } = useAssetFlow();
-  const [isClient, setIsClient] = useState(false);
-  
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
-  if (!isClient || !isInitialized || !currency) {
+  if (!isInitialized || !currency) {
     return <Skeleton className="h-10 w-28" />;
   }
 

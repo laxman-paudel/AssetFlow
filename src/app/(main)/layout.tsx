@@ -13,16 +13,9 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const [isNavVisible, setIsNavVisible] = useState(true);
-  const [isClient, setIsClient] = useState(false);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isClient) return;
-
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       if (currentScrollY > lastScrollY.current && currentScrollY > 80) { // 80 is header height
@@ -40,7 +33,7 @@ export default function MainLayout({
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [isClient]);
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -63,7 +56,7 @@ export default function MainLayout({
         </div>
       </header>
       <main className="flex-1 pb-24">{children}</main>
-      <BottomNav isVisible={isClient ? isNavVisible : true} />
+      <BottomNav isVisible={isNavVisible} />
     </div>
   );
 }
