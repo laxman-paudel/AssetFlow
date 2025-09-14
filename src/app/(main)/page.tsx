@@ -16,14 +16,12 @@ export default function DashboardPage() {
   const [dialogType, setDialogType] = useState<TransactionType>('income');
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
-  
+
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   const getBalanceCardStyle = () => {
-    if (!isClient || !isInitialized) return {};
-    
     const maxAmount = 5000;
     const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
 
@@ -47,37 +45,35 @@ export default function DashboardPage() {
     <div className="container mx-auto p-4 sm:p-6">
       <div className="space-y-6">
         <Card
-            className='text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer'
-            style={isClient && isInitialized ? getBalanceCardStyle() : undefined}
-            onClick={() => router.push('/assets')}
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Balance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isClient && isInitialized ? (
-                <div className="text-4xl font-bold tracking-tighter">
-                   {new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: currency,
-                    }).format(totalBalance)}
-                </div>
-              ) : (
-                <Skeleton className="h-10 w-3/4 bg-primary-foreground/20" />
-              )}
-              <div className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
-                {isClient && isInitialized ? (
-                  <>
-                    View Assets <ChevronRight className="h-3 w-3" />
-                  </>
-                ) : (
-                   <Skeleton className="h-4 w-20 bg-primary-foreground/20" />
-                )}
+          className="text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+          style={isClient && isInitialized ? getBalanceCardStyle() : undefined}
+          onClick={() => router.push('/assets')}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isClient && isInitialized ? (
+              <div className="text-4xl font-bold tracking-tighter">
+                {new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: currency,
+                }).format(totalBalance)}
               </div>
-            </CardContent>
-          </Card>
+            ) : (
+              <Skeleton className="h-10 w-3/4 bg-primary-foreground/20" />
+            )}
+            <div className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
+              {isClient && isInitialized ? (
+                <>
+                  View Assets <ChevronRight className="h-3 w-3" />
+                </>
+              ) : (
+                <Skeleton className="h-4 w-20 bg-primary-foreground/20" />
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-2 gap-4">
           <Button
@@ -103,8 +99,17 @@ export default function DashboardPage() {
         </div>
 
         <div>
-          <Button asChild variant="secondary" className="text-base w-full h-12 font-semibold">
-            <span onClick={() => router.push('/statement')} className="cursor-pointer">View Statement</span>
+          <Button
+            asChild
+            variant="secondary"
+            className="text-base w-full h-12 font-semibold"
+          >
+            <span
+              onClick={() => router.push('/statement')}
+              className="cursor-pointer"
+            >
+              View Statement
+            </span>
           </Button>
         </div>
       </div>

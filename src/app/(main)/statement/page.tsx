@@ -96,8 +96,6 @@ export default function StatementPage() {
   };
   
   const getBalanceCardStyle = () => {
-    if (!isClient || !isInitialized) return {};
-
     const maxAmount = 5000;
     const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
 
