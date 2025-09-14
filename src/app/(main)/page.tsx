@@ -51,30 +51,30 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <div className="space-y-6">
-        <Card
-          className='text-primary-foreground shadow-lg transition-colors duration-500'
-          style={getBalanceCardStyle()}
-        >
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Balance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isInitialized && currency ? (
-              <div className="text-4xl font-bold tracking-tighter">
-                {formattedBalance}
-              </div>
-            ) : (
-              <Skeleton className="h-10 w-3/4 bg-primary-foreground/20" />
-            )}
-            <Link href="/assets" className="block mt-2">
-              <p className="text-xs text-primary-foreground/80 flex items-center gap-1 hover:underline">
-                View Assets <ChevronRight className="h-3 w-3" />
-              </p>
-            </Link>
-          </CardContent>
-        </Card>
+        <Link href="/assets" className="block">
+          <Card
+            className='text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1'
+            style={getBalanceCardStyle()}
+          >
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Balance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isInitialized && currency ? (
+                <div className="text-4xl font-bold tracking-tighter">
+                  {formattedBalance}
+                </div>
+              ) : (
+                <Skeleton className="h-10 w-3/4 bg-primary-foreground/20" />
+              )}
+                <p className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
+                  View Assets <ChevronRight className="h-3 w-3" />
+                </p>
+            </CardContent>
+          </Card>
+        </Link>
 
         <div className="grid grid-cols-2 gap-4">
           <Button
