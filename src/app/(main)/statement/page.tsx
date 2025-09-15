@@ -16,6 +16,8 @@ import {
   Trash2,
   Edit,
   ArrowRightLeft,
+  Search,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,18 +31,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
-import { format } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
+import { format, startOfMonth, subMonths, startOfYear, endOfDay } from 'date-fns';
 import type { Transaction } from '@/lib/types';
 import EditTransactionDialog from '@/components/app/EditTransactionDialog';
 import { useCountUp } from '@/hooks/useCountUp';
 import { getCategoryById } from '@/lib/categories';
+import type { DateRange } from 'react-day-picker';
 
 function StatementPageContent() {
   const {
@@ -61,6 +73,10 @@ function StatementPageContent() {
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [expandedTransactionId, setExpandedTransactionId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [dateFilterLabel, setDateFilterLabel] = useState('All Time');
+
 
   useEffect(() => {
     const accountIdFromQuery = searchParams.get('accountId');
@@ -94,6 +110,19 @@ function StatementPageContent() {
       });
     }
 
+    if (searchTerm) {
+        items = items.filter(t => t.remarks?.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+
+    if (dateRange?.from) {
+        const fromDate = dateRange.from.getTime();
+        const toDate = dateRange.to ? endOfDay(dateRange.to).getTime() : new Date().getTime();
+        items = items.filter(t => {
+            const tDate = new Date(t.date).getTime();
+            return tDate >= fromDate && tDate <= toDate;
+        })
+    }
+
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
@@ -101,7 +130,7 @@ function StatementPageContent() {
     });
 
     return items;
-  }, [transactions, sortOrder, selectedAccounts, showAccountCreations]);
+  }, [transactions, sortOrder, selectedAccounts, showAccountCreations, searchTerm, dateRange]);
 
   const handleAccountFilterChange = (accountId: string) => {
     setSelectedAccounts((prev) =>
@@ -110,6 +139,41 @@ function StatementPageContent() {
         : [...prev, accountId]
     );
   };
+
+  const setDateFilter = (preset: 'all' | 'month' | '3months' | 'year') => {
+      const today = new Date();
+      switch(preset) {
+          case 'month':
+              setDateRange({from: startOfMonth(today), to: today});
+              setDateFilterLabel('This Month');
+              break;
+          case '3months':
+              setDateRange({from: subMonths(today, 3), to: today});
+              setDateFilterLabel('Last 3 Months');
+              break;
+          case 'year':
+              setDateRange({from: startOfYear(today), to: today});
+              setDateFilterLabel('This Year');
+              break;
+          case 'all':
+              setDateRange(undefined);
+              setDateFilterLabel('All Time');
+              break;
+      }
+  };
+  
+  useEffect(() => {
+    if (dateRange?.from && dateRange?.to) {
+        if (format(dateRange.from, 'PPP') === format(dateRange.to, 'PPP')) {
+            setDateFilterLabel(format(dateRange.from, 'PPP'));
+        } else {
+            setDateFilterLabel(`${format(dateRange.from, 'LLL d')} - ${format(dateRange.to, 'LLL d, y')}`);
+        }
+    } else if (dateRange?.from) {
+         setDateFilterLabel(`${format(dateRange.from, 'LLL d, y')} - Present`);
+    }
+  }, [dateRange]);
+
 
   const handleTransactionClick = (transactionId: string) => {
     setExpandedTransactionId(prevId => prevId === transactionId ? null : transactionId);
@@ -187,16 +251,49 @@ function StatementPageContent() {
   return (
     <>
       <div className="container mx-auto p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold">Statements</h1>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            >
-              <ArrowDownUp className="h-4 w-4" />
-            </Button>
+            <div className='relative w-full sm:w-auto'>
+                <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+                <Input 
+                    placeholder='Search remarks...'
+                    className='pl-9 w-full sm:w-64'
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className='w-full sm:w-auto min-w-[150px] justify-start'>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <span className='truncate'>{dateFilterLabel}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => setDateFilter('all')}>All Time</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setDateFilter('month')}>This Month</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setDateFilter('3months')}>Last 3 Months</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setDateFilter('year')}>This Year</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                 <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant='ghost' className='w-full justify-start font-normal'>Custom Range...</Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                        <Calendar
+                        initialFocus
+                        mode="range"
+                        defaultMonth={dateRange?.from}
+                        selected={dateRange}
+                        onSelect={setDateRange}
+                        numberOfMonths={2}
+                        />
+                    </PopoverContent>
+                </Popover>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -229,6 +326,18 @@ function StatementPageContent() {
                     <Checkbox id="show-account-creations" checked={showAccountCreations} onCheckedChange={(checked) => setShowAccountCreations(!!checked)} />
                     <Label htmlFor="show-account-creations">Show Account Creations</Label>
                   </div>
+                   <Separator />
+                    <div className='flex items-center justify-between'>
+                       <Label>Sort Order</Label>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                            >
+                            <ArrowDownUp className="mr-2 h-4 w-4" />
+                            {sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}
+                        </Button>
+                    </div>
                 </div>
               </PopoverContent>
             </Popover>
@@ -402,12 +511,12 @@ function StatementPageContent() {
               <div className="p-4 bg-secondary rounded-full mb-4">
                 <BookText className="h-10 w-10 text-muted-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">No Transactions Yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Your transaction history will appear here.
+              <h3 className="text-xl font-semibold mb-2">No Transactions Found</h3>
+              <p className="text-muted-foreground mb-4 max-w-sm">
+                No transactions match your current filters. Try broadening your search.
               </p>
-              <Button asChild>
-                <span onClick={() => router.push('/')} className="cursor-pointer">Record First Transaction</span>
+              <Button onClick={() => { setSearchTerm(''); setDateRange(undefined); setSelectedAccounts([]); setDateFilterLabel('All Time'); }}>
+                Clear All Filters
               </Button>
             </div>
           )}
@@ -448,3 +557,5 @@ export default function StatementPage() {
     </Suspense>
   )
 }
+
+    
