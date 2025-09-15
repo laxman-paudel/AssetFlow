@@ -275,14 +275,21 @@ function StatementPageContent() {
           <h1 className="text-2xl font-bold">Statements</h1>
           <div className="flex items-center justify-end gap-2">
             
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                  placeholder='Search... (+, -, =)'
-                  className='pl-10 pr-8 w-40 sm:w-44'
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="relative flex-1 sm:flex-initial">
+                <Tooltip>
+                    <TooltipTrigger className="w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                            placeholder='Search...'
+                            className='pl-10 pr-8 w-full sm:w-48'
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="start">
+                        <p>Search by remarks or category.<br />Use '+' for income, '-' for expenses, '=' for transfers.</p>
+                    </TooltipContent>
+                </Tooltip>
               {searchTerm && (
                 <Button variant="ghost" size="icon" className='absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8' onClick={() => setSearchTerm('')}>
                   <X className="h-4 w-4" />
@@ -590,3 +597,5 @@ export default function StatementPage() {
     </Suspense>
   )
 }
+
+    
