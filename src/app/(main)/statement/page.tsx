@@ -562,21 +562,18 @@ function StatementPageContent() {
                         </div>
                         <div className="flex-1 truncate">
                             <p className="font-semibold truncate">{t.remarks || 'Transaction'}</p>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                            <div className="text-xs text-muted-foreground space-y-1 mt-1">
                                 {account && (
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1.5">
                                         {React.cloneElement(getAccountIcon(account?.name), {className: "h-3 w-3 text-muted-foreground"})}
                                         <span className="truncate">{account?.name || 'Unknown Account'}</span>
                                     </div>
                                 )}
                                 {categoriesEnabled && category && (
-                                    <>
-                                        {account && <span className='mx-1'>&bull;</span>}
-                                        <div className="flex items-center gap-1">
-                                            <CategoryIcon className="h-3 w-3" />
-                                            <span className="truncate">{category.name}</span>
-                                        </div>
-                                    </>
+                                    <div className="flex items-center gap-1.5">
+                                        <CategoryIcon className="h-3 w-3" />
+                                        <span className="truncate">{category.name}</span>
+                                    </div>
                                 )}
                             </div>
                         </div>
