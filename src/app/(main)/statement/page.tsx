@@ -81,11 +81,11 @@ export default function StatementPage() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - a;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
     return items;
-  }, [transactions, sortOrder, selectedAccounts, showAccountCreations, isInitialized]);
+  }, [transactions, sortOrder, selectedAccounts, showAccountCreations]);
 
   const handleAccountFilterChange = (accountId: string) => {
     setSelectedAccounts((prev) =>
