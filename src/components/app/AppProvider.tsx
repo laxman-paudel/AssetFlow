@@ -22,6 +22,7 @@ interface AssetFlowState {
   accounts: Account[] | null;
   transactions: Transaction[] | null;
   addAccount: (name: string, initialBalance: number) => Promise<Account>;
+  editAccount: (accountId: string, updates: { name: string; balance: number }) => Promise<void>;
   deleteAccount: (accountId: string) => Promise<void>;
   addTransaction: (
     type: 'income' | 'expenditure',
@@ -117,13 +118,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return newAccount;
   }, [toast]);
   
+  const editAccount = useCallback(async (accountId: string, updates: { name: string; balance: number }) => {
+    setAccounts(prev => 
+      prev?.map(a => a.id === accountId ? { ...a, name: updates.name, balance: updates.balance } : a) || []
+    );
+    
+    // Update account name in all related transactions
+    setTransactions(prev => 
+      prev?.map(t => t.accountId === accountId ? { ...t, accountName: updates.name } : t) || []
+    );
+    
+    toast({
+      title: 'Account Updated',
+      description: `The account has been updated successfully.`,
+    });
+  }, [toast]);
+  
   const deleteAccount = useCallback(async (accountId: string) => {
     setAccounts(prev => prev?.filter(a => a.id !== accountId) || []);
-    // Note: Transactions are not deleted, they will appear as "orphaned"
-    // which is the intended behavior from the previous implementation.
+    setTransactions(prev => prev?.filter(t => t.accountId !== accountId) || []);
+    
     toast({
       title: 'Account Deleted',
-      description: 'The account has been removed.',
+      description: 'The account and all its transactions have been removed.',
+      variant: 'destructive',
     });
   }, [toast]);
 
@@ -169,6 +187,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 newBalance -= transactionToDelete.amount;
             } else if (transactionToDelete.type === 'expenditure') {
                 newBalance += transactionToDelete.amount;
+            } else if (transactionToDelete.type === 'account_creation') {
+                // If we delete an account creation, we should also delete the account
+                // This might be too destructive, let's just adjust balance.
+                // For now, let's prevent deletion of account_creation transactions to be safe.
+                // Or let's revert the balance change
+                newBalance -= transactionToDelete.amount;
             }
 
             return newAccounts.map(a => a.id === transactionToDelete.accountId ? {...a, balance: newBalance} : a);
@@ -291,6 +315,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     accounts,
     transactions,
     addAccount,
+    editAccount,
     deleteAccount,
     addTransaction,
     editTransaction,
