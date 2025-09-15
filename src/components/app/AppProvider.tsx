@@ -269,13 +269,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem(ACCOUNTS_KEY);
       localStorage.removeItem(TRANSACTIONS_KEY);
       
-      setCurrency(null);
-      setAccounts([]);
-      setTransactions([]);
-      
-      setNeedsCurrencySetup(true);
-
       toast({ title: 'Application Reset', description: 'Your data has been cleared.' });
+
+      // Wait a moment for the toast to be visible before reloading
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+
     } catch (error) {
        console.error("Error resetting application: ", error);
        toast({ title: 'Reset Failed', description: 'Could not clear your data. Please try again.', variant: 'destructive' });
