@@ -80,6 +80,8 @@ function StatementPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [dateFilterLabel, setDateFilterLabel] = useState('All Time');
+  const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
+  const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
 
 
   useEffect(() => {
@@ -300,7 +302,7 @@ function StatementPageContent() {
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-11 w-11">
+                <Button variant="outline" size="icon">
                     <CalendarIcon className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -341,7 +343,7 @@ function StatementPageContent() {
                   <div className='space-y-2'>
                     <Label>Custom Date Range</Label>
                     <div className='flex items-center gap-2'>
-                        <Popover>
+                        <Popover open={isStartDatePickerOpen} onOpenChange={setIsStartDatePickerOpen}>
                             <PopoverTrigger asChild>
                                 <Button
                                 variant={"outline"}
@@ -358,12 +360,15 @@ function StatementPageContent() {
                                 <Calendar
                                 mode="single"
                                 selected={dateRange?.from}
-                                onSelect={(day) => setDateRange(prev => ({...prev, from: day}))}
+                                onSelect={(day) => {
+                                    setDateRange(prev => ({...prev, from: day}));
+                                    setIsStartDatePickerOpen(false);
+                                }}
                                 initialFocus
                                 />
                             </PopoverContent>
                         </Popover>
-                         <Popover>
+                         <Popover open={isEndDatePickerOpen} onOpenChange={setIsEndDatePickerOpen}>
                             <PopoverTrigger asChild>
                                 <Button
                                 variant={"outline"}
@@ -380,7 +385,10 @@ function StatementPageContent() {
                                 <Calendar
                                 mode="single"
                                 selected={dateRange?.to}
-                                onSelect={(day) => setDateRange(prev => ({...prev, to: day}))}
+                                onSelect={(day) => {
+                                    setDateRange(prev => ({...prev, to: day}));
+                                    setIsEndDatePickerOpen(false);
+                                }}
                                 disabled={{ before: dateRange?.from }}
                                 initialFocus
                                 />
