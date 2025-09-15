@@ -9,12 +9,14 @@ import { ArrowDown, ArrowUp, ChevronRight, Wallet } from 'lucide-react';
 import TransactionDialog from '@/components/app/TransactionDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionType } from '@/lib/types';
+import AssetDialog from '@/components/app/AssetDialog';
 
 export default function DashboardPage() {
   const store = useAssetFlow();
   const [totalBalance, setTotalBalance] = useState<number | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
+  const [assetDialogOpen, setAssetDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<TransactionType>('income');
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
@@ -48,7 +50,7 @@ export default function DashboardPage() {
 
   const openDialog = (type: TransactionType) => {
     setDialogType(type);
-    setDialogOpen(true);
+    setTransactionDialogOpen(true);
   };
 
   return (
@@ -109,25 +111,21 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-4">
            <Button
-            asChild
+            onClick={() => setAssetDialogOpen(true)}
             variant="secondary"
             className="text-base h-12 font-semibold"
           >
-            <span
-              onClick={() => router.push('/assets')}
-              className="cursor-pointer"
-            >
               <Wallet className="mr-2 h-4 w-4" />
               Add Wallet
-            </span>
           </Button>
         </div>
       </div>
       <TransactionDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        open={transactionDialogOpen}
+        onOpenChange={setTransactionDialogOpen}
         type={dialogType}
       />
+      <AssetDialog open={assetDialogOpen} onOpenChange={setAssetDialogOpen} />
     </div>
   );
 }
