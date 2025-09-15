@@ -279,8 +279,8 @@ function StatementPageContent() {
                     <TooltipTrigger className="w-full">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input
-                            placeholder='Search...'
-                            className='pl-10 pr-8 w-full sm:w-48'
+                            placeholder="Search..."
+                            className={cn('pl-10 pr-8 w-full sm:w-40')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -300,7 +300,7 @@ function StatementPageContent() {
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-11 w-auto min-w-[120px] justify-start">
+                <Button variant="outline" className="h-11 w-auto min-w-[110px] justify-start">
                     <CalendarIcon className="mr-2 h-5 w-5" />
                     <span className='truncate'>{dateFilterLabel}</span>
                 </Button>
