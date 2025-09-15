@@ -78,7 +78,7 @@ export default function StatementPage() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - a.id;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
     return items;
@@ -265,59 +265,58 @@ export default function StatementPage() {
               }
 
               return (
-                <div key={t.id}>
-                    <Card
-                      className={cn(
-                        'transition-all duration-200 border-l-4 cursor-pointer hover:bg-muted/50',
-                        isIncome ? 'border-l-green-500' : 'border-l-red-500'
-                      )}
-                      onClick={() => handleTransactionClick(t.id)}
-                    >
-                      <div className='p-4 relative'>
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex flex-1 items-center gap-4 truncate">
-                            <div className={cn(
-                              "p-2 rounded-full",
-                              isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                            )}>
-                              {isIncome ? <ArrowDown className="h-5 w-5" /> : <ArrowUp className="h-5 w-5" />}
-                            </div>
-                            <div className="flex-1 truncate">
-                              <p className="font-semibold truncate">{t.remarks || 'Transaction'}</p>
-                              <div className="flex items-center gap-2">
-                                {getAccountIcon(account?.name)}
-                                <p className="text-sm text-muted-foreground truncate">{account?.name || 'Unknown Account'}</p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="text-right flex-shrink-0">
-                            <p className={cn(
-                              "font-bold text-lg",
-                              isIncome ? 'text-green-600' : 'text-red-600'
-                            )}>
-                              {isIncome ? '+' : '-'} {formatAmount(t.amount)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                    {expandedTransactionId === t.id && (
-                        <Card className="mt-1">
-                            <CardContent className="p-2 flex justify-end gap-2">
-                                <Button variant="ghost" size="sm" onClick={() => setTransactionToEdit(t)}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Edit
-                                </Button>
-                                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setTransactionToDelete(t)}>
-                                     <Trash2 className="mr-2 h-4 w-4" />
-                                    Delete
-                                </Button>
-                            </CardContent>
-                        </Card>
+                <Card
+                    key={t.id}
+                    className={cn(
+                    'transition-all duration-200 border-l-4 overflow-hidden',
+                    isIncome ? 'border-l-green-500' : 'border-l-red-500',
+                    expandedTransactionId === t.id ? 'bg-muted/50' : 'hover:bg-muted/50'
                     )}
-                </div>
+                >
+                    <div className='p-4 relative cursor-pointer' onClick={() => handleTransactionClick(t.id)}>
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-1 items-center gap-4 truncate">
+                        <div className={cn(
+                            "p-2 rounded-full",
+                            isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        )}>
+                            {isIncome ? <ArrowDown className="h-5 w-5" /> : <ArrowUp className="h-5 w-5" />}
+                        </div>
+                        <div className="flex-1 truncate">
+                            <p className="font-semibold truncate">{t.remarks || 'Transaction'}</p>
+                            <div className="flex items-center gap-2">
+                            {getAccountIcon(account?.name)}
+                            <p className="text-sm text-muted-foreground truncate">{account?.name || 'Unknown Account'}</p>
+                            </div>
+                        </div>
+                        </div>
+
+                        <div className="text-right flex-shrink-0">
+                        <p className={cn(
+                            "font-bold text-lg",
+                            isIncome ? 'text-green-600' : 'text-red-600'
+                        )}>
+                            {isIncome ? '+' : '-'} {formatAmount(t.amount)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                        </div>
+                    </div>
+                    </div>
+                    {expandedTransactionId === t.id && (
+                    <div className="bg-muted/50 border-t">
+                        <div className="px-4 py-2 flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => setTransactionToEdit(t)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                            </Button>
+                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setTransactionToDelete(t)}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                    )}
+                </Card>
               );
             })
           ) : (
