@@ -264,7 +264,10 @@ function StatementPageContent() {
               <div className={cn("relative transition-all duration-300", activeControl === 'search' ? 'w-32' : 'w-0')}>
                 <Input 
                     placeholder='Search...'
-                    className='pl-3 pr-8 w-full'
+                    className={cn(
+                        'pl-3 pr-8 w-full',
+                        activeControl === 'search' && 'search-active'
+                    )}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
