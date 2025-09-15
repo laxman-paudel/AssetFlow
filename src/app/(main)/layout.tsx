@@ -1,7 +1,8 @@
 'use client';
 
 import BottomNav from '@/components/app/BottomNav';
-import { PiggyBank } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { PiggyBank, Settings } from 'lucide-react';
 import Link from 'next/link';
 
 export default function MainLayout({
@@ -20,6 +21,12 @@ export default function MainLayout({
               AssetFlow
             </h1>
           </Link>
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/settings">
+              <Settings className="h-5 w-5" />
+              <span className="sr-only">Settings</span>
+            </Link>
+          </Button>
         </div>
       </header>
       <main className="flex-1 pb-24">{children}</main>
