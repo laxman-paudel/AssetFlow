@@ -277,63 +277,35 @@ export default function StatementPage() {
                 )}
                 onClick={() => handleTransactionClick(t.id)}
               >
-                  <div className='p-4'>
-                    <div
-                        className={cn(
-                        'flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4',
-                        )}
-                    >
-                        <div className="flex items-center gap-4">
-                            <div
-                            className={`p-2 rounded-full ${
-                                isIncome
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-red-100 text-red-700'
-                            }`}
-                            >
-                            {isIncome ? (
-                                <ArrowDown className="h-5 w-5" />
-                            ) : (
-                                <ArrowUp className="h-5 w-5" />
-                            )}
+                <div className='p-4'>
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex flex-1 items-center gap-4 truncate">
+                            <div className={cn(
+                                "p-2 rounded-full",
+                                isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                            )}>
+                                {isIncome ? <ArrowDown className="h-5 w-5" /> : <ArrowUp className="h-5 w-5" />}
                             </div>
-                            <div className="flex-1 md:hidden">
-                            <p className="font-semibold">{t.remarks || 'Transaction'}</p>
-                            <div className="flex items-center gap-2">
-                                {getAssetIcon(t.assetName)}
-                                <p className="text-sm text-muted-foreground">
-                                {t.assetName}
-                                </p>
-                            </div>
+                            <div className="flex-1 truncate">
+                                <p className="font-semibold truncate">{t.remarks || 'Transaction'}</p>
+                                <div className="flex items-center gap-2">
+                                    {getAssetIcon(t.assetName)}
+                                    <p className="text-sm text-muted-foreground truncate">{t.assetName}</p>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="hidden md:flex flex-1 flex-col">
-                        <p className="font-semibold">{t.remarks || 'Transaction'}</p>
-                        <div className="flex items-center gap-2">
-                            {getAssetIcon(t.assetName)}
-                            <p className="text-sm text-muted-foreground">
-                            {t.assetName}
-                            </p>
-                        </div>
-                        </div>
-
-                        <div className="flex items-center justify-between w-full md:w-auto">
-                            <div className="text-right md:text-right ml-14 md:ml-0">
-                            <p
-                                className={`font-bold text-lg ${
+                        <div className="text-right flex-shrink-0">
+                            <p className={cn(
+                                "font-bold text-lg",
                                 isIncome ? 'text-green-600' : 'text-red-600'
-                                }`}
-                            >
+                            )}>
                                 {isIncome ? '+' : '-'} {formatAmount(t.amount)}
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                                {formatDate(t.date)}
-                            </p>
-                            </div>
+                            <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
                         </div>
                     </div>
-                  </div>
+                </div>
                 {selectedTransactionId === t.id && (
                     <>
                         <Separator />
