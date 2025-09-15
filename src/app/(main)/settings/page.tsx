@@ -19,7 +19,9 @@ export default function SettingsPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
       </div>
+
       <div className="space-y-8">
+        {/* Appearance */}
         <Card>
           <CardHeader>
             <CardTitle>Appearance</CardTitle>
@@ -34,48 +36,53 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
-        
+
+        {/* General */}
         <Card>
-            <CardHeader>
-                <CardTitle>General</CardTitle>
-                <CardDescription>
-                    Manage your application-wide settings.
-                </CardDescription>
-            </Header>
-            <CardContent>
-                <div className="flex items-center justify-between">
-                    <Label>Primary Currency</Label>
-                    <CurrencySelector />
-                </div>
-            </CardContent>
+          <CardHeader>
+            <CardTitle>General</CardTitle>
+            <CardDescription>
+              Manage your application-wide settings.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <Label>Primary Currency</Label>
+              <CurrencySelector />
+            </div>
+          </CardContent>
         </Card>
-        
+
+        {/* Data Management */}
         <Card>
-            <CardHeader>
-                <CardTitle>Data Management</CardTitle>
-                <CardDescription>
-                    Export your transaction data to a CSV file.
-                </CardDescription>
-            </Header>
-            <CardContent>
-                <ExportButton />
-            </CardContent>
+          <CardHeader>
+            <CardTitle>Data Management</CardTitle>
+            <CardDescription>
+              Export your transaction data to a CSV file.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ExportButton />
+          </CardContent>
         </Card>
-        
+
+        {/* Danger Zone */}
         <Card className="border-destructive">
-            <CardHeader>
-                <CardTitle className="text-destructive">Danger Zone</CardTitle>
-                 <CardDescription>
-                    These actions are permanent and cannot be undone.
-                </CardDescription>
-            </Header>
-            <CardContent className="space-y-4">
-               <div>
-                    <h4 className="font-semibold">Reset Application</h4>
-                    <p className="text-sm text-muted-foreground mb-2">Delete all your accounts, transactions, and settings.</p>
-                    <ResetButton />
-               </div>
-            </CardContent>
+          <CardHeader>
+            <CardTitle className="text-destructive">Danger Zone</CardTitle>
+            <CardDescription>
+              These actions are permanent and cannot be undone.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h4 className="font-semibold">Reset Application</h4>
+              <p className="text-sm text-muted-foreground mb-2">
+                Delete all your accounts, transactions, and settings.
+              </p>
+              <ResetButton />
+            </div>
+          </CardContent>
         </Card>
       </div>
     </div>
