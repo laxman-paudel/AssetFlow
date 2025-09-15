@@ -10,6 +10,7 @@ import TransactionDialog from '@/components/app/TransactionDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import AccountDialog from '@/components/app/AccountDialog';
 import { Separator } from '@/components/ui/separator';
+import { useCountUp } from '@/hooks/useCountUp';
 
 type DialogType = 'income' | 'expenditure' | 'account';
 
@@ -18,6 +19,8 @@ export default function DashboardPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<DialogType>('income');
   const router = useRouter();
+  
+  const animatedBalance = useCountUp(totalBalance ?? 0);
 
   const getBalanceCardStyle = () => {
     if (totalBalance === null) return {};
@@ -58,7 +61,7 @@ export default function DashboardPage() {
                   {new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: currency,
-                  }).format(totalBalance)}
+                  }).format(animatedBalance)}
                 </div>
                 <div className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
                   View Accounts <ChevronRight className="h-3 w-3" />

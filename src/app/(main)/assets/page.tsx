@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 import type { Account } from '@/lib/types';
 import EditAccountDialog from '@/components/app/EditAccountDialog';
 import { cn } from '@/lib/utils';
+import { useCountUp } from '@/hooks/useCountUp';
 
 
 export default function AccountsPage() {
@@ -38,6 +39,8 @@ export default function AccountsPage() {
   const [expandedAccountId, setExpandedAccountId] = useState<string | null>(null);
   
   const router = useRouter();
+
+  const animatedTotalBalance = useCountUp(totalBalance ?? 0);
   
   const formatCurrency = (amount: number) => {
     if (!currency) return '...';
@@ -128,7 +131,7 @@ export default function AccountsPage() {
                         <p className="text-sm font-medium">Total Balance</p>
                         {accountsLoaded && totalBalance !== null ? (
                           <p className="text-lg font-bold tracking-tighter">
-                              {formatCurrency(totalBalance)}
+                              {formatCurrency(animatedTotalBalance)}
                           </p>
                         ) : (
                           <Skeleton className="h-6 w-24 bg-primary-foreground/20" />

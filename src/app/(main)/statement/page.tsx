@@ -38,6 +38,7 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import type { Transaction } from '@/lib/types';
 import EditTransactionDialog from '@/components/app/EditTransactionDialog';
+import { useCountUp } from '@/hooks/useCountUp';
 
 export default function StatementPage() {
   const {
@@ -57,6 +58,8 @@ export default function StatementPage() {
   const [expandedTransactionId, setExpandedTransactionId] = useState<string | null>(null);
 
   const router = useRouter();
+  
+  const animatedTotalBalance = useCountUp(totalBalance ?? 0);
 
   const filteredTransactions = useMemo(() => {
     if (!transactions) return [];
@@ -78,7 +81,7 @@ export default function StatementPage() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - a;
     });
 
     return items;
@@ -226,7 +229,7 @@ export default function StatementPage() {
               <p className="text-sm font-medium">Total Balance</p>
               {transactionsLoaded && totalBalance !== null ? (
                 <p className="text-lg font-bold tracking-tighter">
-                  {formatCurrency(totalBalance)}
+                  {formatCurrency(animatedTotalBalance)}
                 </p>
               ) : (
                 <Skeleton className="h-6 w-24 bg-primary-foreground/20" />
