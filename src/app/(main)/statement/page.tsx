@@ -261,7 +261,7 @@ function StatementPageContent() {
                 <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
                 <Input 
                     placeholder='Search...'
-                    className='pl-9 w-full sm:w-40'
+                    className='pl-9 w-full sm:w-32'
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -303,9 +303,10 @@ function StatementPageContent() {
                 <Button
                     variant="outline"
                     size="icon"
+                    className="h-11 w-11"
                     onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                     >
-                    <ArrowDownUp className="h-4 w-4" />
+                    <ArrowDownUp className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -315,8 +316,8 @@ function StatementPageContent() {
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Filter className="h-4 w-4" />
+                <Button variant="outline" size="icon" className="h-11 w-11">
+                  <Filter className="h-5 w-5" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-64">
