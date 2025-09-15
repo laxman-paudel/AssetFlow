@@ -563,19 +563,19 @@ function StatementPageContent() {
                         <div className="flex-1 truncate">
                             <p className="font-semibold truncate">{t.remarks || 'Transaction'}</p>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                                {CategoryIcon && categoriesEnabled && category && (
-                                    <div className="flex items-center gap-1">
-                                        <CategoryIcon className="h-3 w-3" />
-                                        <span className="truncate">{category?.name}</span>
-                                    </div>
-                                )}
                                 {account && (
-                                    <>
-                                    {categoriesEnabled && category && <span className='mx-1'>&bull;</span>}
                                     <div className="flex items-center gap-1">
                                         {React.cloneElement(getAccountIcon(account?.name), {className: "h-3 w-3 text-muted-foreground"})}
                                         <span className="truncate">{account?.name || 'Unknown Account'}</span>
                                     </div>
+                                )}
+                                {categoriesEnabled && category && (
+                                    <>
+                                        {account && <span className='mx-1'>&bull;</span>}
+                                        <div className="flex items-center gap-1">
+                                            <CategoryIcon className="h-3 w-3" />
+                                            <span className="truncate">{category.name}</span>
+                                        </div>
                                     </>
                                 )}
                             </div>
@@ -662,5 +662,3 @@ export default function StatementPage() {
     </Suspense>
   )
 }
-
-    
