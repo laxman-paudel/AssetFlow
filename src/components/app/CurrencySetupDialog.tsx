@@ -45,7 +45,10 @@ export default function CurrencySetupDialog({ open, onCurrencySelect }: Currency
   return (
     <Dialog open={open}>
         <DialogOverlay className="bg-background/80 backdrop-blur-sm" />
-      <DialogContent className="sm:max-w-sm" hideCloseButton={true}>
+      <DialogContent 
+        className="sm:max-w-sm top-[50%] -translate-y-[50%]"
+        hideCloseButton={true}
+      >
         <DialogHeader>
           <DialogTitle>Welcome to AssetFlow!</DialogTitle>
           <DialogDescription>
