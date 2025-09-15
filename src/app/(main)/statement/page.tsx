@@ -82,6 +82,7 @@ function StatementPageContent() {
   const [dateFilterLabel, setDateFilterLabel] = useState('All Time');
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
+  const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
 
 
   useEffect(() => {
@@ -200,6 +201,7 @@ function StatementPageContent() {
     setSelectedAccounts([]);
     setDateFilterLabel('All Time');
     setShowAccountCreations(false);
+    setIsFilterPopoverOpen(false);
   };
 
 
@@ -338,7 +340,7 @@ function StatementPageContent() {
               </TooltipContent>
             </Tooltip>
 
-            <Popover>
+            <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="icon" className="h-11 w-11">
                   <Filter className="h-5 w-5" />
