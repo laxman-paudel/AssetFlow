@@ -53,6 +53,8 @@ import EditTransactionDialog from '@/components/app/EditTransactionDialog';
 import { useCountUp } from '@/hooks/useCountUp';
 import { getCategoryById } from '@/lib/categories';
 import type { DateRange } from 'react-day-picker';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 function StatementPageContent() {
   const {
@@ -250,6 +252,7 @@ function StatementPageContent() {
 
   return (
     <>
+    <TooltipProvider>
       <div className="container mx-auto p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold">Statements</h1>
@@ -257,17 +260,18 @@ function StatementPageContent() {
             <div className='relative w-full sm:w-auto'>
                 <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
                 <Input 
-                    placeholder='Search remarks...'
-                    className='pl-9 w-full sm:w-64'
+                    placeholder='Search...'
+                    className='pl-9 w-full sm:w-40'
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className='w-full sm:w-auto min-w-[150px] justify-start'>
+                <Button variant="outline" className='w-full sm:w-auto justify-start'>
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    <span className='truncate'>{dateFilterLabel}</span>
+                    <span className='truncate hidden sm:inline'>{dateFilterLabel}</span>
+                    <span className='truncate sm:hidden'>Date</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -293,6 +297,21 @@ function StatementPageContent() {
                 </Popover>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    >
+                    <ArrowDownUp className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Sort by {sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}</p>
+              </TooltipContent>
+            </Tooltip>
 
             <Popover>
               <PopoverTrigger asChild>
@@ -326,18 +345,6 @@ function StatementPageContent() {
                     <Checkbox id="show-account-creations" checked={showAccountCreations} onCheckedChange={(checked) => setShowAccountCreations(!!checked)} />
                     <Label htmlFor="show-account-creations">Show Account Creations</Label>
                   </div>
-                   <Separator />
-                    <div className='flex items-center justify-between'>
-                       <Label>Sort Order</Label>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                            >
-                            <ArrowDownUp className="mr-2 h-4 w-4" />
-                            {sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}
-                        </Button>
-                    </div>
                 </div>
               </PopoverContent>
             </Popover>
@@ -546,6 +553,7 @@ function StatementPageContent() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </TooltipProvider>
     </>
   );
 }
