@@ -59,7 +59,7 @@ export default function TransactionDialog({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      amount: undefined,
+      amount: '' as any,
       accountId: '',
       remarks: '',
     },
@@ -75,7 +75,7 @@ export default function TransactionDialog({
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     addTransaction(type, values.amount, values.accountId, values.remarks || '');
     onOpenChange(false);
-    form.reset({ amount: undefined, accountId: '', remarks: '' });
+    form.reset({ amount: '' as any, accountId: '', remarks: '' });
   };
   
   const handleAccountCreated = (newAccountId: string) => {
@@ -85,7 +85,7 @@ export default function TransactionDialog({
   
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-        form.reset({ amount: undefined, accountId: '', remarks: '' });
+        form.reset({ amount: '' as any, accountId: '', remarks: '' });
     }
     onOpenChange(open);
   }
@@ -135,7 +135,7 @@ export default function TransactionDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {accounts?.map((account) => (
+                        {accounts && accounts.map((account) => (
                             <SelectItem key={account.id} value={account.id}>
                               {account.name}
                             </SelectItem>
