@@ -116,13 +116,21 @@ function StatementPageContent() {
     }
 
     if (searchTerm) {
+      const term = searchTerm.toLowerCase().trim();
+      if (term === '+') {
+        items = items.filter(t => t.type === 'income');
+      } else if (term === '-') {
+        items = items.filter(t => t.type === 'expenditure');
+      } else if (term === '=') {
+        items = items.filter(t => t.type === 'transfer' || t.type === 'account_creation');
+      } else {
         items = items.filter(t => {
-            const term = searchTerm.toLowerCase();
             const remarksMatch = t.remarks?.toLowerCase().includes(term);
             const category = t.category ? getCategoryById(t.category) : null;
             const categoryMatch = category?.name.toLowerCase().includes(term);
             return remarksMatch || categoryMatch;
         });
+      }
     }
 
     if (dateRange?.from) {
@@ -270,7 +278,7 @@ function StatementPageContent() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                  placeholder='Search...'
+                  placeholder='Search... (+, -, =)'
                   className='pl-10 pr-8 w-40 sm:w-44'
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
