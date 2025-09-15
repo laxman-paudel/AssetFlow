@@ -149,7 +149,13 @@ function StatementPageContent() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - a.id.localeCompare(b.id);
+      const dateDiff = dateA - dateB;
+
+      if (dateDiff === 0) {
+          return sortOrder === 'asc' ? a.id.localeCompare(b.id) : b.id.localeCompare(a.id);
+      }
+      
+      return sortOrder === 'asc' ? dateDiff : -dateDiff;
     });
 
     return items;
