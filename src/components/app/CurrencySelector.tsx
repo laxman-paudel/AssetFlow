@@ -1,5 +1,4 @@
 'use client';
-import { useState, useEffect } from 'react';
 import { useAssetFlow } from '@/components/app/AppProvider';
 import {
   Select,
@@ -27,13 +26,13 @@ export default function CurrencySelector() {
   }
 
   return (
-    <Select value={currency}>
+    <Select value={currency} disabled>
       <SelectTrigger className="w-auto min-w-[110px] shadow-none focus:ring-0">
         <SelectValue placeholder="Currency" />
       </SelectTrigger>
       <SelectContent>
         {currencies.map((c) => (
-          <SelectItem key={c.value} value={c.value} disabled>
+          <SelectItem key={c.value} value={c.value}>
             {c.label}
           </SelectItem>
         ))}

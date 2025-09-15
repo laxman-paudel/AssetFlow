@@ -39,7 +39,7 @@ import { Separator } from '../ui/separator';
 const formSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive.'),
   accountId: z.string().min(1, 'Please select an account.'),
-  remarks: z.string().max(100, 'Remarks are too long.'),
+  remarks: z.string().max(100, 'Remarks are too long.').optional(),
 });
 
 interface TransactionDialogProps {
@@ -59,24 +59,23 @@ export default function TransactionDialog({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      amount: 0,
+      amount: undefined,
       accountId: '',
       remarks: '',
     },
   });
   
-  const lastAccountId = accounts && accounts.length > 0 ? accounts[accounts.length - 1].id : '';
   useEffect(() => {
-    if (accounts && accounts.length === 1 && form.getValues('accountId') === '') {
+    if (accounts && accounts.length === 1 && !form.getValues('accountId')) {
         form.setValue('accountId', accounts[0].id);
     }
   }, [accounts, form]);
 
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    addTransaction(type, values.amount, values.accountId, values.remarks);
+    addTransaction(type, values.amount, values.accountId, values.remarks || '');
     onOpenChange(false);
-    form.reset();
+    form.reset({ amount: undefined, accountId: '', remarks: '' });
   };
   
   const handleAccountCreated = (newAccountId: string) => {
@@ -84,95 +83,107 @@ export default function TransactionDialog({
     setAccountDialogOpen(false);
   }
   
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+        form.reset({ amount: undefined, accountId: '', remarks: '' });
+    }
+    onOpenChange(open);
+  }
+  
   const placeholderText = type === 'expenditure' ? "What are you spending from?" : "Where is the income going to?";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
-            Record {type === 'income' ? 'Income' : 'Expense'}
-          </DialogTitle>
-          <DialogDescription>
-            Enter the details of your transaction below.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" placeholder="0.00" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="accountId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Account</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>
+              Record {type === 'income' ? 'Income' : 'Expense'}
+            </DialogTitle>
+            <DialogDescription>
+              Enter the details of your transaction below.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+              <FormField
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Amount</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={placeholderText} />
-                      </SelectTrigger>
+                      <Input type="number" step="0.01" placeholder="0.00" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {accounts && accounts.map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
-                            {account.name}
-                          </SelectItem>
-                        ))}
-                      {(accounts && accounts.length > 0) && <Separator className="my-1" />}
-                      <Button
-                            variant="ghost"
-                            className="w-full justify-start font-normal"
-                            type="button"
-                            onClick={() => setAccountDialogOpen(true)}
-                        >
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Create New Account
-                        </Button>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="remarks"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Remarks</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="e.g., Purchased coffee" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <DialogFooter>
-              <Button type="submit">Save Transaction</Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="accountId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Account</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={placeholderText} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {accounts?.map((account) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              {account.name}
+                            </SelectItem>
+                          ))}
+                        {(accounts && accounts.length > 0) && <Separator className="my-1" />}
+                        <div className="p-1">
+                          <Button
+                                variant="ghost"
+                                className="w-full justify-start font-normal"
+                                type="button"
+                                onSelect={(e) => e.preventDefault()}
+                                onClick={() => setAccountDialogOpen(true)}
+                            >
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Create New Account
+                            </Button>
+                        </div>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="remarks"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Remarks</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="e.g., Purchased coffee" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="submit">Save Transaction</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
        <NestedAccountDialog 
         open={accountDialogOpen} 
         onOpenChange={setAccountDialogOpen}
         onAccountCreated={handleAccountCreated}
       />
-    </Dialog>
+    </>
   );
 }

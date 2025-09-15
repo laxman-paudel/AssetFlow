@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useAssetFlow } from '@/components/app/AppProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowDown, ArrowUp, ChevronRight, Wallet } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react';
 import TransactionDialog from '@/components/app/TransactionDialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TransactionType } from '@/lib/types';
 import AccountDialog from '@/components/app/AccountDialog';
 
 type DialogType = 'income' | 'expenditure' | 'account';
@@ -17,12 +16,7 @@ export default function DashboardPage() {
   const { totalBalance, currency, isInitialized } = useAssetFlow();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<DialogType>('income');
-  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const getBalanceCardStyle = () => {
     if (totalBalance === null) return {};
@@ -50,14 +44,14 @@ export default function DashboardPage() {
       <div className="space-y-6">
         <Card
           className="text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
-          style={isClient && totalBalance !== null ? getBalanceCardStyle() : {}}
+          style={getBalanceCardStyle()}
           onClick={() => router.push('/assets')}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            {isClient && isInitialized && totalBalance !== null && currency ? (
+            {isInitialized && totalBalance !== null && currency ? (
               <>
                 <div className="text-4xl font-bold tracking-tighter">
                   {new Intl.NumberFormat('en-US', {
@@ -98,17 +92,6 @@ export default function DashboardPage() {
               <ArrowUp className="h-6 w-6" />
             </div>
             <span className="font-semibold text-red-800">Expense</span>
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4">
-           <Button
-            onClick={() => openDialog('account')}
-            variant="secondary"
-            className="text-base h-12 font-semibold"
-          >
-              <Wallet className="mr-2 h-4 w-4" />
-              Add Wallet
           </Button>
         </div>
       </div>

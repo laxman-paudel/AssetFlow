@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,58 +13,34 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { RotateCcw } from 'lucide-react';
-import { auth, db } from '@/lib/firebase';
-import { collection, getDocs, writeBatch, doc, deleteDoc } from 'firebase/firestore';
+import { RotateCcw, Loader2 } from 'lucide-react';
 import { useAssetFlow } from '@/components/app/AppProvider';
-import { useToast } from '@/hooks/use-toast';
 
 export default function ResetButton() {
-  const { user } = useAssetFlow();
-  const { toast } = useToast();
+  const { resetApplication } = useAssetFlow();
+  const [isResetting, setIsResetting] = useState(false);
 
   const handleReset = async () => {
-    if (!user) {
-      toast({ title: 'Error', description: 'You must be logged in to reset.', variant: 'destructive' });
-      return;
-    }
+    setIsResetting(true);
     try {
-      // 1. Delete all transactions
-      const transactionsRef = collection(db, 'users', user.uid, 'transactions');
-      const transactionsSnap = await getDocs(transactionsRef);
-      const batch = writeBatch(db);
-      transactionsSnap.forEach(doc => batch.delete(doc.ref));
-
-      // 2. Delete all accounts
-      const accountsRef = collection(db, 'users', user.uid, 'accounts');
-      const accountsSnap = await getDocs(accountsRef);
-      accountsSnap.forEach(doc => batch.delete(doc.ref));
-
-      // 3. Delete the user document itself
-      const userDocRef = doc(db, 'users', user.uid);
-      batch.delete(userDocRef);
-      
-      await batch.commit();
-
-      // Sign out
-      await auth.signOut();
-      
-      toast({ title: 'Application Reset', description: 'Your data has been cleared.' });
-      
-      // Force a reload to trigger the initial setup flow
-      window.location.href = '/auth';
-
+      await resetApplication();
     } catch (error) {
+      // Toast is already handled in the provider
       console.error("Error resetting application: ", error);
-      toast({ title: 'Reset Failed', description: 'Could not reset your data. Please try again.', variant: 'destructive' });
+    } finally {
+      // The provider will handle redirect, so we may not need to set isResetting to false
     }
   };
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">
-          <RotateCcw className="mr-2 h-4 w-4" />
+        <Button variant="destructive" disabled={isResetting}>
+          {isResetting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <RotateCcw className="mr-2 h-4 w-4" />
+          )}
           Reset App
         </Button>
       </AlertDialogTrigger>
@@ -79,8 +56,10 @@ export default function ResetButton() {
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleReset}
+            disabled={isResetting}
             className="bg-destructive hover:bg-destructive/90"
           >
+            {isResetting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Reset App
           </AlertDialogAction>
         </AlertDialogFooter>

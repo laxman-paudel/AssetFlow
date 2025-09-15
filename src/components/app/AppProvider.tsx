@@ -17,13 +17,14 @@ import {
   query,
   onSnapshot,
   writeBatch,
-  getDocs,
-  addDoc,
   serverTimestamp,
+  getDocs,
+  deleteDoc,
+  updateDoc,
 } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import type { Account, Transaction } from '@/lib/types';
-import { useToast } from '@/hooks/use-toast';
+import type { Account, Transaction, TransactionType } from '@/lib/types';
+import { useToast } from '@/components/ui/use-toast';
 import Loading from '@/app/loading';
 import { useRouter, usePathname } from 'next/navigation';
 import CurrencySetupDialog from './CurrencySetupDialog';
@@ -33,16 +34,17 @@ interface AssetFlowState {
   accounts: Account[] | null;
   transactions: Transaction[] | null;
   addAccount: (name: string, initialBalance: number) => Promise<Account>;
-  deleteAccount: (id: string) => Promise<void>;
+  deleteAccount: (accountId: string) => Promise<void>;
   addTransaction: (
     type: 'income' | 'expenditure',
     amount: number,
     accountId: string,
     remarks: string
   ) => Promise<void>;
-  deleteTransaction: (id: string) => Promise<void>;
+  resetApplication: () => Promise<void>;
   totalBalance: number | null;
   isInitialized: boolean;
+  isLoading: boolean;
   currency: string | null;
 }
 
@@ -50,6 +52,7 @@ const AssetFlowContext = createContext<AssetFlowState | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
   const [needsCurrencySetup, setNeedsCurrencySetup] = useState(false);
   
@@ -62,39 +65,61 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setCurrency(userData.currency);
-          setIsInitialized(true);
-        } else {
-          setNeedsCurrencySetup(true);
-        }
-      } else {
-        setUser(null);
-        setIsInitialized(true);
-        setAccounts(null);
-        setTransactions(null);
-        setCurrency(null);
-      }
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setIsLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
-  
-  useEffect(() => {
-    if(isInitialized && !user && pathname !== '/auth') {
-        router.push('/auth');
-    }
-  }, [isInitialized, user, pathname, router]);
 
   useEffect(() => {
-    if (!user || !currency) return;
+    if (isLoading) return;
+
+    if (!user) {
+      if (pathname !== '/auth') {
+        router.push('/auth');
+      }
+      setAccounts(null);
+      setTransactions(null);
+      setCurrency(null);
+      setIsInitialized(false);
+      return;
+    }
+
+    const userDocRef = doc(db, 'users', user.uid);
+    const unsub = onSnapshot(userDocRef, (doc) => {
+        if (doc.exists()) {
+            const userData = doc.data();
+            if (userData.currency) {
+                setCurrency(userData.currency);
+                setNeedsCurrencySetup(false);
+            } else {
+                setNeedsCurrencySetup(true);
+            }
+        } else {
+            setNeedsCurrencySetup(true);
+        }
+    }, (error) => {
+        console.error("Error fetching user document:", error);
+        toast({ title: 'Error', description: 'Could not fetch user profile.', variant: 'destructive' });
+    });
+
+    return () => unsub();
+  }, [user, isLoading, pathname, router, toast]);
+
+  useEffect(() => {
+    if (!user || needsCurrencySetup) {
+      setIsInitialized(false);
+      return;
+    };
+    if (currency) {
+      setIsInitialized(true);
+    }
+  }, [user, currency, needsCurrencySetup]);
+
+
+  useEffect(() => {
+    if (!isInitialized || !user) return;
 
     const accountsQuery = query(collection(db, 'users', user.uid, 'accounts'));
     const accountsUnsubscribe = onSnapshot(accountsQuery, (snapshot) => {
@@ -103,6 +128,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         fetchedAccounts.push({ id: doc.id, ...doc.data() } as Account);
       });
       setAccounts(fetchedAccounts);
+    }, (error) => {
+      console.error("Error fetching accounts:", error);
+      toast({ title: 'Error', description: 'Could not fetch accounts.', variant: 'destructive' });
     });
 
     const transactionsQuery = query(collection(db, 'users', user.uid, 'transactions'));
@@ -113,18 +141,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         fetchedTransactions.push({ 
           id: doc.id,
           ...data,
-          // Convert Firestore Timestamp to ISO string
           date: data.date?.toDate ? data.date.toDate().toISOString() : new Date().toISOString()
         } as Transaction);
       });
       setTransactions(fetchedTransactions);
+    }, (error) => {
+        console.error("Error fetching transactions:", error);
+        toast({ title: 'Error', description: 'Could not fetch transactions.', variant: 'destructive' });
     });
 
     return () => {
       accountsUnsubscribe();
       transactionsUnsubscribe();
     };
-  }, [user, currency]);
+  }, [isInitialized, user, toast]);
   
   const addAccount = useCallback(async (name: string, initialBalance: number): Promise<Account> => {
     if (!user) throw new Error("User not authenticated");
@@ -135,16 +165,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const newAccountData = { name, balance: initialBalance };
     batch.set(newAccountRef, newAccountData);
 
-    const newTransactionRef = doc(collection(db, 'users', user.uid, 'transactions'));
-    const newTransactionData = {
-      type: 'account_creation',
-      amount: initialBalance,
-      accountId: newAccountRef.id,
-      accountName: name,
-      date: serverTimestamp(),
-      remarks: `Account "${name}" created`,
-    };
-    batch.set(newTransactionRef, newTransactionData);
+    if (initialBalance > 0) {
+      const newTransactionRef = doc(collection(db, 'users', user.uid, 'transactions'));
+      const newTransactionData = {
+        type: 'account_creation',
+        amount: initialBalance,
+        accountId: newAccountRef.id,
+        accountName: name,
+        date: serverTimestamp(),
+        remarks: `Account "${name}" created`,
+      };
+      batch.set(newTransactionRef, newTransactionData);
+    }
 
     await batch.commit();
     toast({
@@ -155,30 +187,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return { id: newAccountRef.id, ...newAccountData };
   }, [user, toast]);
   
-  const deleteAccount = useCallback(async (id: string) => {
+  const deleteAccount = useCallback(async (accountId: string) => {
     if (!user) throw new Error("User not authenticated");
-
-    const batch = writeBatch(db);
-    const accountRef = doc(db, 'users', user.uid, 'accounts', id);
-    batch.delete(accountRef);
     
-    const transactionsQuery = query(collection(db, 'users', user.uid, 'transactions'));
-    const querySnapshot = await getDocs(transactionsQuery);
-
-    querySnapshot.forEach(doc => {
-      if (doc.data().accountId === id) {
-        batch.update(doc.ref, { isOrphaned: true });
-      }
-    });
-
-    await batch.commit();
+    // Deleting an account just removes the account doc.
+    // Transactions will remain and be shown as 'orphaned'.
+    await deleteDoc(doc(db, 'users', user.uid, 'accounts', accountId));
 
     toast({
       title: 'Account Deleted',
-      description: 'The account and its balance have been removed. Transaction history is preserved.',
+      description: 'The account has been removed.',
     });
   }, [user, toast]);
-
 
   const addTransaction = useCallback(async (type: 'income' | 'expenditure', amount: number, accountId: string, remarks: string) => {
     if (!user || !accounts) throw new Error("User or accounts not available");
@@ -208,52 +228,57 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       description: `Your ${type} of ${amount.toFixed(2)} has been recorded.`,
     });
   }, [user, accounts, toast]);
-
-  const deleteTransaction = useCallback(async (id: string) => {
-    if (!user || !transactions || !accounts) throw new Error("Required data not available");
-
-    const tx = transactions.find(t => t.id === id);
-    if (!tx || tx.type === 'account_creation') {
-      toast({
-        title: 'Deletion Failed',
-        description: 'Account creation events cannot be deleted.',
-        variant: 'destructive'
-      });
+  
+  const resetApplication = async () => {
+    if (!user) {
+      toast({ title: 'Error', description: 'You must be logged in to reset.', variant: 'destructive' });
       return;
     }
     
     const batch = writeBatch(db);
-    const txRef = doc(db, 'users', user.uid, 'transactions', id);
-    batch.delete(txRef);
+    const transactionsRef = collection(db, 'users', user.uid, 'transactions');
+    const accountsRef = collection(db, 'users', user.uid, 'accounts');
+    const userDocRef = doc(db, 'users', user.uid);
+    
+    try {
+      const [transactionsSnap, accountsSnap] = await Promise.all([
+        getDocs(transactionsRef),
+        getDocs(accountsRef)
+      ]);
+      
+      transactionsSnap.forEach(doc => batch.delete(doc.ref));
+      accountsSnap.forEach(doc => batch.delete(doc.ref));
+      
+      // Instead of deleting the user doc, we just clear the currency to re-trigger the setup flow.
+      batch.update(userDocRef, { currency: null });
 
-    const account = accounts.find(a => a.id === tx.accountId);
-    if (account) {
-      const accountRef = doc(db, 'users', user.uid, 'accounts', account.id);
-      const newBalance = tx.type === 'income' ? account.balance - tx.amount : account.balance + tx.amount;
-      batch.update(accountRef, { balance: newBalance });
+      await batch.commit();
+      
+      auth.signOut();
+
+      toast({ title: 'Application Reset', description: 'Your data has been cleared.' });
+      setNeedsCurrencySetup(true); // Manually trigger setup dialog
+
+    } catch (error) {
+       console.error("Error resetting application: ", error);
+       toast({ title: 'Reset Failed', description: 'Could not clear your data. Please try again.', variant: 'destructive' });
     }
+  };
 
-    await batch.commit();
-    toast({
-      title: 'Transaction Deleted',
-      description: 'The transaction has been removed and the account balance is updated.',
-    });
-  }, [user, transactions, accounts, toast]);
-
-  const totalBalance = useMemo(
-    () => accounts?.reduce((sum, account) => sum + account.balance, 0) ?? null,
-    [accounts]
-  );
+  const totalBalance = useMemo(() => {
+    if (accounts === null) return null;
+    return accounts.reduce((sum, account) => sum + account.balance, 0);
+  }, [accounts]);
   
   const completeCurrencySetup = async (selectedCurrency: string) => {
     if (!user) return;
     try {
         const userDocRef = doc(db, 'users', user.uid);
-        await setDoc(userDocRef, { currency: selectedCurrency, createdAt: serverTimestamp() });
+        await setDoc(userDocRef, { currency: selectedCurrency }, { merge: true });
+      
         setCurrency(selectedCurrency);
         setNeedsCurrencySetup(false);
         
-        // Create default accounts
         await addAccount("Cash", 0);
         await addAccount("Primary Bank", 0);
       
@@ -270,7 +295,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         });
     }
   };
-  
+
   const value: AssetFlowState = {
     user,
     accounts,
@@ -278,17 +303,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addAccount,
     deleteAccount,
     addTransaction,
-    deleteTransaction,
+    resetApplication,
     totalBalance,
     isInitialized,
+    isLoading,
     currency,
   };
 
-  if (!isInitialized) {
-    return <Loading />;
-  }
-  
-  if (isInitialized && !user && pathname !== '/auth') {
+  if (isLoading || (!isInitialized && pathname !== '/auth')) {
     return <Loading />;
   }
 

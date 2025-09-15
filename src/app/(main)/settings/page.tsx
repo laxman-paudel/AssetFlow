@@ -1,18 +1,18 @@
 'use client';
 
-import ResetButton from '@/components/app/ResetButton';
 import ThemeSwitcher from '@/components/app/ThemeSwitcher';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import CurrencySelector from '@/components/app/CurrencySelector';
 import ExportButton from '@/components/app/ExportButton';
+import ResetButton from '@/components/app/ResetButton';
+import { Separator } from '@/components/ui/separator';
 
 export default function SettingsPage() {
   return (
@@ -42,7 +42,7 @@ export default function SettingsPage() {
                 <CardDescription>
                     Manage your application-wide settings.
                 </CardDescription>
-            </CardHeader>
+            </Header>
             <CardContent>
                 <div className="flex items-center justify-between">
                     <Label>Primary Currency</Label>
@@ -52,29 +52,31 @@ export default function SettingsPage() {
         </Card>
         
         <Card>
-          <CardHeader>
-            <CardTitle>Data Management</CardTitle>
-            <CardDescription>
-              Manage your application data. Exports include all transactions.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <ExportButton />
-          </CardFooter>
+            <CardHeader>
+                <CardTitle>Data Management</CardTitle>
+                <CardDescription>
+                    Export your transaction data to a CSV file.
+                </CardDescription>
+            </Header>
+            <CardContent>
+                <ExportButton />
+            </CardContent>
         </Card>
-
+        
         <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle>Danger Zone</CardTitle>
-            <CardDescription>
-              These actions are destructive and cannot be undone. Please be
-              certain before proceeding.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className='flex justify-between items-center w-full'>
-              <p className="text-sm font-medium">Reset Application</p>
-              <ResetButton />
-          </CardFooter>
+            <CardHeader>
+                <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                 <CardDescription>
+                    These actions are permanent and cannot be undone.
+                </CardDescription>
+            </Header>
+            <CardContent className="space-y-4">
+               <div>
+                    <h4 className="font-semibold">Reset Application</h4>
+                    <p className="text-sm text-muted-foreground mb-2">Delete all your accounts, transactions, and settings.</p>
+                    <ResetButton />
+               </div>
+            </CardContent>
         </Card>
       </div>
     </div>

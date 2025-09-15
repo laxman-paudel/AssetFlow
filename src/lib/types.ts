@@ -11,8 +11,7 @@ export type Transaction = {
   type: TransactionType;
   amount: number;
   accountId: string;
-  accountName: string;
+  accountName?: string;
   date: string; // ISO string
   remarks: string;
-  isOrphaned?: boolean;
 };

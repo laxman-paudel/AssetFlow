@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useAssetFlow } from '@/components/app/AppProvider';
-import { Transaction, Account } from '@/lib/types';
 import {
   ArrowDown,
   ArrowDownUp,
@@ -14,6 +13,7 @@ import {
   HelpCircle,
   BookText,
   PlusSquare,
+  AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,7 +38,6 @@ export default function StatementPage() {
     currency,
     isInitialized,
   } = useAssetFlow();
-  const [isClient, setIsClient] = useState(false);
   
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
@@ -46,12 +45,8 @@ export default function StatementPage() {
 
   const router = useRouter();
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const filteredTransactions = useMemo(() => {
-    if (transactions === null) return null;
+    if (!transactions) return null;
     let items = [...transactions];
 
     if (!showAccountCreations) {
@@ -60,14 +55,14 @@ export default function StatementPage() {
 
     if (selectedAccounts.length > 0) {
       items = items.filter(
-        (t) => t.type === 'account_creation' || selectedAccounts.includes(t.accountId)
+        (t) => (t.accountId && selectedAccounts.includes(t.accountId)) || t.type === 'account_creation'
       );
     }
-
+    
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - a;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
     return items;
@@ -82,7 +77,7 @@ export default function StatementPage() {
   };
 
   const formatCurrency = (amount: number) => {
-    if (!currency) return '...';
+    if (currency === null) return '...';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
@@ -114,11 +109,15 @@ export default function StatementPage() {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, "MMM d, yyyy, h:mm a");
+    try {
+        const date = new Date(dateString);
+        return format(date, "MMM d, yyyy, h:mm a");
+    } catch {
+        return "Invalid date";
+    }
   };
 
-  const getAccountIcon = (accountName: string) => {
+  const getAccountIcon = (accountName?: string) => {
     if (!accountName) {
       return <HelpCircle className="h-5 w-5 text-muted-foreground" />;
     }
@@ -135,7 +134,8 @@ export default function StatementPage() {
     return <HelpCircle className="h-5 w-5 text-muted-foreground" />;
   };
 
-  const transactionsLoaded = isClient && isInitialized && filteredTransactions !== null;
+  const transactionsLoaded = isInitialized && filteredTransactions !== null;
+  const accountsLoaded = isInitialized && accounts !== null;
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -159,7 +159,7 @@ export default function StatementPage() {
               <div className="space-y-4">
                 <h4 className="font-medium leading-none">Filter by Account</h4>
                 <div className="space-y-2">
-                  {isClient && accounts && accounts.map((account) => (
+                  {accountsLoaded && accounts && accounts.map((account) => (
                     <div key={account.id} className="flex items-center space-x-2">
                       <Checkbox
                         id={account.id}
@@ -169,12 +169,12 @@ export default function StatementPage() {
                       <Label htmlFor={account.id}>{account.name}</Label>
                     </div>
                   ))}
-                  {isClient && accounts?.length === 0 && (
+                  {accountsLoaded && accounts?.length === 0 && (
                     <p className="text-sm text-muted-foreground">
                       No accounts to filter.
                     </p>
                   )}
-                  {!isClient && <Skeleton className="h-10 w-full" />}
+                  {!accountsLoaded && <Skeleton className="h-10 w-full" />}
                 </div>
                 <Separator />
                  <div className="flex items-center space-x-2">
@@ -190,12 +190,12 @@ export default function StatementPage() {
        <div className="block mb-6">
           <Card 
               className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer'
-              style={isClient && totalBalance !== null ? getBalanceCardStyle() : {}}
+              style={getBalanceCardStyle()}
               onClick={() => router.push('/')}
           >
               <CardContent className="p-3 flex items-center justify-between">
                   <p className="text-sm font-medium">Total Balance</p>
-                  {isClient && totalBalance !== null && currency ? (
+                  {transactionsLoaded && totalBalance !== null ? (
                     <p className="text-lg font-bold tracking-tighter">
                         {formatCurrency(totalBalance)}
                     </p>
@@ -208,15 +208,12 @@ export default function StatementPage() {
 
       <div className="space-y-3">
         {!transactionsLoaded ? (
-          <>
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-          </>
+          Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)
         ) : filteredTransactions.length > 0 ? (
           filteredTransactions.map((t) => {
             const isIncome = t.type === 'income';
             const isAccountCreation = t.type === 'account_creation';
+            const isOrphaned = t.type !== 'account_creation' && !accounts?.some(a => a.id === t.accountId);
 
             if (isAccountCreation) {
                 return (
@@ -230,9 +227,9 @@ export default function StatementPage() {
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-lg text-blue-600">
-                             + {currency ? formatAmount(t.amount) : '...'}
+                             + {formatAmount(t.amount)}
                           </p>
-                          <p className="text-xs text-muted-foreground">{isClient ? formatDate(t.date) : '...'}</p>
+                          <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
                         </div>
                       </div>
                 )
@@ -243,8 +240,8 @@ export default function StatementPage() {
                 key={t.id}
                 className={cn(
                   'transition-all duration-200',
-                  isIncome ? 'border-l-green-500' : 'border-l-red-500',
-                  t.isOrphaned && 'opacity-60',
+                  !isOrphaned && (isIncome ? 'border-l-green-500' : 'border-l-red-500'),
+                  isOrphaned && 'border-l-amber-500 bg-amber-50 dark:bg-amber-950/30'
                 )}
               >
                 <div className='p-4'>
@@ -252,16 +249,16 @@ export default function StatementPage() {
                         <div className="flex flex-1 items-center gap-4 truncate">
                             <div className={cn(
                                 "p-2 rounded-full",
-                                isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                !isOrphaned && (isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'),
+                                isOrphaned && 'bg-amber-100 text-amber-700'
                             )}>
-                                {isIncome ? <ArrowDown className="h-5 w-5" /> : <ArrowUp className="h-5 w-5" />}
+                                {isOrphaned ? <AlertTriangle className="h-5 w-5" /> : (isIncome ? <ArrowDown className="h-5 w-5" /> : <ArrowUp className="h-5 w-5" />)}
                             </div>
                             <div className="flex-1 truncate">
                                 <p className="font-semibold truncate">{t.remarks || 'Transaction'}</p>
                                 <div className="flex items-center gap-2">
                                     {getAccountIcon(t.accountName)}
-                                    <p className="text-sm text-muted-foreground truncate">{t.accountName}</p>
-
+                                    <p className="text-sm text-muted-foreground truncate">{isOrphaned ? 'Original account deleted' : t.accountName}</p>
                                 </div>
                             </div>
                         </div>
@@ -269,11 +266,12 @@ export default function StatementPage() {
                         <div className="text-right flex-shrink-0">
                             <p className={cn(
                                 "font-bold text-lg",
-                                isIncome ? 'text-green-600' : 'text-red-600'
+                                !isOrphaned && (isIncome ? 'text-green-600' : 'text-red-600'),
+                                isOrphaned && 'text-amber-600'
                             )}>
                                 {isIncome ? '+' : '-'} {formatAmount(t.amount)}
                             </p>
-                            <p className="text-xs text-muted-foreground">{isClient ? formatDate(t.date) : '...'}</p>
+                            <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
                         </div>
                     </div>
                 </div>

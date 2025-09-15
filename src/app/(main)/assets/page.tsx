@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAssetFlow } from '@/components/app/AppProvider';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,20 +13,14 @@ import {
 import { PlusCircle, Landmark, Wallet, CreditCard, HelpCircle } from 'lucide-react';
 import AccountDialog from '@/components/app/AccountDialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Account } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
 export default function AccountsPage() {
   const { accounts, currency, totalBalance, isInitialized } = useAssetFlow();
-  const [isClient, setIsClient] = useState(false);
   
   const [dialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
   
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const formatCurrency = (amount: number) => {
     if (!currency) return '...';
     return new Intl.NumberFormat('en-US', {
@@ -65,7 +59,7 @@ export default function AccountsPage() {
     return { backgroundColor: 'hsl(210, 80%, 70%)' };
   };
 
-  const accountsLoaded = isClient && isInitialized && accounts !== null;
+  const accountsLoaded = isInitialized && accounts !== null;
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
@@ -84,11 +78,11 @@ export default function AccountsPage() {
           </div>
           <h3 className="text-xl font-semibold mb-2">Create Your First Account</h3>
           <p className="text-muted-foreground mb-6 max-w-sm">
-            Start by adding a bank account, credit card, or cash to track your balance.
+            You've been given a Cash and Bank account, but you can add more.
           </p>
           <Button onClick={() => setDialogOpen(true)} size="lg">
             <PlusCircle className="mr-2 h-5 w-5" />
-            Add First Account
+            Add Account
           </Button>
         </div>
       ) : (
@@ -96,12 +90,12 @@ export default function AccountsPage() {
           <div className="block mb-6">
               <Card 
                   className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer'
-                  style={isClient && totalBalance !== null ? getBalanceCardStyle() : {}}
+                  style={getBalanceCardStyle()}
                   onClick={() => router.push('/')}
               >
                   <CardContent className="p-3 flex items-center justify-between">
                       <p className="text-sm font-medium">Total Balance</p>
-                      {isClient && totalBalance !== null && currency ? (
+                      {accountsLoaded && totalBalance !== null ? (
                         <p className="text-lg font-bold tracking-tighter">
                             {formatCurrency(totalBalance)}
                         </p>
@@ -113,10 +107,9 @@ export default function AccountsPage() {
           </div>
           <div className="space-y-4">
             {!accountsLoaded ? (
-              <>
-                <Skeleton className="h-28 w-full" />
-                <Skeleton className="h-28 w-full" />
-              </>
+              Array.from({ length: 2 }).map((_, i) => (
+                <Skeleton key={i} className="h-28 w-full" />
+              ))
             ) : (
               accounts.map((account) => (
                 <Card key={account.id} className="transition-all hover:shadow-lg hover:-translate-y-1 duration-300 border-l-4 border-l-primary/20 hover:border-l-primary/60">
@@ -124,13 +117,13 @@ export default function AccountsPage() {
                     <div className="flex items-center gap-4">
                        {getAccountIcon(account.name)}
                        <div>
-                          <CardTitle className="tracking-tight">{account.name}</CardTitle>
+                          <CardTitle className="tracking-tight text-xl">{account.name}</CardTitle>
                           <CardDescription>Available Balance</CardDescription>
                        </div>
                     </div>
                   </CardHeader>
                   <CardContent className="pl-16">
-                    {isClient && currency ? (
+                    {accountsLoaded ? (
                       <p className="text-3xl font-bold tracking-tight">
                         {formatCurrency(account.balance)}
                       </p>

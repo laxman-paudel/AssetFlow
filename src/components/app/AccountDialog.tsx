@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAssetFlow } from '@/lib/store';
+import { useAssetFlow } from '@/components/app/AppProvider';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
