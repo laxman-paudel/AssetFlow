@@ -93,7 +93,7 @@ function StatementPageContent() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - a;
     });
 
     return items;
@@ -108,7 +108,7 @@ function StatementPageContent() {
   };
 
   const handleTransactionClick = (transactionId: string) => {
-    setExpandedTransactionId(prevId => prevId === transactionId ? null : prevId);
+    setExpandedTransactionId(prevId => prevId === transactionId ? null : transactionId);
   }
 
   const formatCurrency = (amount: number) => {
