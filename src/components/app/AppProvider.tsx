@@ -33,6 +33,7 @@ interface AssetFlowState {
   editTransaction: (transactionId: string, updates: EditableTransaction) => Promise<void>;
   deleteTransaction: (transactionId: string) => Promise<void>;
   resetApplication: () => Promise<void>;
+  changeCurrency: (newCurrency: string) => void;
   totalBalance: number | null;
   isInitialized: boolean;
   currency: string | null;
@@ -262,7 +263,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   }, [accounts, toast]);
   
-  const resetApplication = async () => {
+  const resetApplication = useCallback(async () => {
     try {
       localStorage.removeItem(CURRENCY_KEY);
       localStorage.removeItem(ACCOUNTS_KEY);
@@ -279,7 +280,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
        console.error("Error resetting application: ", error);
        toast({ title: 'Reset Failed', description: 'Could not clear your data. Please try again.', variant: 'destructive' });
     }
-  };
+  }, [toast]);
+
+  const changeCurrency = useCallback((newCurrency: string) => {
+    setCurrency(newCurrency);
+    toast({
+        title: 'Currency Updated',
+        description: `Your primary currency has been changed to ${newCurrency}.`,
+    });
+  }, [toast]);
 
   const totalBalance = useMemo(() => {
     if (accounts === null) return null;
@@ -321,6 +330,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     editTransaction,
     deleteTransaction,
     resetApplication,
+    changeCurrency,
     totalBalance,
     isInitialized,
     currency,

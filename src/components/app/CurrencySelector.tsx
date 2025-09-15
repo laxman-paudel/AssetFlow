@@ -19,14 +19,14 @@ const currencies = [
 ];
 
 export default function CurrencySelector() {
-  const { currency, isInitialized } = useAssetFlow();
+  const { currency, changeCurrency, isInitialized } = useAssetFlow();
 
   if (!isInitialized || !currency) {
     return <Skeleton className="h-10 w-28" />;
   }
 
   return (
-    <Select value={currency} disabled>
+    <Select value={currency} onValueChange={changeCurrency}>
       <SelectTrigger className="w-auto min-w-[110px] shadow-none focus:ring-0">
         <SelectValue placeholder="Currency" />
       </SelectTrigger>

@@ -47,7 +47,7 @@ export default function CurrencySetupDialog({ open, onCurrencySelect }: Currency
         <DialogHeader>
           <DialogTitle>Welcome to AssetFlow!</DialogTitle>
           <DialogDescription>
-            To get started, please select your primary currency. This cannot be changed later.
+            To get started, please select your primary currency. You can change this later in the settings.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
