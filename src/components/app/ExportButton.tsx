@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Transaction } from '@/lib/types';
+import { format } from 'date-fns';
 
 interface ExportButtonProps {
   minimal?: boolean;
@@ -29,8 +30,8 @@ export default function ExportButton({ minimal = false, transactions: transactio
     const header = ['Date', 'Time', 'Type', 'Amount', 'Asset', 'Remarks'];
     const rows = dataToExport.map(t => {
       const date = new Date(t.date);
-      const rowDate = date.toLocaleDateString();
-      const rowTime = date.toLocaleTimeString();
+      const rowDate = format(date, 'yyyy-MM-dd');
+      const rowTime = format(date, 'HH:mm:ss');
       let amount = t.amount;
       if (t.type === 'expenditure') {
           amount = -amount;

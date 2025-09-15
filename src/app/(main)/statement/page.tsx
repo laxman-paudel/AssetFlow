@@ -43,6 +43,7 @@ import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import EditTransactionDialog from '@/components/app/EditTransactionDialog';
 import ExportButton from '@/components/app/ExportButton';
+import { format } from 'date-fns';
 
 export default function StatementPage() {
   const store = useAssetFlow();
@@ -90,7 +91,7 @@ export default function StatementPage() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - a.date;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
     return items;
@@ -142,10 +143,7 @@ export default function StatementPage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    });
+    return format(date, "MMM d, yyyy, h:mm a");
   };
 
   const getAssetIcon = (assetName: string) => {
@@ -261,7 +259,7 @@ export default function StatementPage() {
                           <p className="font-bold text-lg text-blue-600">
                              + {currency ? formatAmount(t.amount) : '...'}
                           </p>
-                          <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                          <p className="text-xs text-muted-foreground">{isClient ? formatDate(t.date) : '...'}</p>
                         </div>
                       </div>
                 )
@@ -279,7 +277,7 @@ export default function StatementPage() {
                 onClick={() => handleTransactionClick(t.id)}
               >
                 <div className='p-4'>
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-start justify-between gap-4">
                         <div className="flex flex-1 items-center gap-4 truncate">
                             <div className={cn(
                                 "p-2 rounded-full",
@@ -303,7 +301,7 @@ export default function StatementPage() {
                             )}>
                                 {isIncome ? '+' : '-'} {formatAmount(t.amount)}
                             </p>
-                            <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                            <p className="text-xs text-muted-foreground">{isClient ? formatDate(t.date) : '...'}</p>
                         </div>
                     </div>
                 </div>
