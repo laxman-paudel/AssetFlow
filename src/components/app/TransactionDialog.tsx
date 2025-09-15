@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAssetFlow } from '@/components/app/AppProvider';
-import { TransactionType } from '@/lib/types';
+import { TransactionType, Category } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -32,10 +32,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Shapes } from 'lucide-react';
 import NestedAccountDialog from './NestedAccountDialog';
 import { Separator } from '../ui/separator';
-import { incomeCategories, expenseCategories } from '@/lib/categories';
+import { getIncomeCategories, getExpenseCategories } from '@/lib/categories';
+import CategoryDialog from './CategoryDialog';
 
 const formSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive.'),
@@ -55,8 +56,9 @@ export default function TransactionDialog({
   onOpenChange,
   type,
 }: TransactionDialogProps) {
-  const { accounts, addTransaction } = useAssetFlow();
+  const { accounts, customCategories, addTransaction } = useAssetFlow();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -85,6 +87,11 @@ export default function TransactionDialog({
     form.setValue('accountId', newAccountId);
     setAccountDialogOpen(false);
   }
+
+  const handleCategoryCreated = (newCategory: Category) => {
+    form.setValue('category', newCategory.id);
+    setCategoryDialogOpen(false);
+  };
   
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -94,7 +101,13 @@ export default function TransactionDialog({
   }
   
   const placeholderText = type === 'expenditure' ? "What are you spending from?" : "Where is the income going to?";
-  const categories = type === 'income' ? incomeCategories : expenseCategories;
+  
+  const categories = useMemo(() => {
+    const allCustomCategories = customCategories || [];
+    return type === 'income' 
+      ? getIncomeCategories(allCustomCategories) 
+      : getExpenseCategories(allCustomCategories);
+  }, [type, customCategories]);
 
   return (
     <>
@@ -176,14 +189,30 @@ export default function TransactionDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id}>
-                            <div className="flex items-center gap-2">
-                                <cat.icon className="h-4 w-4 text-muted-foreground" />
-                                {cat.name}
-                            </div>
-                          </SelectItem>
-                        ))}
+                        {categories.map((cat) => {
+                           const Icon = cat.icon || Shapes;
+                           return (
+                            <SelectItem key={cat.id} value={cat.id}>
+                                <div className="flex items-center gap-2">
+                                    <Icon className="h-4 w-4 text-muted-foreground" />
+                                    {cat.name}
+                                </div>
+                            </SelectItem>
+                           )
+                        })}
+                        <Separator className="my-1" />
+                        <div className="p-1">
+                          <Button
+                                variant="ghost"
+                                className="w-full justify-start font-normal"
+                                type="button"
+                                onSelect={(e) => e.preventDefault()}
+                                onClick={() => setCategoryDialogOpen(true)}
+                            >
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Create New Category
+                            </Button>
+                        </div>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -214,6 +243,12 @@ export default function TransactionDialog({
         open={accountDialogOpen} 
         onOpenChange={setAccountDialogOpen}
         onAccountCreated={handleAccountCreated}
+      />
+      <CategoryDialog
+        open={categoryDialogOpen}
+        onOpenChange={setCategoryDialogOpen}
+        onCategoryCreated={handleCategoryCreated}
+        type={type}
       />
     </>
   );

@@ -1,3 +1,5 @@
+import type { LucideIcon } from 'lucide-react';
+
 export type Account = {
   id: string;
   name: string;
@@ -5,11 +7,13 @@ export type Account = {
 };
 
 export type TransactionType = 'income' | 'expenditure' | 'account_creation' | 'transfer';
+export type CategoryType = 'income' | 'expense';
 
 export type Category = {
   id: string;
   name: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon | React.ComponentType<{ className?: string }>;
+  type: CategoryType;
 };
 
 export type Transaction = {

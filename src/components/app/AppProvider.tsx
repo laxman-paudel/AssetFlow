@@ -8,7 +8,7 @@ import {
   useMemo,
   useCallback,
 } from 'react';
-import type { Account, Transaction, EditableTransaction } from '@/lib/types';
+import type { Account, Transaction, EditableTransaction, Category, CategoryType } from '@/lib/types';
 import { useToast } from '@/components/ui/use-toast';
 import Loading from '@/app/loading';
 import CurrencySetupDialog from './CurrencySetupDialog';
@@ -18,10 +18,12 @@ import { useRouter } from 'next/navigation';
 const CURRENCY_KEY = 'assetflow-currency';
 const ACCOUNTS_KEY = 'assetflow-accounts';
 const TRANSACTIONS_KEY = 'assetflow-transactions';
+const CUSTOM_CATEGORIES_KEY = 'assetflow-custom-categories';
 
 interface AssetFlowState {
   accounts: Account[] | null;
   transactions: Transaction[] | null;
+  customCategories: Category[] | null;
   addAccount: (name: string, initialBalance: number) => Promise<Account>;
   editAccount: (accountId: string, updates: { name: string; balance: number }) => Promise<void>;
   deleteAccount: (accountId: string) => Promise<void>;
@@ -40,6 +42,7 @@ interface AssetFlowState {
   ) => Promise<void>;
   editTransaction: (transactionId: string, updates: EditableTransaction) => Promise<void>;
   deleteTransaction: (transactionId: string) => Promise<void>;
+  addCustomCategory: (name: string, type: CategoryType) => Promise<Category>;
   resetApplication: () => Promise<void>;
   changeCurrency: (newCurrency: string) => void;
   totalBalance: number | null;
@@ -56,6 +59,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [accounts, setAccounts] = useState<Account[] | null>(null);
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
+  const [customCategories, setCustomCategories] = useState<Category[] | null>(null);
 
   const { toast } = useToast();
   const router = useRouter();
@@ -72,6 +76,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         
         const storedTransactions = localStorage.getItem(TRANSACTIONS_KEY);
         setTransactions(storedTransactions ? JSON.parse(storedTransactions) : []);
+
+        const storedCustomCategories = localStorage.getItem(CUSTOM_CATEGORIES_KEY);
+        setCustomCategories(storedCustomCategories ? JSON.parse(storedCustomCategories) : []);
         
       } else {
         setNeedsCurrencySetup(true);
@@ -92,11 +99,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (currency) localStorage.setItem(CURRENCY_KEY, JSON.stringify(currency));
       if (accounts) localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
       if (transactions) localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
+      if (customCategories) localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(customCategories));
     } catch (error) {
       console.error("Failed to save data to local storage:", error);
       toast({ title: "Save Error", description: "Could not save your changes.", variant: "destructive" });
     }
-  }, [currency, accounts, transactions, isInitialized, toast]);
+  }, [currency, accounts, transactions, customCategories, isInitialized, toast]);
 
   const addAccount = useCallback(async (name: string, initialBalance: number): Promise<Account> => {
     const newAccount: Account = { 
@@ -356,12 +364,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
 
   }, [accounts, toast]);
+
+    const addCustomCategory = useCallback(async (name: string, type: CategoryType): Promise<Category> => {
+        const newCategory: Category = {
+            id: new Date().toISOString() + Math.random(),
+            name,
+            type,
+            icon: () => null, // Icon is handled in getCategoryById
+        };
+        
+        setCustomCategories(prev => [...(prev || []), newCategory]);
+
+        toast({
+            title: 'Category Added',
+            description: `New category "${name}" has been created.`,
+        });
+
+        return newCategory;
+    }, [toast]);
   
   const resetApplication = useCallback(async () => {
     try {
       localStorage.removeItem(CURRENCY_KEY);
       localStorage.removeItem(ACCOUNTS_KEY);
       localStorage.removeItem(TRANSACTIONS_KEY);
+      localStorage.removeItem(CUSTOM_CATEGORIES_KEY);
       
       toast({ title: 'Application Reset', description: 'Your data has been cleared.' });
 
@@ -399,6 +426,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const bankAccount: Account = { id: 'bank', name: 'Primary Bank', balance: 0 };
         setAccounts([cashAccount, bankAccount]);
         setTransactions([]);
+        setCustomCategories([]);
 
         router.push('/');
       
@@ -419,6 +447,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const value: AssetFlowState = {
     accounts,
     transactions,
+    customCategories,
     addAccount,
     editAccount,
     deleteAccount,
@@ -426,6 +455,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addTransfer,
     editTransaction,
     deleteTransaction,
+    addCustomCategory,
     resetApplication,
     changeCurrency,
     totalBalance,
@@ -462,6 +492,7 @@ function AppProviderShell({ children }: { children: React.ReactNode }) {
     const value: AssetFlowState = {
         accounts: [],
         transactions: [],
+        customCategories: [],
         addAccount: async () => new Promise(() => {}),
         editAccount: async () => {},
         deleteAccount: async () => {},
@@ -469,6 +500,7 @@ function AppProviderShell({ children }: { children: React.ReactNode }) {
         addTransfer: async () => {},
         editTransaction: async () => {},
         deleteTransaction: async () => {},
+        addCustomCategory: async () => new Promise(() => {}),
         resetApplication: async () => {},
         changeCurrency: () => {},
         totalBalance: 0,

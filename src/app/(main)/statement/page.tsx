@@ -19,6 +19,7 @@ import {
   Search,
   Calendar as CalendarIcon,
   X,
+  Shapes,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -62,6 +63,7 @@ function StatementPageContent() {
   const {
     transactions,
     accounts,
+    customCategories,
     totalBalance,
     currency,
     isInitialized,
@@ -128,7 +130,7 @@ function StatementPageContent() {
       } else {
         items = items.filter(t => {
             const remarksMatch = t.remarks?.toLowerCase().includes(term);
-            const category = t.category ? getCategoryById(t.category) : null;
+            const category = t.category ? getCategoryById(t.category, customCategories || []) : null;
             const categoryMatch = category?.name.toLowerCase().includes(term);
             return remarksMatch || categoryMatch;
         });
@@ -151,7 +153,7 @@ function StatementPageContent() {
     });
 
     return items;
-  }, [transactions, sortOrder, selectedAccounts, showAccountCreations, searchTerm, dateRange]);
+  }, [transactions, sortOrder, selectedAccounts, showAccountCreations, searchTerm, dateRange, customCategories]);
 
   const handleAccountFilterChange = (accountId: string) => {
     setSelectedAccounts((prev) =>
@@ -471,7 +473,7 @@ function StatementPageContent() {
               const isTransfer = t.type === 'transfer';
               const account = accounts?.find(a => a.id === t.accountId);
               const toAccount = accounts?.find(a => a.id === t.toAccountId);
-              const category = t.category ? getCategoryById(t.category) : null;
+              const category = t.category ? getCategoryById(t.category, customCategories || []) : null;
               const CategoryIcon = category?.icon;
 
               if (isAccountCreation) {
