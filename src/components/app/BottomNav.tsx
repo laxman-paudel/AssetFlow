@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/statement', icon: BookText, label: 'Statements' },
-  { href: '/assets', icon: Wallet, label: 'Assets' },
+  { href: '/assets', icon: Wallet, label: 'Accounts' },
 ];
 
 export default function BottomNav() {

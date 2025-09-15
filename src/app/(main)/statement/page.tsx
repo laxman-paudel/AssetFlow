@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useAssetFlow } from '@/lib/store';
-import { Transaction, Asset } from '@/lib/types';
+import { Transaction, Account } from '@/lib/types';
 import {
   ArrowDown,
   ArrowDownUp,
@@ -48,14 +48,14 @@ import { format } from 'date-fns';
 export default function StatementPage() {
   const store = useAssetFlow();
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
-  const [assets, setAssets] = useState<Asset[] | null>(null);
+  const [accounts, setAccounts] = useState<Account[] | null>(null);
   const [totalBalance, setTotalBalance] = useState<number | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
-  const [showAssetCreations, setShowAssetCreations] = useState(false);
+  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
+  const [showAccountCreations, setShowAccountCreations] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
@@ -68,23 +68,23 @@ export default function StatementPage() {
   useEffect(() => {
     if (store.isInitialized) {
       setTransactions(store.transactions);
-      setAssets(store.assets);
+      setAccounts(store.accounts);
       setTotalBalance(store.totalBalance);
       setCurrency(store.currency);
     }
-  }, [store.isInitialized, store.transactions, store.assets, store.totalBalance, store.currency]);
+  }, [store.isInitialized, store.transactions, store.accounts, store.totalBalance, store.currency]);
 
   const filteredTransactions = useMemo(() => {
     if (transactions === null) return null;
     let items = [...transactions];
 
-    if (!showAssetCreations) {
-      items = items.filter((t) => t.type !== 'asset_creation');
+    if (!showAccountCreations) {
+      items = items.filter((t) => t.type !== 'account_creation');
     }
 
-    if (selectedAssets.length > 0) {
+    if (selectedAccounts.length > 0) {
       items = items.filter(
-        (t) => t.type === 'asset_creation' || selectedAssets.includes(t.assetId)
+        (t) => t.type === 'account_creation' || selectedAccounts.includes(t.accountId)
       );
     }
 
@@ -95,13 +95,13 @@ export default function StatementPage() {
     });
 
     return items;
-  }, [transactions, sortOrder, selectedAssets, showAssetCreations]);
+  }, [transactions, sortOrder, selectedAccounts, showAccountCreations]);
 
-  const handleAssetFilterChange = (assetId: string) => {
-    setSelectedAssets((prev) =>
-      prev.includes(assetId)
-        ? prev.filter((id) => id !== assetId)
-        : [...prev, assetId]
+  const handleAccountFilterChange = (accountId: string) => {
+    setSelectedAccounts((prev) =>
+      prev.includes(accountId)
+        ? prev.filter((id) => id !== accountId)
+        : [...prev, accountId]
     );
   };
   
@@ -146,11 +146,11 @@ export default function StatementPage() {
     return format(date, "MMM d, yyyy, h:mm a");
   };
 
-  const getAssetIcon = (assetName: string) => {
-    if (!assetName) {
+  const getAccountIcon = (accountName: string) => {
+    if (!accountName) {
       return <HelpCircle className="h-5 w-5 text-muted-foreground" />;
     }
-    const lowerCaseName = assetName.toLowerCase();
+    const lowerCaseName = accountName.toLowerCase();
     if (lowerCaseName.includes('bank')) {
       return <Landmark className="h-5 w-5 text-muted-foreground" />;
     }
@@ -184,29 +184,29 @@ export default function StatementPage() {
             </PopoverTrigger>
             <PopoverContent className="w-64">
               <div className="space-y-4">
-                <h4 className="font-medium leading-none">Filter by Asset</h4>
+                <h4 className="font-medium leading-none">Filter by Account</h4>
                 <div className="space-y-2">
-                  {isClient && assets && assets.map((asset) => (
-                    <div key={asset.id} className="flex items-center space-x-2">
+                  {isClient && accounts && accounts.map((account) => (
+                    <div key={account.id} className="flex items-center space-x-2">
                       <Checkbox
-                        id={asset.id}
-                        checked={selectedAssets.includes(asset.id)}
-                        onCheckedChange={() => handleAssetFilterChange(asset.id)}
+                        id={account.id}
+                        checked={selectedAccounts.includes(account.id)}
+                        onCheckedChange={() => handleAccountFilterChange(account.id)}
                       />
-                      <Label htmlFor={asset.id}>{asset.name}</Label>
+                      <Label htmlFor={account.id}>{account.name}</Label>
                     </div>
                   ))}
-                  {isClient && assets?.length === 0 && (
+                  {isClient && accounts?.length === 0 && (
                     <p className="text-sm text-muted-foreground">
-                      No assets to filter.
+                      No accounts to filter.
                     </p>
                   )}
                   {!isClient && <Skeleton className="h-10 w-full" />}
                 </div>
                 <Separator />
                  <div className="flex items-center space-x-2">
-                    <Checkbox id="show-asset-creations" checked={showAssetCreations} onCheckedChange={(checked) => setShowAssetCreations(!!checked)} />
-                    <Label htmlFor="show-asset-creations">Show Asset Creations</Label>
+                    <Checkbox id="show-account-creations" checked={showAccountCreations} onCheckedChange={(checked) => setShowAccountCreations(!!checked)} />
+                    <Label htmlFor="show-account-creations">Show Account Creations</Label>
                 </div>
               </div>
             </PopoverContent>
@@ -243,9 +243,9 @@ export default function StatementPage() {
         ) : filteredTransactions.length > 0 ? (
           filteredTransactions.map((t) => {
             const isIncome = t.type === 'income';
-            const isAssetCreation = t.type === 'asset_creation';
+            const isAccountCreation = t.type === 'account_creation';
 
-            if (isAssetCreation) {
+            if (isAccountCreation) {
                 return (
                      <div key={t.id} className="flex items-center gap-4 p-4 rounded-lg bg-card border border-l-4 border-l-blue-500">
                         <div className="p-2 rounded-full bg-blue-100 text-blue-700">
@@ -288,8 +288,8 @@ export default function StatementPage() {
                             <div className="flex-1 truncate">
                                 <p className="font-semibold truncate">{t.remarks || 'Transaction'}</p>
                                 <div className="flex items-center gap-2">
-                                    {getAssetIcon(t.assetName)}
-                                    <p className="text-sm text-muted-foreground truncate">{t.assetName}</p>
+                                    {getAccountIcon(t.accountName)}
+                                    <p className="text-sm text-muted-foreground truncate">{t.accountName}</p>
                                 </div>
                             </div>
                         </div>
@@ -322,7 +322,7 @@ export default function StatementPage() {
                                     <AlertDialogHeader>
                                         <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete this transaction and update the asset balance.
+                                        This action cannot be undone. This will permanently delete this transaction and update the account balance.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>

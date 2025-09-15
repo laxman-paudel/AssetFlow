@@ -33,12 +33,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PlusCircle } from 'lucide-react';
-import NestedAssetDialog from './NestedAssetDialog';
+import NestedAccountDialog from './NestedAccountDialog';
 import { Separator } from '../ui/separator';
 
 const formSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive.'),
-  assetId: z.string().min(1, 'Please select an asset.'),
+  accountId: z.string().min(1, 'Please select an account.'),
   remarks: z.string().max(100, 'Remarks are too long.'),
 });
 
@@ -53,35 +53,35 @@ export default function TransactionDialog({
   onOpenChange,
   type,
 }: TransactionDialogProps) {
-  const { assets, addTransaction } = useAssetFlow();
-  const [assetDialogOpen, setAssetDialogOpen] = useState(false);
+  const { accounts, addTransaction } = useAssetFlow();
+  const [accountDialogOpen, setAccountDialogOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       amount: 0,
-      assetId: '',
+      accountId: '',
       remarks: '',
     },
   });
   
-  const lastAssetId = assets.length > 0 ? assets[assets.length - 1].id : '';
+  const lastAccountId = accounts.length > 0 ? accounts[accounts.length - 1].id : '';
   useEffect(() => {
-    if (assets.length === 1 && form.getValues('assetId') === '') {
-        form.setValue('assetId', assets[0].id);
+    if (accounts.length === 1 && form.getValues('accountId') === '') {
+        form.setValue('accountId', accounts[0].id);
     }
-  }, [assets, form]);
+  }, [accounts, form]);
 
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    addTransaction(type, values.amount, values.assetId, values.remarks);
+    addTransaction(type, values.amount, values.accountId, values.remarks);
     onOpenChange(false);
     form.reset();
   };
   
-  const handleAssetCreated = (newAssetId: string) => {
-    form.setValue('assetId', newAssetId);
-    setAssetDialogOpen(false);
+  const handleAccountCreated = (newAccountId: string) => {
+    form.setValue('accountId', newAccountId);
+    setAccountDialogOpen(false);
   }
   
   const placeholderText = type === 'expenditure' ? "What are you spending from?" : "Where is the income going to?";
@@ -114,10 +114,10 @@ export default function TransactionDialog({
             />
             <FormField
               control={form.control}
-              name="assetId"
+              name="accountId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Asset</FormLabel>
+                  <FormLabel>Account</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
@@ -128,20 +128,20 @@ export default function TransactionDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {assets.map((asset) => (
-                          <SelectItem key={asset.id} value={asset.id}>
-                            {asset.name}
+                      {accounts.map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            {account.name}
                           </SelectItem>
                         ))}
-                      {(assets.length > 0) && <Separator className="my-1" />}
+                      {(accounts.length > 0) && <Separator className="my-1" />}
                       <Button
                             variant="ghost"
                             className="w-full justify-start font-normal"
                             type="button"
-                            onClick={() => setAssetDialogOpen(true)}
+                            onClick={() => setAccountDialogOpen(true)}
                         >
                             <PlusCircle className="mr-2 h-4 w-4" />
-                            Create New Asset
+                            Create New Account
                         </Button>
                     </SelectContent>
                   </Select>
@@ -168,10 +168,10 @@ export default function TransactionDialog({
           </form>
         </Form>
       </DialogContent>
-       <NestedAssetDialog 
-        open={assetDialogOpen} 
-        onOpenChange={setAssetDialogOpen}
-        onAssetCreated={handleAssetCreated}
+       <NestedAccountDialog 
+        open={accountDialogOpen} 
+        onOpenChange={setAccountDialogOpen}
+        onAccountCreated={handleAccountCreated}
       />
     </Dialog>
   );

@@ -1,21 +1,21 @@
 import { createContext, useContext } from 'react';
-import type { Asset, Transaction } from '@/lib/types';
+import type { Account, Transaction } from '@/lib/types';
 
 interface AssetFlowState {
-  assets: Asset[];
+  accounts: Account[];
   transactions: Transaction[];
-  addAsset: (name: string, initialBalance: number) => Asset;
-  editAsset: (id: string, newName: string) => void;
-  deleteAsset: (id: string) => void;
+  addAccount: (name: string, initialBalance: number) => Account;
+  editAccount: (id: string, newName: string) => void;
+  deleteAccount: (id: string) => void;
   addTransaction: (
     type: 'income' | 'expenditure',
     amount: number,
-    assetId: string,
+    accountId: string,
     remarks: string
   ) => void;
   editTransaction: (id: string, newAmount: number, newRemarks: string) => void;
   deleteTransaction: (id: string) => void;
-  getAssetById: (id: string) => Asset | undefined;
+  getAccountById: (id: string) => Account | undefined;
   totalBalance: number;
   isInitialized: boolean;
   currency: string;

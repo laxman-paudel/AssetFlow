@@ -2,18 +2,18 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { AssetFlowContext } from '@/lib/store';
-import type { Asset, Transaction } from '@/lib/types';
+import type { Account, Transaction } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import CurrencySetupDialog from './CurrencySetupDialog';
 
-const ASSETS_STORAGE_KEY = 'assetflow-assets';
+const ACCOUNTS_STORAGE_KEY = 'assetflow-accounts';
 const TRANSACTIONS_STORAGE_KEY = 'assetflow-transactions';
 const CURRENCY_STORAGE_KEY = 'assetflow-currency';
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [needsCurrencySetup, setNeedsCurrencySetup] = useState(false);
-  const [assets, setAssets] = useState<Asset[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [currency, setCurrency] = useState<string>('');
   const { toast } = useToast();
@@ -24,9 +24,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       
       if (storedCurrency) {
         setCurrency(JSON.parse(storedCurrency));
-        const storedAssets = localStorage.getItem(ASSETS_STORAGE_KEY);
-        if (storedAssets) {
-          setAssets(JSON.parse(storedAssets));
+        const storedAccounts = localStorage.getItem(ACCOUNTS_STORAGE_KEY);
+        if (storedAccounts) {
+          setAccounts(JSON.parse(storedAccounts));
         }
         const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
         if (storedTransactions) {
@@ -51,7 +51,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isInitialized) {
       try {
-        localStorage.setItem(ASSETS_STORAGE_KEY, JSON.stringify(assets));
+        localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
         localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
         if (currency) {
             localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(currency));
@@ -60,11 +60,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         console.error('Failed to save state to localStorage', error);
       }
     }
-  }, [assets, transactions, currency, isInitialized]);
+  }, [accounts, transactions, currency, isInitialized]);
 
 
-  const addAsset = useCallback((name: string, initialBalance: number): Asset => {
-    const newAsset: Asset = {
+  const addAccount = useCallback((name: string, initialBalance: number): Account => {
+    const newAccount: Account = {
       id: crypto.randomUUID(),
       name,
       balance: initialBalance,
@@ -72,102 +72,102 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
     const newTransaction: Transaction = {
       id: crypto.randomUUID(),
-      type: 'asset_creation',
+      type: 'account_creation',
       amount: initialBalance,
-      assetId: newAsset.id,
-      assetName: newAsset.name,
+      accountId: newAccount.id,
+      accountName: newAccount.name,
       date: new Date().toISOString(),
-      remarks: `Asset "${newAsset.name}" created`,
+      remarks: `Account "${newAccount.name}" created`,
     };
 
-    setAssets((prev) => [...prev, newAsset]);
+    setAccounts((prev) => [...prev, newAccount]);
     setTransactions(prev => [newTransaction, ...prev]);
 
     toast({
-      title: 'Asset Added',
-      description: `New asset "${name}" has been created.`,
+      title: 'Account Added',
+      description: `New account "${name}" has been created.`,
     });
-    return newAsset;
+    return newAccount;
   }, [toast]);
   
-  const editAsset = useCallback((id: string, newName: string) => {
-    const assetExists = assets.some(a => a.id === id);
-    if (!assetExists) {
+  const editAccount = useCallback((id: string, newName: string) => {
+    const accountExists = accounts.some(a => a.id === id);
+    if (!accountExists) {
         toast({
             title: 'Edit Failed',
-            description: 'Asset not found.',
+            description: 'Account not found.',
             variant: 'destructive'
         });
         return;
     }
 
-    setAssets(prevAssets => prevAssets.map(asset => {
-        if (asset.id === id) {
-            return { ...asset, name: newName };
+    setAccounts(prevAccounts => prevAccounts.map(account => {
+        if (account.id === id) {
+            return { ...account, name: newName };
         }
-        return asset;
+        return account;
     }));
 
     setTransactions(prevTxs => prevTxs.map(t => {
-        if (t.assetId === id) {
-            return { ...t, assetName: newName };
+        if (t.accountId === id) {
+            return { ...t, accountName: newName };
         }
         return t;
     }));
     
     toast({
-        title: 'Asset Updated',
-        description: 'The asset has been successfully renamed.',
+        title: 'Account Updated',
+        description: 'The account has been successfully renamed.',
     });
-}, [assets, toast]);
+}, [accounts, toast]);
 
-  const deleteAsset = useCallback((id: string) => {
-    const assetToDelete = assets.find(asset => asset.id === id);
-    if (!assetToDelete) return;
+  const deleteAccount = useCallback((id: string) => {
+    const accountToDelete = accounts.find(account => account.id === id);
+    if (!accountToDelete) return;
     
-    setAssets((prev) => prev.filter((asset) => asset.id !== id));
+    setAccounts((prev) => prev.filter((account) => account.id !== id));
     setTransactions(prev => 
       prev.map(t => 
-        t.assetId === id ? { ...t, isOrphaned: true, assetName: t.assetName } : t
+        t.accountId === id ? { ...t, isOrphaned: true, accountName: t.accountName } : t
       )
     );
     toast({
-      title: 'Asset Deleted',
-      description: 'The asset and its balance have been removed. Transaction history is preserved.',
+      title: 'Account Deleted',
+      description: 'The account and its balance have been removed. Transaction history is preserved.',
     });
-  }, [assets, toast]);
+  }, [accounts, toast]);
 
   const addTransaction = useCallback(
     (
       type: 'income' | 'expenditure',
       amount: number,
-      assetId: string,
+      accountId: string,
       remarks: string
     ) => {
-      const asset = assets.find(a => a.id === assetId);
-      if (!asset) return;
+      const account = accounts.find(a => a.id === accountId);
+      if (!account) return;
 
       const newTransaction: Transaction = {
         id: crypto.randomUUID(),
         type,
         amount,
-        assetId,
-        assetName: asset.name,
+        accountId,
+        accountName: account.name,
         date: new Date().toISOString(),
         remarks,
       };
 
       setTransactions((prev) => [newTransaction, ...prev]);
-      setAssets((prev) =>
-        prev.map((asset) => {
-          if (asset.id === assetId) {
+      setAccounts((prev) =>
+        prev.map((account) => {
+          if (account.id === accountId) {
             const newBalance =
               type === 'income'
-                ? asset.balance + amount
-                : asset.balance - amount;
-            return { ...asset, balance: newBalance };
+                ? account.balance + amount
+                : account.balance - amount;
+            return { ...account, balance: newBalance };
           }
-          return asset;
+          return account;
         })
       );
       toast({
@@ -175,15 +175,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         description: `Your ${type} of ${amount.toFixed(2)} has been recorded.`,
       });
     },
-    [assets, toast]
+    [accounts, toast]
   );
   
   const editTransaction = useCallback((id: string, newAmount: number, newRemarks: string) => {
     const tx = transactions.find(t => t.id === id);
-    if (!tx || tx.type === 'asset_creation') {
+    if (!tx || tx.type === 'account_creation') {
         toast({
             title: 'Edit Failed',
-            description: 'Asset creation events cannot be edited.',
+            description: 'Account creation events cannot be edited.',
             variant: 'destructive'
         });
         return;
@@ -191,13 +191,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const amountDifference = newAmount - tx.amount;
 
-    // Update asset balance
-    setAssets(prevAssets => prevAssets.map(asset => {
-        if (asset.id === tx.assetId) {
+    // Update account balance
+    setAccounts(prevAccounts => prevAccounts.map(account => {
+        if (account.id === tx.accountId) {
             const balanceAdjustment = tx.type === 'income' ? amountDifference : -amountDifference;
-            return { ...asset, balance: asset.balance + balanceAdjustment };
+            return { ...account, balance: account.balance + balanceAdjustment };
         }
-        return asset;
+        return account;
     }));
 
     // Update the transaction
@@ -217,24 +217,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const deleteTransaction = useCallback((id: string) => {
     const tx = transactions.find(t => t.id === id);
-    if (!tx || tx.type === 'asset_creation') {
+    if (!tx || tx.type === 'account_creation') {
         toast({
             title: 'Deletion Failed',
-            description: 'Asset creation events cannot be deleted.',
+            description: 'Account creation events cannot be deleted.',
             variant: 'destructive'
         });
         return;
     };
     
     // Reverse the balance change
-    setAssets(prevAssets => prevAssets.map(asset => {
-        if (asset.id === tx.assetId) {
+    setAccounts(prevAccounts => prevAccounts.map(account => {
+        if (account.id === tx.accountId) {
             const newBalance = tx.type === 'income'
-                ? asset.balance - tx.amount
-                : asset.balance + tx.amount;
-            return { ...asset, balance: newBalance };
+                ? account.balance - tx.amount
+                : account.balance + tx.amount;
+            return { ...account, balance: newBalance };
         }
-        return asset;
+        return account;
     }));
 
     // Remove the transaction
@@ -242,17 +242,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
     toast({
         title: 'Transaction Deleted',
-        description: 'The transaction has been removed and the asset balance is updated.',
+        description: 'The transaction has been removed and the account balance is updated.',
     });
 }, [transactions, toast]);
 
-  const getAssetById = useCallback((id: string) => {
-    return assets.find(a => a.id === id);
-  }, [assets]);
+  const getAccountById = useCallback((id: string) => {
+    return accounts.find(a => a.id === id);
+  }, [accounts]);
 
   const totalBalance = useMemo(
-    () => assets.reduce((sum, asset) => sum + asset.balance, 0),
-    [assets]
+    () => accounts.reduce((sum, account) => sum + account.balance, 0),
+    [accounts]
   );
   
   const handleSetCurrency = useCallback((newCurrency: string) => {
@@ -266,7 +266,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const completeCurrencySetup = (selectedCurrency: string) => {
     try {
         setCurrency(selectedCurrency);
-        setAssets([]);
+        setAccounts([]);
         setTransactions([]);
         setNeedsCurrencySetup(false);
       
@@ -285,15 +285,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
   
   const value = {
-    assets,
+    accounts,
     transactions,
-    addAsset,
-    editAsset,
-    deleteAsset,
+    addAccount,
+    editAccount,
+    deleteAccount,
     addTransaction,
     editTransaction,
     deleteTransaction,
-    getAssetById,
+    getAccountById,
     totalBalance,
     isInitialized,
     currency,

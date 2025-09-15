@@ -27,7 +27,7 @@ export default function ExportButton({ minimal = false, transactions: transactio
       return;
     }
 
-    const header = ['Date', 'Time', 'Type', 'Amount', 'Asset', 'Remarks'];
+    const header = ['Date', 'Time', 'Type', 'Amount', 'Account', 'Remarks'];
     const rows = dataToExport.map(t => {
       const date = new Date(t.date);
       const rowDate = format(date, 'yyyy-MM-dd');
@@ -42,7 +42,7 @@ export default function ExportButton({ minimal = false, transactions: transactio
         rowTime,
         t.type,
         amount,
-        `"${t.assetName.replace(/"/g, '""')}"`,
+        `"${t.accountName.replace(/"/g, '""')}"`,
         `"${(t.remarks || '').replace(/"/g, '""')}"`
       ].join(',');
     });

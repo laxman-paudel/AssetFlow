@@ -16,7 +16,7 @@ import { RotateCcw } from 'lucide-react';
 
 export default function ResetButton() {
   const handleReset = () => {
-    localStorage.removeItem('assetflow-assets');
+    localStorage.removeItem('assetflow-accounts');
     localStorage.removeItem('assetflow-transactions');
     localStorage.removeItem('assetflow-currency');
     window.location.href = '/';
@@ -35,7 +35,7 @@ export default function ResetButton() {
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete all your
-            assets, transactions, and settings.
+            accounts, transactions, and settings.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

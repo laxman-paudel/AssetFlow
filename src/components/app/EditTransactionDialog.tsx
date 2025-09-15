@@ -101,7 +101,7 @@ export default function EditTransactionDialog({
               )}
             />
              <div className='text-xs text-muted-foreground p-2 bg-muted rounded-md'>
-                Asset, transaction type and date cannot be changed. To modify them, please delete and create a new transaction.
+                Account, transaction type and date cannot be changed. To modify them, please delete and create a new transaction.
              </div>
             <DialogFooter>
                 <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

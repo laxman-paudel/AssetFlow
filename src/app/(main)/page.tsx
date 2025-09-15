@@ -9,14 +9,14 @@ import { ArrowDown, ArrowUp, ChevronRight, Wallet } from 'lucide-react';
 import TransactionDialog from '@/components/app/TransactionDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionType } from '@/lib/types';
-import AssetDialog from '@/components/app/AssetDialog';
+import AccountDialog from '@/components/app/AccountDialog';
 
 export default function DashboardPage() {
   const store = useAssetFlow();
   const [totalBalance, setTotalBalance] = useState<number | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
-  const [assetDialogOpen, setAssetDialogOpen] = useState(false);
+  const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<TransactionType>('income');
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
@@ -74,7 +74,7 @@ export default function DashboardPage() {
                   }).format(totalBalance)}
                 </div>
                 <div className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
-                  View Assets <ChevronRight className="h-3 w-3" />
+                  View Accounts <ChevronRight className="h-3 w-3" />
                 </div>
               </>
             ) : (
@@ -111,7 +111,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-4">
            <Button
-            onClick={() => setAssetDialogOpen(true)}
+            onClick={() => setAccountDialogOpen(true)}
             variant="secondary"
             className="text-base h-12 font-semibold"
           >
@@ -125,7 +125,7 @@ export default function DashboardPage() {
         onOpenChange={setTransactionDialogOpen}
         type={dialogType}
       />
-      <AssetDialog open={assetDialogOpen} onOpenChange={setAssetDialogOpen} />
+      <AccountDialog open={accountDialogOpen} onOpenChange={setAccountDialogOpen} />
     </div>
   );
 }

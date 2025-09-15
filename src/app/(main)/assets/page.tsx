@@ -22,21 +22,21 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { PlusCircle, Trash2, Landmark, Wallet, CreditCard, HelpCircle, Pencil } from 'lucide-react';
-import AssetDialog from '@/components/app/AssetDialog';
+import AccountDialog from '@/components/app/AccountDialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import EditAssetDialog from '@/components/app/EditAssetDialog';
-import { Asset } from '@/lib/types';
+import EditAccountDialog from '@/components/app/EditAccountDialog';
+import { Account } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
-export default function AssetsPage() {
+export default function AccountsPage() {
   const store = useAssetFlow();
-  const [assets, setAssets] = useState<Asset[] | null>(null);
+  const [accounts, setAccounts] = useState<Account[] | null>(null);
   const [totalBalance, setTotalBalance] = useState<number | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const router = useRouter();
   
   useEffect(() => {
@@ -45,11 +45,11 @@ export default function AssetsPage() {
 
   useEffect(() => {
     if (store.isInitialized) {
-      setAssets(store.assets);
+      setAccounts(store.accounts);
       setTotalBalance(store.totalBalance);
       setCurrency(store.currency);
     }
-  }, [store.isInitialized, store.assets, store.totalBalance, store.currency]);
+  }, [store.isInitialized, store.accounts, store.totalBalance, store.currency]);
 
   const formatCurrency = (amount: number) => {
     if (!currency) return '...';
@@ -59,8 +59,8 @@ export default function AssetsPage() {
     }).format(amount);
   };
   
-  const getAssetIcon = (assetName: string) => {
-    const lowerCaseName = assetName.toLowerCase();
+  const getAccountIcon = (accountName: string) => {
+    const lowerCaseName = accountName.toLowerCase();
     if (lowerCaseName.includes('bank')) {
       return <Landmark className="h-6 w-6 text-muted-foreground" />;
     }
@@ -92,25 +92,25 @@ export default function AssetsPage() {
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">My Assets</h1>
+        <h1 className="text-2xl font-bold tracking-tight">My Accounts</h1>
         <Button onClick={() => setDialogOpen(true)} className='h-11'>
           <PlusCircle className="mr-2 h-4 w-4" />
-          New Asset
+          New Account
         </Button>
       </div>
       
-      {isClient && assets !== null && assets.length === 0 ? (
+      {isClient && accounts !== null && accounts.length === 0 ? (
         <div className="flex flex-col items-center justify-center text-center py-20 border-2 border-dashed rounded-lg">
           <div className="p-4 bg-primary/10 rounded-full mb-4">
             <Wallet className="h-12 w-12 text-primary" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">Create Your First Asset</h3>
+          <h3 className="text-xl font-semibold mb-2">Create Your First Account</h3>
           <p className="text-muted-foreground mb-6 max-w-sm">
             Start by adding a bank account, credit card, or cash to track your balance.
           </p>
           <Button onClick={() => setDialogOpen(true)} size="lg">
             <PlusCircle className="mr-2 h-5 w-5" />
-            Add First Asset
+            Add First Account
           </Button>
         </div>
       ) : (
@@ -134,24 +134,24 @@ export default function AssetsPage() {
               </Card>
           </div>
           <div className="space-y-4">
-            {!isClient || assets === null ? (
+            {!isClient || accounts === null ? (
               <>
                 <Skeleton className="h-28 w-full" />
                 <Skeleton className="h-28 w-full" />
               </>
             ) : (
-              assets.map((asset) => (
-                <Card key={asset.id} className="transition-all hover:shadow-lg hover:-translate-y-1 duration-300 group border-l-4 border-l-primary/20 hover:border-l-primary/60">
+              accounts.map((account) => (
+                <Card key={account.id} className="transition-all hover:shadow-lg hover:-translate-y-1 duration-300 group border-l-4 border-l-primary/20 hover:border-l-primary/60">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <div className="flex items-center gap-4">
-                       {getAssetIcon(asset.name)}
+                       {getAccountIcon(account.name)}
                        <div>
-                          <CardTitle className="tracking-tight">{asset.name}</CardTitle>
+                          <CardTitle className="tracking-tight">{account.name}</CardTitle>
                           <CardDescription>Available Balance</CardDescription>
                        </div>
                     </div>
                     <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground" onClick={() => setEditingAsset(asset)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground" onClick={() => setEditingAccount(account)}>
                             <Pencil className="h-4 w-4" />
                         </Button>
                         <AlertDialog>
@@ -164,12 +164,12 @@ export default function AssetsPage() {
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                       This action cannot be undone. This will permanently delete your asset and its balance. The transaction history will be preserved.
+                                       This action cannot be undone. This will permanently delete your account and its balance. The transaction history will be preserved.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => store.deleteAsset(asset.id)} className="bg-destructive hover:bg-destructive/90">
+                                    <AlertDialogAction onClick={() => store.deleteAccount(account.id)} className="bg-destructive hover:bg-destructive/90">
                                         Delete
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -180,7 +180,7 @@ export default function AssetsPage() {
                   <CardContent className="pl-16">
                     {isClient && currency ? (
                       <p className="text-3xl font-bold tracking-tight">
-                        {formatCurrency(asset.balance)}
+                        {formatCurrency(account.balance)}
                       </p>
                     ) : (
                       <Skeleton className="h-8 w-32" />
@@ -189,16 +189,16 @@ export default function AssetsPage() {
                 </Card>
               ))
             )}
-            {isClient && assets !== null && assets.length > 0 && (
+            {isClient && accounts !== null && accounts.length > 0 && (
                 <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
                     <div className="p-4 bg-secondary rounded-full mb-4">
                         <PlusCircle className="h-10 w-10 text-muted-foreground" />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">Add Another Asset</h3>
+                    <h3 className="text-xl font-semibold mb-2">Add Another Account</h3>
                     <p className="text-muted-foreground mb-4">You can add more accounts, like credit cards or other savings.</p>
                     <Button onClick={() => setDialogOpen(true)}>
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        Create New Asset
+                        Create New Account
                     </Button>
                 </div>
             )}
@@ -206,13 +206,13 @@ export default function AssetsPage() {
         </>
       )}
 
-      <AssetDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-      {editingAsset && (
-        <EditAssetDialog
-          key={editingAsset.id}
-          asset={editingAsset}
-          open={!!editingAsset}
-          onOpenChange={(open) => !open && setEditingAsset(null)}
+      <AccountDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      {editingAccount && (
+        <EditAccountDialog
+          key={editingAccount.id}
+          account={editingAccount}
+          open={!!editingAccount}
+          onOpenChange={(open) => !open && setEditingAccount(null)}
         />
       )}
     </div>

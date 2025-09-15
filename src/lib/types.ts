@@ -1,17 +1,17 @@
-export type Asset = {
+export type Account = {
   id: string;
   name: string;
   balance: number;
 };
 
-export type TransactionType = 'income' | 'expenditure' | 'asset_creation';
+export type TransactionType = 'income' | 'expenditure' | 'account_creation';
 
 export type Transaction = {
   id: string;
   type: TransactionType;
   amount: number;
-  assetId: string;
-  assetName: string;
+  accountId: string;
+  accountName: string;
   date: string; // ISO string
   remarks: string;
   isOrphaned?: boolean;

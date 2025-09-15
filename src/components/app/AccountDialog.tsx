@@ -28,13 +28,13 @@ const formSchema = z.object({
   balance: z.coerce.number(),
 });
 
-interface AssetDialogProps {
+interface AccountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function AssetDialog({ open, onOpenChange }: AssetDialogProps) {
-  const { addAsset } = useAssetFlow();
+export default function AccountDialog({ open, onOpenChange }: AccountDialogProps) {
+  const { addAccount } = useAssetFlow();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -44,7 +44,7 @@ export default function AssetDialog({ open, onOpenChange }: AssetDialogProps) {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    addAsset(values.name, values.balance);
+    addAccount(values.name, values.balance);
     onOpenChange(false);
     form.reset();
   };
@@ -53,9 +53,9 @@ export default function AssetDialog({ open, onOpenChange }: AssetDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create New Asset</DialogTitle>
+          <DialogTitle>Create New Account</DialogTitle>
           <DialogDescription>
-            Add a new asset like a bank account or cash.
+            Add a new account like a bank account or cash.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -65,7 +65,7 @@ export default function AssetDialog({ open, onOpenChange }: AssetDialogProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Asset Name</FormLabel>
+                  <FormLabel>Account Name</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g. Primary bank balance, Wallet balance" {...field} />
                   </FormControl>
@@ -87,7 +87,7 @@ export default function AssetDialog({ open, onOpenChange }: AssetDialogProps) {
               )}
             />
             <DialogFooter>
-              <Button type="submit">Create Asset</Button>
+              <Button type="submit">Create Account</Button>
             </DialogFooter>
           </form>
         </Form>

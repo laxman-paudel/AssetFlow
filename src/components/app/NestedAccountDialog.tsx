@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAssetFlow } from '@/lib/store';
-import { Asset } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -27,45 +25,46 @@ import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
+  balance: z.coerce.number(),
 });
 
-interface EditAssetDialogProps {
-  asset: Asset;
+interface NestedAccountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAccountCreated: (accountId: string) => void;
 }
 
-export default function EditAssetDialog({
-  asset,
-  open,
-  onOpenChange,
-}: EditAssetDialogProps) {
-  const { editAsset } = useAssetFlow();
+export default function NestedAccountDialog({ open, onOpenChange, onAccountCreated }: NestedAccountDialogProps) {
+  const { addAccount } = useAssetFlow();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: asset.name,
+      name: '',
+      balance: 0,
     },
   });
-  
-  useEffect(() => {
-    form.reset({
-      name: asset.name,
-    })
-  }, [asset, form])
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    editAsset(asset.id, values.name);
+    const newAccount = addAccount(values.name, values.balance);
+    onAccountCreated(newAccount.id);
     onOpenChange(false);
+    form.reset();
   };
+  
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+        form.reset();
+    }
+    onOpenChange(open);
+  }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Asset</DialogTitle>
+          <DialogTitle>Create New Account</DialogTitle>
           <DialogDescription>
-            Update the name of your asset.
+            Add a new account to assign this transaction to.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -75,7 +74,7 @@ export default function EditAssetDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Asset Name</FormLabel>
+                  <FormLabel>Account Name</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., Savings Account" {...field} />
                   </FormControl>
@@ -83,12 +82,21 @@ export default function EditAssetDialog({
                 </FormItem>
               )}
             />
-             <div className='text-xs text-muted-foreground p-2 bg-muted rounded-md'>
-                The asset balance cannot be changed directly. It is calculated automatically from your transactions.
-             </div>
+            <FormField
+              control={form.control}
+              name="balance"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Initial Balance</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
-                <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                <Button type="submit">Save Changes</Button>
+              <Button type="submit">Create and Select</Button>
             </DialogFooter>
           </form>
         </Form>
