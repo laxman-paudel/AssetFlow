@@ -274,7 +274,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         // Create default accounts without showing toast
         addAccount("Cash", 0, false);
-        addAccount("Primary Bank Balance", 0, false);
+        addAccount("Primary Bank", 0, false);
       
         toast({
           title: 'Welcome!',
