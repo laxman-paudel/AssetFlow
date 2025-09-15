@@ -63,7 +63,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [accounts, transactions, currency, isInitialized]);
 
 
-  const addAccount = useCallback((name: string, initialBalance: number): Account => {
+  const addAccount = useCallback((name: string, initialBalance: number, showToast = true): Account => {
     const newAccount: Account = {
       id: crypto.randomUUID(),
       name,
@@ -83,10 +83,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setAccounts((prev) => [...prev, newAccount]);
     setTransactions(prev => [newTransaction, ...prev]);
 
-    toast({
-      title: 'Account Added',
-      description: `New account "${name}" has been created.`,
-    });
+    if (showToast) {
+        toast({
+          title: 'Account Added',
+          description: `New account "${name}" has been created.`,
+        });
+    }
     return newAccount;
   }, [toast]);
   
@@ -269,10 +271,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setAccounts([]);
         setTransactions([]);
         setNeedsCurrencySetup(false);
+
+        // Create default accounts without showing toast
+        addAccount("Cash", 0, false);
+        addAccount("Primary Bank Balance", 0, false);
       
         toast({
           title: 'Welcome!',
-          description: `Your currency has been set to ${selectedCurrency}.`
+          description: `Your currency has been set to ${selectedCurrency}. Let's get started!`
         });
     } catch(error) {
        console.error('Failed to complete currency setup', error);
