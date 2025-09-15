@@ -188,7 +188,7 @@ export default function StatementPage() {
               <div className="space-y-4">
                 <h4 className="font-medium leading-none">Filter by Asset</h4>
                 <div className="space-y-2">
-                  {assets?.map((asset) => (
+                  {isClient && assets && assets.map((asset) => (
                     <div key={asset.id} className="flex items-center space-x-2">
                       <Checkbox
                         id={asset.id}
@@ -198,11 +198,12 @@ export default function StatementPage() {
                       <Label htmlFor={asset.id}>{asset.name}</Label>
                     </div>
                   ))}
-                  {assets?.length === 0 && (
+                  {isClient && assets?.length === 0 && (
                     <p className="text-sm text-muted-foreground">
                       No assets to filter.
                     </p>
                   )}
+                  {!isClient && <Skeleton className="h-10 w-full" />}
                 </div>
                 <Separator />
                  <div className="flex items-center space-x-2">
