@@ -56,6 +56,8 @@ export default function StatementPage() {
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [showAssetCreations, setShowAssetCreations] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -101,6 +103,10 @@ export default function StatementPage() {
         : [...prev, assetId]
     );
   };
+  
+  const handleTransactionClick = (transactionId: string) => {
+    setSelectedTransactionId(prevId => prevId === transactionId ? null : transactionId);
+  }
 
   const formatCurrency = (amount: number) => {
     if (!currency) return '...';
@@ -261,90 +267,105 @@ export default function StatementPage() {
             }
 
             return (
-              <div
+              <Card
                 key={t.id}
                 className={cn(
-                  'group flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 p-4 rounded-lg bg-card border border-l-4',
+                  'cursor-pointer transition-all duration-200',
                   isIncome ? 'border-l-green-500' : 'border-l-red-500',
-                  t.isOrphaned && 'opacity-60'
+                  t.isOrphaned && 'opacity-60',
+                  selectedTransactionId === t.id && 'shadow-lg -translate-y-0.5'
                 )}
+                onClick={() => handleTransactionClick(t.id)}
               >
-                <div className="flex items-center gap-4">
+                  <div className='p-4'>
                     <div
-                      className={`p-2 rounded-full ${
-                        isIncome
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}
+                        className={cn(
+                        'flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4',
+                        )}
                     >
-                      {isIncome ? (
-                        <ArrowDown className="h-5 w-5" />
-                      ) : (
-                        <ArrowUp className="h-5 w-5" />
-                      )}
-                    </div>
-                    <div className="flex-1 md:hidden">
-                      <p className="font-semibold">{t.remarks || 'Transaction'}</p>
-                       <div className="flex items-center gap-2">
-                        {getAssetIcon(t.assetName)}
-                        <p className="text-sm text-muted-foreground">
-                          {t.assetName}
-                        </p>
-                      </div>
-                    </div>
-                </div>
+                        <div className="flex items-center gap-4">
+                            <div
+                            className={`p-2 rounded-full ${
+                                isIncome
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}
+                            >
+                            {isIncome ? (
+                                <ArrowDown className="h-5 w-5" />
+                            ) : (
+                                <ArrowUp className="h-5 w-5" />
+                            )}
+                            </div>
+                            <div className="flex-1 md:hidden">
+                            <p className="font-semibold">{t.remarks || 'Transaction'}</p>
+                            <div className="flex items-center gap-2">
+                                {getAssetIcon(t.assetName)}
+                                <p className="text-sm text-muted-foreground">
+                                {t.assetName}
+                                </p>
+                            </div>
+                            </div>
+                        </div>
 
-                <div className="hidden md:flex flex-1 flex-col">
-                  <p className="font-semibold">{t.remarks || 'Transaction'}</p>
-                  <div className="flex items-center gap-2">
-                    {getAssetIcon(t.assetName)}
-                    <p className="text-sm text-muted-foreground">
-                      {t.assetName}
-                    </p>
+                        <div className="hidden md:flex flex-1 flex-col">
+                        <p className="font-semibold">{t.remarks || 'Transaction'}</p>
+                        <div className="flex items-center gap-2">
+                            {getAssetIcon(t.assetName)}
+                            <p className="text-sm text-muted-foreground">
+                            {t.assetName}
+                            </p>
+                        </div>
+                        </div>
+
+                        <div className="flex items-center justify-between w-full md:w-auto">
+                            <div className="text-right md:text-right ml-14 md:ml-0">
+                            <p
+                                className={`font-bold text-lg ${
+                                isIncome ? 'text-green-600' : 'text-red-600'
+                                }`}
+                            >
+                                {isIncome ? '+' : '-'} {formatAmount(t.amount)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                {formatDate(t.date)}
+                            </p>
+                            </div>
+                        </div>
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center justify-between w-full md:w-auto">
-                    <div className="text-right md:text-right ml-14 md:ml-0">
-                      <p
-                        className={`font-bold text-lg ${
-                          isIncome ? 'text-green-600' : 'text-red-600'
-                        }`}
-                      >
-                        {isIncome ? '+' : '-'} {currency ? formatAmount(t.amount) : '...'}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(t.date)}
-                      </p>
-                    </div>
-                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground" onClick={() => setEditingTransaction(t)}>
-                            <Pencil className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/60 hover:text-destructive hover:bg-destructive/10">
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                       This action cannot be undone. This will permanently delete this transaction and update the asset balance.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => store.deleteTransaction(t.id)} className="bg-destructive hover:bg-destructive/90">
-                                        Delete
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
-                </div>
-              </div>
+                {selectedTransactionId === t.id && (
+                    <>
+                        <Separator />
+                        <div className="flex justify-end items-center p-2">
+                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); setEditingTransaction(t); }}>
+                                <Pencil className="h-4 w-4 mr-2" /> Edit
+                            </Button>
+                            <AlertDialog onOpenChange={(open) => !open && handleTransactionClick(t.id)}>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="text-destructive/80 hover:text-destructive hover:bg-destructive/10" onClick={(e) => e.stopPropagation()}>
+                                        <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete this transaction and update the asset balance.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => store.deleteTransaction(t.id)} className="bg-destructive hover:bg-destructive/90">
+                                            Delete
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    </>
+                )}
+              </Card>
             );
           })
         ) : (
@@ -370,6 +391,7 @@ export default function StatementPage() {
             onOpenChange={(open) => {
                 if (!open) {
                     setEditingTransaction(null);
+                    setSelectedTransactionId(null);
                 }
             }}
           />
