@@ -45,7 +45,7 @@ export default function StatementPage() {
   const router = useRouter();
 
   const filteredTransactions = useMemo(() => {
-    if (!isInitialized || !transactions) return null;
+    if (!transactions) return [];
     let items = [...transactions];
 
     if (!showAccountCreations) {
@@ -54,6 +54,9 @@ export default function StatementPage() {
 
     if (selectedAccounts.length > 0) {
       items = items.filter((t) => {
+        if (t.type === 'account_creation') {
+            return showAccountCreations;
+        }
         if (t.accountId) {
           return selectedAccounts.includes(t.accountId);
         }
@@ -64,11 +67,11 @@ export default function StatementPage() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - a.id;
     });
 
     return items;
-  }, [transactions, sortOrder, selectedAccounts, showAccountCreations, isInitialized]);
+  }, [transactions, sortOrder, selectedAccounts, showAccountCreations]);
 
   const handleAccountFilterChange = (accountId: string) => {
     setSelectedAccounts((prev) =>
