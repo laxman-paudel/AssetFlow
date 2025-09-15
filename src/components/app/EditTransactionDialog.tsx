@@ -58,7 +58,7 @@ export default function EditTransactionDialog({
   onOpenChange,
   transaction,
 }: EditTransactionDialogProps) {
-  const { accounts, customCategories, editTransaction } = useAssetFlow();
+  const { accounts, customCategories, categoriesEnabled, editTransaction } = useAssetFlow();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
@@ -204,7 +204,7 @@ export default function EditTransactionDialog({
                 />
               )}
 
-              {!isTransfer && (
+              {!isTransfer && categoriesEnabled && (
                 <FormField
                   control={form.control}
                   name="category"

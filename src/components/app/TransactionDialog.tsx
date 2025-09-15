@@ -56,7 +56,7 @@ export default function TransactionDialog({
   onOpenChange,
   type,
 }: TransactionDialogProps) {
-  const { accounts, customCategories, addTransaction } = useAssetFlow();
+  const { accounts, customCategories, categoriesEnabled, addTransaction } = useAssetFlow();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
@@ -176,7 +176,7 @@ export default function TransactionDialog({
                   </FormItem>
                 )}
               />
-               <FormField
+               {categoriesEnabled && <FormField
                 control={form.control}
                 name="category"
                 render={({ field }) => (
@@ -218,7 +218,7 @@ export default function TransactionDialog({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              />}
               <FormField
                 control={form.control}
                 name="remarks"

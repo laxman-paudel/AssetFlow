@@ -19,11 +19,13 @@ const CURRENCY_KEY = 'assetflow-currency';
 const ACCOUNTS_KEY = 'assetflow-accounts';
 const TRANSACTIONS_KEY = 'assetflow-transactions';
 const CUSTOM_CATEGORIES_KEY = 'assetflow-custom-categories';
+const CATEGORIES_ENABLED_KEY = 'assetflow-categories-enabled';
 
 interface AssetFlowState {
   accounts: Account[] | null;
   transactions: Transaction[] | null;
   customCategories: Category[] | null;
+  categoriesEnabled: boolean;
   addAccount: (name: string, initialBalance: number) => Promise<Account>;
   editAccount: (accountId: string, updates: { name: string; balance: number }) => Promise<void>;
   deleteAccount: (accountId: string) => Promise<void>;
@@ -43,6 +45,9 @@ interface AssetFlowState {
   editTransaction: (transactionId: string, updates: EditableTransaction) => Promise<void>;
   deleteTransaction: (transactionId: string) => Promise<void>;
   addCustomCategory: (name: string, type: CategoryType) => Promise<Category>;
+  editCustomCategory: (categoryId: string, updates: { name: string }) => Promise<void>;
+  deleteCustomCategory: (categoryId: string) => Promise<void>;
+  toggleCategories: (enabled: boolean) => void;
   resetApplication: () => Promise<void>;
   changeCurrency: (newCurrency: string) => void;
   totalBalance: number | null;
@@ -60,6 +65,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
   const [customCategories, setCustomCategories] = useState<Category[] | null>(null);
+  const [categoriesEnabled, setCategoriesEnabled] = useState(true);
 
   const { toast } = useToast();
   const router = useRouter();
@@ -80,6 +86,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const storedCustomCategories = localStorage.getItem(CUSTOM_CATEGORIES_KEY);
         setCustomCategories(storedCustomCategories ? JSON.parse(storedCustomCategories) : []);
         
+        const storedCategoriesEnabled = localStorage.getItem(CATEGORIES_ENABLED_KEY);
+        setCategoriesEnabled(storedCategoriesEnabled ? JSON.parse(storedCategoriesEnabled) : true);
+
       } else {
         setNeedsCurrencySetup(true);
       }
@@ -100,11 +109,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (accounts) localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
       if (transactions) localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
       if (customCategories) localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(customCategories));
+      localStorage.setItem(CATEGORIES_ENABLED_KEY, JSON.stringify(categoriesEnabled));
     } catch (error) {
       console.error("Failed to save data to local storage:", error);
       toast({ title: "Save Error", description: "Could not save your changes.", variant: "destructive" });
     }
-  }, [currency, accounts, transactions, customCategories, isInitialized, toast]);
+  }, [currency, accounts, transactions, customCategories, categoriesEnabled, isInitialized, toast]);
 
   const addAccount = useCallback(async (name: string, initialBalance: number): Promise<Account> => {
     const newAccount: Account = { 
@@ -382,13 +392,41 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         return newCategory;
     }, [toast]);
-  
+    
+    const editCustomCategory = useCallback(async (categoryId: string, updates: { name: string }) => {
+        setCustomCategories(prev => prev?.map(c => c.id === categoryId ? { ...c, name: updates.name } : c) || []);
+        toast({
+            title: 'Category Updated',
+            description: `The category has been renamed to "${updates.name}".`,
+        });
+    }, [toast]);
+
+    const deleteCustomCategory = useCallback(async (categoryId: string) => {
+        setCustomCategories(prev => prev?.filter(c => c.id !== categoryId) || []);
+        // Remove this category from any transactions that use it
+        setTransactions(prev => prev?.map(t => t.category === categoryId ? { ...t, category: undefined } : t) || []);
+        toast({
+            title: 'Category Deleted',
+            description: 'The custom category has been removed.',
+            variant: 'destructive',
+        });
+    }, [toast]);
+
+    const toggleCategories = useCallback((enabled: boolean) => {
+        setCategoriesEnabled(enabled);
+        toast({
+            title: `Categories ${enabled ? 'Enabled' : 'Disabled'}`,
+            description: `Transaction categorization has been turned ${enabled ? 'on' : 'off'}.`,
+        });
+    }, [toast]);
+
   const resetApplication = useCallback(async () => {
     try {
       localStorage.removeItem(CURRENCY_KEY);
       localStorage.removeItem(ACCOUNTS_KEY);
       localStorage.removeItem(TRANSACTIONS_KEY);
       localStorage.removeItem(CUSTOM_CATEGORIES_KEY);
+      localStorage.removeItem(CATEGORIES_ENABLED_KEY);
       
       toast({ title: 'Application Reset', description: 'Your data has been cleared.' });
 
@@ -427,6 +465,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setAccounts([cashAccount, bankAccount]);
         setTransactions([]);
         setCustomCategories([]);
+        setCategoriesEnabled(true);
 
         router.push('/');
       
@@ -448,6 +487,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     accounts,
     transactions,
     customCategories,
+    categoriesEnabled,
     addAccount,
     editAccount,
     deleteAccount,
@@ -456,6 +496,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     editTransaction,
     deleteTransaction,
     addCustomCategory,
+    editCustomCategory,
+    deleteCustomCategory,
+    toggleCategories,
     resetApplication,
     changeCurrency,
     totalBalance,
@@ -493,6 +536,7 @@ function AppProviderShell({ children }: { children: React.ReactNode }) {
         accounts: [],
         transactions: [],
         customCategories: [],
+        categoriesEnabled: true,
         addAccount: async () => new Promise(() => {}),
         editAccount: async () => {},
         deleteAccount: async () => {},
@@ -501,6 +545,9 @@ function AppProviderShell({ children }: { children: React.ReactNode }) {
         editTransaction: async () => {},
         deleteTransaction: async () => {},
         addCustomCategory: async () => new Promise(() => {}),
+        editCustomCategory: async () => {},
+        deleteCustomCategory: async () => {},
+        toggleCategories: () => {},
         resetApplication: async () => {},
         changeCurrency: () => {},
         totalBalance: 0,

@@ -14,8 +14,14 @@ import CurrencySelector from '@/components/app/CurrencySelector';
 import ExportButton from '@/components/app/ExportButton';
 import ResetButton from '@/components/app/ResetButton';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
+import { useAssetFlow } from '@/components/app/AppProvider';
+import CategoryList from '@/components/app/CategoryList';
+
 
 function SettingsContent() {
+  const { categoriesEnabled, toggleCategories } = useAssetFlow();
+  
   return (
     <div className="space-y-8">
       <Card>
@@ -46,6 +52,31 @@ function SettingsContent() {
             <CurrencySelector />
           </div>
         </CardContent>
+      </Card>
+
+      <Card>
+          <CardHeader>
+              <CardTitle>Category Management</CardTitle>
+              <CardDescription>
+                  Manage your custom income and expense categories.
+              </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                      <h4 className="font-semibold">Enable Categories</h4>
+                      <p className="text-sm text-muted-foreground">
+                          Turn transaction categorization on or off globally.
+                      </p>
+                  </div>
+                  <Switch
+                      checked={categoriesEnabled}
+                      onCheckedChange={toggleCategories}
+                      aria-label="Toggle transaction categories"
+                  />
+              </div>
+              {categoriesEnabled && <CategoryList />}
+          </CardContent>
       </Card>
 
       <Card>

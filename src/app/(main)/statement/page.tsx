@@ -64,6 +64,7 @@ function StatementPageContent() {
     transactions,
     accounts,
     customCategories,
+    categoriesEnabled,
     totalBalance,
     currency,
     isInitialized,
@@ -130,7 +131,7 @@ function StatementPageContent() {
       } else {
         items = items.filter(t => {
             const remarksMatch = t.remarks?.toLowerCase().includes(term);
-            const category = t.category ? getCategoryById(t.category, customCategories || []) : null;
+            const category = (categoriesEnabled && t.category) ? getCategoryById(t.category, customCategories || []) : null;
             const categoryMatch = category?.name.toLowerCase().includes(term);
             return remarksMatch || categoryMatch;
         });
@@ -153,7 +154,7 @@ function StatementPageContent() {
     });
 
     return items;
-  }, [transactions, sortOrder, selectedAccounts, showAccountCreations, searchTerm, dateRange, customCategories]);
+  }, [transactions, sortOrder, selectedAccounts, showAccountCreations, searchTerm, dateRange, customCategories, categoriesEnabled]);
 
   const handleAccountFilterChange = (accountId: string) => {
     setSelectedAccounts((prev) =>
@@ -473,7 +474,7 @@ function StatementPageContent() {
               const isTransfer = t.type === 'transfer';
               const account = accounts?.find(a => a.id === t.accountId);
               const toAccount = accounts?.find(a => a.id === t.toAccountId);
-              const category = t.category ? getCategoryById(t.category, customCategories || []) : null;
+              const category = (categoriesEnabled && t.category) ? getCategoryById(t.category, customCategories || []) : null;
               const CategoryIcon = category?.icon;
 
               if (isAccountCreation) {
@@ -563,7 +564,7 @@ function StatementPageContent() {
                         <div className="flex-1 truncate">
                             <p className="font-semibold truncate">{t.remarks || 'Transaction'}</p>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                {CategoryIcon ? (
+                                {CategoryIcon && categoriesEnabled ? (
                                     <>
                                         <CategoryIcon className="h-4 w-4" />
                                         <p className="truncate">{category?.name}</p>
