@@ -79,7 +79,7 @@ function StatementPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [dateFilterLabel, setDateFilterLabel] = useState('All Time');
-  const [activeControl, setActiveControl] = useState<'search' | 'date' | null>(null);
+  const [activeControl, setActiveControl] = useState<'date' | null>(null);
 
 
   useEffect(() => {
@@ -260,33 +260,21 @@ function StatementPageContent() {
           <h1 className="text-2xl font-bold">Statements</h1>
           <div className="flex items-center justify-end gap-2">
             
-            <div className={cn("flex items-center gap-2 transition-all duration-300", activeControl !== 'search' && 'w-0')}>
-              <div className={cn("relative transition-all duration-300", activeControl === 'search' ? 'w-32' : 'w-0')}>
-                <Input 
-                    placeholder='Search...'
-                    className={cn(
-                        'pl-3 pr-8 w-full',
-                        activeControl === 'search' && 'search-active'
-                    )}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                 <Button variant="ghost" size="icon" className='absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8' onClick={() => {setSearchTerm(''); setActiveControl(null)}}>
-                    <X className="h-4 w-4" />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                  placeholder='Search by remarks...'
+                  className='pl-10 pr-8 w-40 sm:w-56 search-active'
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <Button variant="ghost" size="icon" className='absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8' onClick={() => setSearchTerm('')}>
+                  <X className="h-4 w-4" />
                 </Button>
-              </div>
+              )}
             </div>
-
-            <Button
-              variant="outline"
-              size="icon"
-              className={cn("h-11 w-11 shrink-0", activeControl === 'search' && 'border-primary ring-2 ring-primary/50')}
-              onClick={() => setActiveControl(activeControl === 'search' ? null : 'search')}
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-
-
+            
             <DropdownMenu onOpenChange={(open) => open ? setActiveControl('date') : setActiveControl(null)}>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className={cn("h-11 w-11 shrink-0", activeControl === 'date' && 'border-primary ring-2 ring-primary/50')}>
