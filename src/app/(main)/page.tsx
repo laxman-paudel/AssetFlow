@@ -107,19 +107,7 @@ export default function DashboardPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Button
-            asChild
-            variant="secondary"
-            className="text-base h-12 font-semibold"
-          >
-            <span
-              onClick={() => router.push('/statement')}
-              className="cursor-pointer"
-            >
-              View Statement
-            </span>
-          </Button>
+        <div className="grid grid-cols-1 gap-4">
            <Button
             asChild
             variant="secondary"
@@ -130,7 +118,7 @@ export default function DashboardPage() {
               className="cursor-pointer"
             >
               <Wallet className="mr-2 h-4 w-4" />
-              Manage Assets
+              Add Wallet
             </span>
           </Button>
         </div>
