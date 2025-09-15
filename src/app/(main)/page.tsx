@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAssetFlow } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowDown, ArrowUp, ChevronRight } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronRight, Wallet } from 'lucide-react';
 import TransactionDialog from '@/components/app/TransactionDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionType } from '@/lib/types';
@@ -107,17 +107,30 @@ export default function DashboardPage() {
           </Button>
         </div>
 
-        <div>
+        <div className="grid grid-cols-2 gap-4">
           <Button
             asChild
             variant="secondary"
-            className="text-base w-full h-12 font-semibold"
+            className="text-base h-12 font-semibold"
           >
             <span
               onClick={() => router.push('/statement')}
               className="cursor-pointer"
             >
               View Statement
+            </span>
+          </Button>
+           <Button
+            asChild
+            variant="secondary"
+            className="text-base h-12 font-semibold"
+          >
+            <span
+              onClick={() => router.push('/assets')}
+              className="cursor-pointer"
+            >
+              <Wallet className="mr-2 h-4 w-4" />
+              Manage Assets
             </span>
           </Button>
         </div>
