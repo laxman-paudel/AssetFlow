@@ -50,12 +50,17 @@ export default function StatementPage() {
   const [assets, setAssets] = useState<Asset[] | null>(null);
   const [totalBalance, setTotalBalance] = useState<number | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
   
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedAssets, setSelectedAssets] = useState<string[]>([]);
   const [showAssetCreations, setShowAssetCreations] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   useEffect(() => {
     if (store.isInitialized) {
@@ -98,7 +103,7 @@ export default function StatementPage() {
   };
 
   const formatCurrency = (amount: number) => {
-    if (currency === null) return '...';
+    if (!currency) return '...';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
@@ -199,12 +204,12 @@ export default function StatementPage() {
        <div className="block mb-6">
           <Card 
               className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer'
-              style={getBalanceCardStyle()}
+              style={isClient && totalBalance !== null ? getBalanceCardStyle() : {}}
               onClick={() => router.push('/')}
           >
               <CardContent className="p-3 flex items-center justify-between">
                   <p className="text-sm font-medium">Total Balance</p>
-                  {totalBalance !== null && currency !== null ? (
+                  {isClient && totalBalance !== null && currency !== null ? (
                     <p className="text-lg font-bold tracking-tighter">
                         {formatCurrency(totalBalance)}
                     </p>
@@ -216,7 +221,7 @@ export default function StatementPage() {
       </div>
 
       <div className="space-y-3">
-        {filteredTransactions === null ? (
+        {!isClient || filteredTransactions === null ? (
           <>
             <Skeleton className="h-20 w-full" />
             <Skeleton className="h-20 w-full" />

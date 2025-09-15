@@ -33,11 +33,16 @@ export default function AssetsPage() {
   const [assets, setAssets] = useState<Asset[] | null>(null);
   const [totalBalance, setTotalBalance] = useState<number | null>(null);
   const [currency, setCurrency] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
   
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const router = useRouter();
   
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   useEffect(() => {
     if (store.isInitialized) {
       setAssets(store.assets);
@@ -47,7 +52,7 @@ export default function AssetsPage() {
   }, [store.isInitialized, store.assets, store.totalBalance, store.currency]);
 
   const formatCurrency = (amount: number) => {
-    if (currency === null) return '...';
+    if (!currency) return '...';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
@@ -94,7 +99,7 @@ export default function AssetsPage() {
         </Button>
       </div>
       
-      {assets !== null && assets.length === 0 ? (
+      {isClient && assets !== null && assets.length === 0 ? (
         <div className="flex flex-col items-center justify-center text-center py-20 border-2 border-dashed rounded-lg">
           <div className="p-4 bg-primary/10 rounded-full mb-4">
             <Wallet className="h-12 w-12 text-primary" />
@@ -113,12 +118,12 @@ export default function AssetsPage() {
           <div className="block mb-6">
               <Card 
                   className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer'
-                  style={getBalanceCardStyle()}
+                  style={isClient && totalBalance !== null ? getBalanceCardStyle() : {}}
                   onClick={() => router.push('/')}
               >
                   <CardContent className="p-3 flex items-center justify-between">
                       <p className="text-sm font-medium">Total Balance</p>
-                      {totalBalance !== null && currency ? (
+                      {isClient && totalBalance !== null && currency ? (
                         <p className="text-lg font-bold tracking-tighter">
                             {formatCurrency(totalBalance)}
                         </p>
@@ -129,7 +134,7 @@ export default function AssetsPage() {
               </Card>
           </div>
           <div className="space-y-4">
-            {assets === null ? (
+            {!isClient || assets === null ? (
               <>
                 <Skeleton className="h-28 w-full" />
                 <Skeleton className="h-28 w-full" />
@@ -174,13 +179,13 @@ export default function AssetsPage() {
                   </CardHeader>
                   <CardContent className="pl-16">
                     <p className="text-3xl font-bold tracking-tight">
-                      {formatCurrency(asset.balance)}
+                      {isClient ? formatCurrency(asset.balance) : <Skeleton className="h-8 w-32" />}
                     </p>
                   </CardContent>
                 </Card>
               ))
             )}
-            {assets !== null && assets.length > 0 && (
+            {isClient && assets !== null && assets.length > 0 && (
                 <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
                     <div className="p-4 bg-secondary rounded-full mb-4">
                         <PlusCircle className="h-10 w-10 text-muted-foreground" />
