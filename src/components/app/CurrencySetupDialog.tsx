@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
+  DialogOverlay
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -43,7 +44,8 @@ export default function CurrencySetupDialog({ open, onCurrencySelect }: Currency
 
   return (
     <Dialog open={open}>
-      <DialogContent className="sm:max-w-[425px]" hideCloseButton={true}>
+        <DialogOverlay className="bg-background/80 backdrop-blur-sm" />
+      <DialogContent className="sm:max-w-sm" hideCloseButton={true}>
         <DialogHeader>
           <DialogTitle>Welcome to AssetFlow!</DialogTitle>
           <DialogDescription>
@@ -65,7 +67,7 @@ export default function CurrencySetupDialog({ open, onCurrencySelect }: Currency
             </Select>
         </div>
         <DialogFooter>
-          <Button type="button" onClick={handleSave} disabled={!selectedCurrency}>
+          <Button type="button" onClick={handleSave} disabled={!selectedCurrency} className="w-full">
             Save and Continue
           </Button>
         </DialogFooter>

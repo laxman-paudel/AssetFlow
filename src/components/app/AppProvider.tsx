@@ -340,19 +340,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return <Loading />;
   }
   
-  if (needsCurrencySetup) {
-    return (
-      <AssetFlowContext.Provider value={value}>
-        <div className="flex items-center justify-center min-h-screen bg-background">
-            <CurrencySetupDialog open={needsCurrencySetup} onCurrencySelect={completeCurrencySetup} />
-        </div>
-      </AssetFlowContext.Provider>
-    );
-  }
-
   return (
     <AssetFlowContext.Provider value={value}>
       {children}
+      {needsCurrencySetup && (
+        <CurrencySetupDialog 
+            open={needsCurrencySetup} 
+            onCurrencySelect={completeCurrencySetup} 
+        />
+      )}
     </AssetFlowContext.Provider>
   );
 }
