@@ -329,11 +329,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   if (!isInitialized) {
     return <Loading />;
   }
+  
+  if (needsCurrencySetup) {
+    return (
+      <AssetFlowContext.Provider value={value}>
+        <CurrencySetupDialog open={needsCurrencySetup} onCurrencySelect={completeCurrencySetup} />
+      </AssetFlowContext.Provider>
+    );
+  }
 
   return (
     <AssetFlowContext.Provider value={value}>
       {children}
-      <CurrencySetupDialog open={needsCurrencySetup} onCurrencySelect={completeCurrencySetup} />
     </AssetFlowContext.Provider>
   );
 }
