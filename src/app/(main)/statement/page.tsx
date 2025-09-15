@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect, Suspense } from 'react';
+import React, { useMemo, useState, useEffect, Suspense } from 'react';
 import { useAssetFlow } from '@/components/app/AppProvider';
 import {
   ArrowDown,
@@ -662,3 +662,5 @@ export default function StatementPage() {
     </Suspense>
   )
 }
+
+    
