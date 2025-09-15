@@ -273,9 +273,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       
       toast({ title: 'Application Reset', description: 'Your data has been cleared.' });
 
-      // Wait a moment for the toast to be visible before reloading
+      // Wait a moment for the toast to be visible before redirecting
       setTimeout(() => {
-        window.location.reload();
+        window.location.href = '/';
       }, 500);
 
     } catch (error) {
@@ -344,17 +344,49 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return <Loading />;
   }
   
-  return (
-    <AssetFlowContext.Provider value={value}>
-      {children}
-      {needsCurrencySetup && (
+  if (needsCurrencySetup) {
+    return (
+      <AppProviderShell>
         <CurrencySetupDialog 
             open={needsCurrencySetup} 
             onCurrencySelect={completeCurrencySetup} 
         />
-      )}
+        {children}
+      </AppProviderShell>
+    );
+  }
+  
+  return (
+    <AssetFlowContext.Provider value={value}>
+      {children}
     </AssetFlowContext.Provider>
   );
+}
+
+// A shell provider that can show children content (blurred)
+// This is used for the currency setup, so the dialog appears over the app
+function AppProviderShell({ children }: { children: React.ReactNode }) {
+    const value: AssetFlowState = {
+        accounts: [],
+        transactions: [],
+        addAccount: async () => new Promise(() => {}),
+        editAccount: async () => {},
+        deleteAccount: async () => {},
+        addTransaction: async () => {},
+        editTransaction: async () => {},
+        deleteTransaction: async () => {},
+        resetApplication: async () => {},
+        changeCurrency: () => {},
+        totalBalance: 0,
+        isInitialized: true,
+        currency: null,
+    };
+
+    return (
+        <AssetFlowContext.Provider value={value}>
+            {children}
+        </AssetFlowContext.Provider>
+    );
 }
 
 export function useAssetFlow() {
