@@ -32,10 +32,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PlusCircle, Shapes } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import NestedAccountDialog from './NestedAccountDialog';
 import { Separator } from '../ui/separator';
-import { getIncomeCategories, getExpenseCategories } from '@/lib/categories';
+import { getIncomeCategories, getExpenseCategories, getIconByName } from '@/lib/categories';
 import CategoryDialog from './CategoryDialog';
 
 const formSchema = z.object({
@@ -56,7 +56,7 @@ export default function TransactionDialog({
   onOpenChange,
   type,
 }: TransactionDialogProps) {
-  const { accounts, customCategories, categoriesEnabled, addTransaction } = useAssetFlow();
+  const { accounts, categories, categoriesEnabled, addTransaction } = useAssetFlow();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
@@ -102,12 +102,12 @@ export default function TransactionDialog({
   
   const placeholderText = type === 'expenditure' ? "What are you spending from?" : "Where is the income going to?";
   
-  const categories = useMemo(() => {
-    const allCustomCategories = customCategories || [];
+  const categoryList = useMemo(() => {
+    if (!categories) return [];
     return type === 'income' 
-      ? getIncomeCategories(allCustomCategories) 
-      : getExpenseCategories(allCustomCategories);
-  }, [type, customCategories]);
+      ? getIncomeCategories(categories) 
+      : getExpenseCategories(categories);
+  }, [type, categories]);
 
   return (
     <>
@@ -189,8 +189,8 @@ export default function TransactionDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {categories.map((cat) => {
-                           const Icon = cat.icon || Shapes;
+                        {categoryList.map((cat) => {
+                           const Icon = getIconByName(cat.icon);
                            return (
                             <SelectItem key={cat.id} value={cat.id}>
                                 <div className="flex items-center gap-2">

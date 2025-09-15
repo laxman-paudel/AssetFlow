@@ -22,10 +22,20 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { Category } from '@/lib/types';
+import { assignableIcons, getIconByName } from '@/lib/categories';
+import { ScrollArea } from '../ui/scroll-area';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
+  icon: z.string().min(1, 'Please select an icon.'),
 });
 
 interface EditCategoryDialogProps {
@@ -35,24 +45,25 @@ interface EditCategoryDialogProps {
 }
 
 export default function EditCategoryDialog({ open, onOpenChange, category }: EditCategoryDialogProps) {
-  const { editCustomCategory } = useAssetFlow();
+  const { editCategory } = useAssetFlow();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: category.name,
+      icon: category.icon,
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    await editCustomCategory(category.id, values);
+    await editCategory(category.id, values);
     onOpenChange(false);
     form.reset();
   };
   
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      form.reset({ name: category.name });
+      form.reset({ name: category.name, icon: category.icon });
     }
     onOpenChange(open);
   }
@@ -63,7 +74,7 @@ export default function EditCategoryDialog({ open, onOpenChange, category }: Edi
         <DialogHeader>
           <DialogTitle>Edit Category</DialogTitle>
           <DialogDescription>
-            Rename your custom category. The type cannot be changed.
+            Rename your category and change its icon. The type cannot be changed.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -80,6 +91,38 @@ export default function EditCategoryDialog({ open, onOpenChange, category }: Edi
                   <FormMessage />
                 </FormItem>
               )}
+            />
+            <FormField
+                control={form.control}
+                name="icon"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Icon</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select an icon" />
+                        </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        <ScrollArea className="h-72">
+                        {assignableIcons.map((iconName) => {
+                            const Icon = getIconByName(iconName);
+                            return (
+                                <SelectItem key={iconName} value={iconName}>
+                                <div className="flex items-center gap-2">
+                                    <Icon className="h-4 w-4 text-muted-foreground" />
+                                    {iconName}
+                                </div>
+                                </SelectItem>
+                            )
+                        })}
+                        </ScrollArea>
+                    </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+                )}
             />
             <DialogFooter>
               <Button type="submit">Save Changes</Button>

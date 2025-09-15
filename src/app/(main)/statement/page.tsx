@@ -19,7 +19,6 @@ import {
   Search,
   Calendar as CalendarIcon,
   X,
-  Shapes,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -53,7 +52,7 @@ import { format, startOfMonth, subMonths, startOfYear, endOfDay } from 'date-fns
 import type { Transaction } from '@/lib/types';
 import EditTransactionDialog from '@/components/app/EditTransactionDialog';
 import { useCountUp } from '@/hooks/useCountUp';
-import { getCategoryById } from '@/lib/categories';
+import { getCategoryById, getIconByName } from '@/lib/categories';
 import type { DateRange } from 'react-day-picker';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import StatementExportButton from '@/components/app/StatementExportButton';
@@ -63,7 +62,7 @@ function StatementPageContent() {
   const {
     transactions,
     accounts,
-    customCategories,
+    categories,
     categoriesEnabled,
     totalBalance,
     currency,
@@ -131,7 +130,7 @@ function StatementPageContent() {
       } else {
         items = items.filter(t => {
             const remarksMatch = t.remarks?.toLowerCase().includes(term);
-            const category = (categoriesEnabled && t.category) ? getCategoryById(t.category, customCategories || []) : null;
+            const category = (categoriesEnabled && t.category) ? getCategoryById(t.category, categories || []) : null;
             const categoryMatch = category?.name.toLowerCase().includes(term);
             return remarksMatch || categoryMatch;
         });
@@ -154,7 +153,7 @@ function StatementPageContent() {
     });
 
     return items;
-  }, [transactions, sortOrder, selectedAccounts, showAccountCreations, searchTerm, dateRange, customCategories, categoriesEnabled]);
+  }, [transactions, sortOrder, selectedAccounts, showAccountCreations, searchTerm, dateRange, categories, categoriesEnabled]);
 
   const handleAccountFilterChange = (accountId: string) => {
     setSelectedAccounts((prev) =>
@@ -474,8 +473,8 @@ function StatementPageContent() {
               const isTransfer = t.type === 'transfer';
               const account = accounts?.find(a => a.id === t.accountId);
               const toAccount = accounts?.find(a => a.id === t.toAccountId);
-              const category = (categoriesEnabled && t.category) ? getCategoryById(t.category, customCategories || []) : null;
-              const CategoryIcon = category?.icon;
+              const category = (categoriesEnabled && t.category) ? getCategoryById(t.category, categories || []) : null;
+              const CategoryIcon = category ? getIconByName(category.icon) : HelpCircle;
 
               if (isAccountCreation) {
                 return (
@@ -564,7 +563,7 @@ function StatementPageContent() {
                         <div className="flex-1 truncate">
                             <p className="font-semibold truncate">{t.remarks || 'Transaction'}</p>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                {CategoryIcon && categoriesEnabled ? (
+                                {CategoryIcon && categoriesEnabled && category ? (
                                     <>
                                         <CategoryIcon className="h-4 w-4" />
                                         <p className="truncate">{category?.name}</p>

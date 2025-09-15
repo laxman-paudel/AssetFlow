@@ -44,7 +44,7 @@ interface CategoryDialogProps {
 }
 
 export default function CategoryDialog({ open, onOpenChange, onCategoryCreated, type }: CategoryDialogProps) {
-  const { addCustomCategory } = useAssetFlow();
+  const { addCategory } = useAssetFlow();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,7 +54,7 @@ export default function CategoryDialog({ open, onOpenChange, onCategoryCreated, 
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const newCategory = await addCustomCategory(values.name, values.type);
+    const newCategory = await addCategory(values.name, values.type);
     onCategoryCreated(newCategory);
     onOpenChange(false);
     form.reset();

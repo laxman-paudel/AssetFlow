@@ -32,11 +32,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PlusCircle, Shapes } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import NestedAccountDialog from './NestedAccountDialog';
 import CategoryDialog from './CategoryDialog';
 import { Separator } from '../ui/separator';
-import { getIncomeCategories, getExpenseCategories } from '@/lib/categories';
+import { getIncomeCategories, getExpenseCategories, getIconByName } from '@/lib/categories';
 
 const formSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive.'),
@@ -58,7 +58,7 @@ export default function EditTransactionDialog({
   onOpenChange,
   transaction,
 }: EditTransactionDialogProps) {
-  const { accounts, customCategories, categoriesEnabled, editTransaction } = useAssetFlow();
+  const { accounts, categories, categoriesEnabled, editTransaction } = useAssetFlow();
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
@@ -105,12 +105,12 @@ export default function EditTransactionDialog({
   const fromAccountLabel = isTransfer ? "From Account" : "Account";
   const fromAccountPlaceholder = isTransfer ? "Select source account" : "Select an account";
 
-  const categories = useMemo(() => {
-    const allCustomCategories = customCategories || [];
+  const categoryList = useMemo(() => {
+    if (!categories) return [];
     return transaction.type === 'income' 
-      ? getIncomeCategories(allCustomCategories) 
-      : getExpenseCategories(allCustomCategories);
-  }, [transaction.type, customCategories]);
+      ? getIncomeCategories(categories) 
+      : getExpenseCategories(categories);
+  }, [transaction.type, categories]);
 
   return (
     <>
@@ -218,8 +218,8 @@ export default function EditTransactionDialog({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categories.map((cat) => {
-                            const Icon = cat.icon || Shapes;
+                          {categoryList.map((cat) => {
+                            const Icon = getIconByName(cat.icon);
                             return (
                                 <SelectItem key={cat.id} value={cat.id}>
                                 <div className="flex items-center gap-2">

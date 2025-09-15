@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import type { IconName } from './categories';
 
 export type Account = {
   id: string;
@@ -12,8 +13,9 @@ export type CategoryType = 'income' | 'expense';
 export type Category = {
   id: string;
   name: string;
-  icon: LucideIcon | React.ComponentType<{ className?: string }>;
+  icon: IconName | string;
   type: CategoryType;
+  isDefault?: boolean;
 };
 
 export type Transaction = {

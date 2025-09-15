@@ -58,7 +58,7 @@ function SettingsContent() {
           <CardHeader>
               <CardTitle>Category Management</CardTitle>
               <CardDescription>
-                  Manage your custom income and expense categories.
+                  Manage your income and expense categories.
               </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
