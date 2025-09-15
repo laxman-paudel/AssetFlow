@@ -21,8 +21,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription as FormDescriptionNew
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { useMemo } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -36,7 +38,13 @@ interface EditAccountDialogProps {
 }
 
 export default function EditAccountDialog({ open, onOpenChange, account }: EditAccountDialogProps) {
-  const { editAccount } = useAssetFlow();
+  const { editAccount, transactions } = useAssetFlow();
+
+  const hasTransactions = useMemo(() => {
+    if (!transactions) return false;
+    return transactions.some(t => t.accountId === account.id && t.type !== 'account_creation');
+  }, [transactions, account.id]);
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,7 +71,7 @@ export default function EditAccountDialog({ open, onOpenChange, account }: EditA
         <DialogHeader>
           <DialogTitle>Edit Account</DialogTitle>
           <DialogDescription>
-            Update the details for your account. Changing the balance here will not create a transaction.
+            Update the details for your account.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -88,8 +96,13 @@ export default function EditAccountDialog({ open, onOpenChange, account }: EditA
                 <FormItem>
                   <FormLabel>Balance</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" {...field} />
+                    <Input type="number" step="0.01" {...field} disabled={hasTransactions} />
                   </FormControl>
+                  {hasTransactions && (
+                    <FormDescriptionNew>
+                      Balance cannot be edited as transactions have been recorded for this account.
+                    </FormDescriptionNew>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
