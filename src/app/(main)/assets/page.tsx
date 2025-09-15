@@ -179,7 +179,7 @@ export default function AssetsPage() {
                   </CardHeader>
                   <CardContent className="pl-16">
                     <p className="text-3xl font-bold tracking-tight">
-                      {isClient ? formatCurrency(asset.balance) : <Skeleton className="h-8 w-32" />}
+                      {isClient && currency ? formatCurrency(asset.balance) : <Skeleton className="h-8 w-32" />}
                     </p>
                   </CardContent>
                 </Card>

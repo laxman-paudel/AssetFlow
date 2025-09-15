@@ -209,7 +209,7 @@ export default function StatementPage() {
           >
               <CardContent className="p-3 flex items-center justify-between">
                   <p className="text-sm font-medium">Total Balance</p>
-                  {isClient && totalBalance !== null && currency !== null ? (
+                  {isClient && totalBalance !== null && currency ? (
                     <p className="text-lg font-bold tracking-tighter">
                         {formatCurrency(totalBalance)}
                     </p>
@@ -244,7 +244,7 @@ export default function StatementPage() {
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-lg text-blue-600">
-                             + {formatCurrency(t.amount)}
+                             + {currency ? formatCurrency(t.amount) : '...'}
                           </p>
                           <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
                         </div>
@@ -303,7 +303,7 @@ export default function StatementPage() {
                           isIncome ? 'text-green-600' : 'text-red-600'
                         }`}
                       >
-                        {isIncome ? '+' : '-'} {formatCurrency(t.amount)}
+                        {isIncome ? '+' : '-'} {currency ? formatCurrency(t.amount) : '...'}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {formatDate(t.date)}
