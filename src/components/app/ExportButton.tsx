@@ -19,7 +19,7 @@ export default function ExportButton({ minimal = false, transactions: transactio
   const handleExport = () => {
     const dataToExport = transactionsToExport ?? allTransactions;
 
-    if (dataToExport.length === 0) {
+    if (!dataToExport || dataToExport.length === 0) {
       toast({
         title: 'No Data to Export',
         description: 'There are no transactions to export.',

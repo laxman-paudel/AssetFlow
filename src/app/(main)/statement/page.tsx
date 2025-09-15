@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useAssetFlow } from '@/lib/store';
+import { useAssetFlow } from '@/components/app/AppProvider';
 import { Transaction, Account } from '@/lib/types';
 import {
   ArrowDown,
@@ -14,20 +14,7 @@ import {
   HelpCircle,
   BookText,
   PlusSquare,
-  Trash2,
-  Pencil
 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -41,38 +28,27 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
-import EditTransactionDialog from '@/components/app/EditTransactionDialog';
-import ExportButton from '@/components/app/ExportButton';
 import { format } from 'date-fns';
 
 export default function StatementPage() {
-  const store = useAssetFlow();
-  const [transactions, setTransactions] = useState<Transaction[] | null>(null);
-  const [accounts, setAccounts] = useState<Account[] | null>(null);
-  const [totalBalance, setTotalBalance] = useState<number | null>(null);
-  const [currency, setCurrency] = useState<string | null>(null);
+  const {
+    transactions,
+    accounts,
+    totalBalance,
+    currency,
+    isInitialized,
+  } = useAssetFlow();
   const [isClient, setIsClient] = useState(false);
   
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
   const [showAccountCreations, setShowAccountCreations] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
   const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
-  
-  useEffect(() => {
-    if (store.isInitialized) {
-      setTransactions(store.transactions);
-      setAccounts(store.accounts);
-      setTotalBalance(store.totalBalance);
-      setCurrency(store.currency);
-    }
-  }, [store.isInitialized, store.transactions, store.accounts, store.totalBalance, store.currency]);
 
   const filteredTransactions = useMemo(() => {
     if (transactions === null) return null;
@@ -91,7 +67,7 @@ export default function StatementPage() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - a;
     });
 
     return items;
@@ -104,10 +80,6 @@ export default function StatementPage() {
         : [...prev, accountId]
     );
   };
-  
-  const handleTransactionClick = (transactionId: string) => {
-    setSelectedTransactionId(prevId => prevId === transactionId ? null : transactionId);
-  }
 
   const formatCurrency = (amount: number) => {
     if (!currency) return '...';
@@ -163,12 +135,13 @@ export default function StatementPage() {
     return <HelpCircle className="h-5 w-5 text-muted-foreground" />;
   };
 
+  const transactionsLoaded = isClient && isInitialized && filteredTransactions !== null;
+
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Statements</h1>
         <div className="flex items-center gap-2">
-           <ExportButton minimal transactions={filteredTransactions ?? []} />
           <Button
             variant="outline"
             size="icon"
@@ -234,7 +207,7 @@ export default function StatementPage() {
       </div>
 
       <div className="space-y-3">
-        {!isClient || filteredTransactions === null ? (
+        {!transactionsLoaded ? (
           <>
             <Skeleton className="h-20 w-full" />
             <Skeleton className="h-20 w-full" />
@@ -269,12 +242,10 @@ export default function StatementPage() {
               <Card
                 key={t.id}
                 className={cn(
-                  'cursor-pointer transition-all duration-200',
+                  'transition-all duration-200',
                   isIncome ? 'border-l-green-500' : 'border-l-red-500',
                   t.isOrphaned && 'opacity-60',
-                  selectedTransactionId === t.id && 'shadow-lg -translate-y-0.5'
                 )}
-                onClick={() => handleTransactionClick(t.id)}
               >
                 <div className='p-4'>
                     <div className="flex items-start justify-between gap-4">
@@ -290,6 +261,7 @@ export default function StatementPage() {
                                 <div className="flex items-center gap-2">
                                     {getAccountIcon(t.accountName)}
                                     <p className="text-sm text-muted-foreground truncate">{t.accountName}</p>
+
                                 </div>
                             </div>
                         </div>
@@ -305,37 +277,6 @@ export default function StatementPage() {
                         </div>
                     </div>
                 </div>
-                {selectedTransactionId === t.id && (
-                    <>
-                        <Separator />
-                        <div className="flex justify-end items-center p-2">
-                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); setEditingTransaction(t); }}>
-                                <Pencil className="h-4 w-4 mr-2" /> Edit
-                            </Button>
-                            <AlertDialog onOpenChange={(open) => !open && handleTransactionClick(t.id)}>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="text-destructive/80 hover:text-destructive hover:bg-destructive/10" onClick={(e) => e.stopPropagation()}>
-                                        <Trash2 className="h-4 w-4 mr-2" /> Delete
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete this transaction and update the account balance.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => store.deleteTransaction(t.id)} className="bg-destructive hover:bg-destructive/90">
-                                            Delete
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </div>
-                    </>
-                )}
               </Card>
             );
           })
@@ -354,19 +295,6 @@ export default function StatementPage() {
           </div>
         )}
       </div>
-      {editingTransaction && (
-          <EditTransactionDialog
-            key={editingTransaction.id}
-            transaction={editingTransaction}
-            open={!!editingTransaction}
-            onOpenChange={(open) => {
-                if (!open) {
-                    setEditingTransaction(null);
-                    setSelectedTransactionId(null);
-                }
-            }}
-          />
-      )}
     </div>
   );
 }

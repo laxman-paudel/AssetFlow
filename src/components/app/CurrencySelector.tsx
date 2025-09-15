@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useAssetFlow } from '@/lib/store';
+import { useAssetFlow } from '@/components/app/AppProvider';
 import {
   Select,
   SelectContent,
@@ -20,20 +20,20 @@ const currencies = [
 ];
 
 export default function CurrencySelector() {
-  const { currency, setCurrency, isInitialized } = useAssetFlow();
+  const { currency, isInitialized } = useAssetFlow();
 
   if (!isInitialized || !currency) {
     return <Skeleton className="h-10 w-28" />;
   }
 
   return (
-    <Select value={currency} onValueChange={setCurrency}>
+    <Select value={currency}>
       <SelectTrigger className="w-auto min-w-[110px] shadow-none focus:ring-0">
         <SelectValue placeholder="Currency" />
       </SelectTrigger>
       <SelectContent>
         {currencies.map((c) => (
-          <SelectItem key={c.value} value={c.value}>
+          <SelectItem key={c.value} value={c.value} disabled>
             {c.label}
           </SelectItem>
         ))}

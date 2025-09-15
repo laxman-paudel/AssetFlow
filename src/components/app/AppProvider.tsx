@@ -1,280 +1,261 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import { AssetFlowContext } from '@/lib/store';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react';
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  onSnapshot,
+  writeBatch,
+  getDocs,
+  addDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import type { Account, Transaction } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import Loading from '@/app/loading';
+import { useRouter, usePathname } from 'next/navigation';
 import CurrencySetupDialog from './CurrencySetupDialog';
 
-const ACCOUNTS_STORAGE_KEY = 'assetflow-accounts';
-const TRANSACTIONS_STORAGE_KEY = 'assetflow-transactions';
-const CURRENCY_STORAGE_KEY = 'assetflow-currency';
+interface AssetFlowState {
+  user: User | null;
+  accounts: Account[] | null;
+  transactions: Transaction[] | null;
+  addAccount: (name: string, initialBalance: number) => Promise<Account>;
+  deleteAccount: (id: string) => Promise<void>;
+  addTransaction: (
+    type: 'income' | 'expenditure',
+    amount: number,
+    accountId: string,
+    remarks: string
+  ) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
+  totalBalance: number | null;
+  isInitialized: boolean;
+  currency: string | null;
+}
+
+const AssetFlowContext = createContext<AssetFlowState | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [needsCurrencySetup, setNeedsCurrencySetup] = useState(false);
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [currency, setCurrency] = useState<string>('');
+  
+  const [accounts, setAccounts] = useState<Account[] | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[] | null>(null);
+  const [currency, setCurrency] = useState<string | null>(null);
+
   const { toast } = useToast();
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    try {
-      const storedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
-      
-      if (storedCurrency) {
-        setCurrency(JSON.parse(storedCurrency));
-        const storedAccounts = localStorage.getItem(ACCOUNTS_STORAGE_KEY);
-        if (storedAccounts) {
-          setAccounts(JSON.parse(storedAccounts));
-        }
-        const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
-        if (storedTransactions) {
-          setTransactions(JSON.parse(storedTransactions));
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUser(user);
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setCurrency(userData.currency);
+          setIsInitialized(true);
+        } else {
+          setNeedsCurrencySetup(true);
         }
       } else {
-        setNeedsCurrencySetup(true);
-      }
-    } catch (error) {
-      console.error('Failed to initialize app state from localStorage', error);
-      toast({
-        title: 'Initialization Error',
-        description: 'Could not load your data. Please clear your site data and try again.',
-        variant: 'destructive',
-      });
-      setNeedsCurrencySetup(true);
-    } finally {
+        setUser(null);
         setIsInitialized(true);
+        setAccounts(null);
+        setTransactions(null);
+        setCurrency(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+  
+  useEffect(() => {
+    if(isInitialized && !user && pathname !== '/auth') {
+        router.push('/auth');
     }
-  }, [toast]);
+  }, [isInitialized, user, pathname, router]);
 
   useEffect(() => {
-    if (isInitialized) {
-      try {
-        localStorage.setItem(ACCOUNTS_STORAGE_KEY, JSON.stringify(accounts));
-        localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
-        if (currency) {
-            localStorage.setItem(CURRENCY_STORAGE_KEY, JSON.stringify(currency));
-        }
-      } catch (error) {
-        console.error('Failed to save state to localStorage', error);
-      }
-    }
-  }, [accounts, transactions, currency, isInitialized]);
+    if (!user || !currency) return;
 
+    const accountsQuery = query(collection(db, 'users', user.uid, 'accounts'));
+    const accountsUnsubscribe = onSnapshot(accountsQuery, (snapshot) => {
+      const fetchedAccounts: Account[] = [];
+      snapshot.forEach((doc) => {
+        fetchedAccounts.push({ id: doc.id, ...doc.data() } as Account);
+      });
+      setAccounts(fetchedAccounts);
+    });
 
-  const addAccount = useCallback((name: string, initialBalance: number, showToast = true): Account => {
-    const newAccount: Account = {
-      id: crypto.randomUUID(),
-      name,
-      balance: initialBalance,
+    const transactionsQuery = query(collection(db, 'users', user.uid, 'transactions'));
+    const transactionsUnsubscribe = onSnapshot(transactionsQuery, (snapshot) => {
+      const fetchedTransactions: Transaction[] = [];
+       snapshot.forEach((doc) => {
+        const data = doc.data();
+        fetchedTransactions.push({ 
+          id: doc.id,
+          ...data,
+          // Convert Firestore Timestamp to ISO string
+          date: data.date?.toDate ? data.date.toDate().toISOString() : new Date().toISOString()
+        } as Transaction);
+      });
+      setTransactions(fetchedTransactions);
+    });
+
+    return () => {
+      accountsUnsubscribe();
+      transactionsUnsubscribe();
     };
+  }, [user, currency]);
+  
+  const addAccount = useCallback(async (name: string, initialBalance: number): Promise<Account> => {
+    if (!user) throw new Error("User not authenticated");
     
-    const newTransaction: Transaction = {
-      id: crypto.randomUUID(),
+    const batch = writeBatch(db);
+
+    const newAccountRef = doc(collection(db, 'users', user.uid, 'accounts'));
+    const newAccountData = { name, balance: initialBalance };
+    batch.set(newAccountRef, newAccountData);
+
+    const newTransactionRef = doc(collection(db, 'users', user.uid, 'transactions'));
+    const newTransactionData = {
       type: 'account_creation',
       amount: initialBalance,
-      accountId: newAccount.id,
-      accountName: newAccount.name,
-      date: new Date().toISOString(),
-      remarks: `Account "${newAccount.name}" created`,
+      accountId: newAccountRef.id,
+      accountName: name,
+      date: serverTimestamp(),
+      remarks: `Account "${name}" created`,
     };
+    batch.set(newTransactionRef, newTransactionData);
 
-    setAccounts((prev) => [...prev, newAccount]);
-    setTransactions(prev => [newTransaction, ...prev]);
-
-    if (showToast) {
-        toast({
-          title: 'Account Added',
-          description: `New account "${name}" has been created.`,
-        });
-    }
-    return newAccount;
-  }, [toast]);
-  
-  const editAccount = useCallback((id: string, newName: string) => {
-    const accountExists = accounts.some(a => a.id === id);
-    if (!accountExists) {
-        toast({
-            title: 'Edit Failed',
-            description: 'Account not found.',
-            variant: 'destructive'
-        });
-        return;
-    }
-
-    setAccounts(prevAccounts => prevAccounts.map(account => {
-        if (account.id === id) {
-            return { ...account, name: newName };
-        }
-        return account;
-    }));
-
-    setTransactions(prevTxs => prevTxs.map(t => {
-        if (t.accountId === id) {
-            return { ...t, accountName: newName };
-        }
-        return t;
-    }));
-    
+    await batch.commit();
     toast({
-        title: 'Account Updated',
-        description: 'The account has been successfully renamed.',
+      title: 'Account Added',
+      description: `New account "${name}" has been created.`,
     });
-}, [accounts, toast]);
 
-  const deleteAccount = useCallback((id: string) => {
-    const accountToDelete = accounts.find(account => account.id === id);
-    if (!accountToDelete) return;
+    return { id: newAccountRef.id, ...newAccountData };
+  }, [user, toast]);
+  
+  const deleteAccount = useCallback(async (id: string) => {
+    if (!user) throw new Error("User not authenticated");
+
+    const batch = writeBatch(db);
+    const accountRef = doc(db, 'users', user.uid, 'accounts', id);
+    batch.delete(accountRef);
     
-    setAccounts((prev) => prev.filter((account) => account.id !== id));
-    setTransactions(prev => 
-      prev.map(t => 
-        t.accountId === id ? { ...t, isOrphaned: true, accountName: t.accountName } : t
-      )
-    );
+    const transactionsQuery = query(collection(db, 'users', user.uid, 'transactions'));
+    const querySnapshot = await getDocs(transactionsQuery);
+
+    querySnapshot.forEach(doc => {
+      if (doc.data().accountId === id) {
+        batch.update(doc.ref, { isOrphaned: true });
+      }
+    });
+
+    await batch.commit();
+
     toast({
       title: 'Account Deleted',
       description: 'The account and its balance have been removed. Transaction history is preserved.',
     });
-  }, [accounts, toast]);
+  }, [user, toast]);
 
-  const addTransaction = useCallback(
-    (
-      type: 'income' | 'expenditure',
-      amount: number,
-      accountId: string,
-      remarks: string
-    ) => {
-      const account = accounts.find(a => a.id === accountId);
-      if (!account) return;
 
-      const newTransaction: Transaction = {
-        id: crypto.randomUUID(),
-        type,
-        amount,
-        accountId,
-        accountName: account.name,
-        date: new Date().toISOString(),
-        remarks,
-      };
+  const addTransaction = useCallback(async (type: 'income' | 'expenditure', amount: number, accountId: string, remarks: string) => {
+    if (!user || !accounts) throw new Error("User or accounts not available");
 
-      setTransactions((prev) => [newTransaction, ...prev]);
-      setAccounts((prev) =>
-        prev.map((account) => {
-          if (account.id === accountId) {
-            const newBalance =
-              type === 'income'
-                ? account.balance + amount
-                : account.balance - amount;
-            return { ...account, balance: newBalance };
-          }
-          return account;
-        })
-      );
-      toast({
-        title: 'Transaction Recorded',
-        description: `Your ${type} of ${amount.toFixed(2)} has been recorded.`,
-      });
-    },
-    [accounts, toast]
-  );
-  
-  const editTransaction = useCallback((id: string, newAmount: number, newRemarks: string) => {
+    const account = accounts.find(a => a.id === accountId);
+    if (!account) throw new Error("Account not found");
+    
+    const batch = writeBatch(db);
+    
+    const accountRef = doc(db, 'users', user.uid, 'accounts', accountId);
+    const newBalance = type === 'income' ? account.balance + amount : account.balance - amount;
+    batch.update(accountRef, { balance: newBalance });
+    
+    const newTransactionRef = doc(collection(db, 'users', user.uid, 'transactions'));
+    batch.set(newTransactionRef, {
+      type,
+      amount,
+      accountId,
+      accountName: account.name,
+      date: serverTimestamp(),
+      remarks,
+    });
+    
+    await batch.commit();
+    toast({
+      title: 'Transaction Recorded',
+      description: `Your ${type} of ${amount.toFixed(2)} has been recorded.`,
+    });
+  }, [user, accounts, toast]);
+
+  const deleteTransaction = useCallback(async (id: string) => {
+    if (!user || !transactions || !accounts) throw new Error("Required data not available");
+
     const tx = transactions.find(t => t.id === id);
     if (!tx || tx.type === 'account_creation') {
-        toast({
-            title: 'Edit Failed',
-            description: 'Account creation events cannot be edited.',
-            variant: 'destructive'
-        });
-        return;
+      toast({
+        title: 'Deletion Failed',
+        description: 'Account creation events cannot be deleted.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    const batch = writeBatch(db);
+    const txRef = doc(db, 'users', user.uid, 'transactions', id);
+    batch.delete(txRef);
+
+    const account = accounts.find(a => a.id === tx.accountId);
+    if (account) {
+      const accountRef = doc(db, 'users', user.uid, 'accounts', account.id);
+      const newBalance = tx.type === 'income' ? account.balance - tx.amount : account.balance + tx.amount;
+      batch.update(accountRef, { balance: newBalance });
     }
 
-    const amountDifference = newAmount - tx.amount;
-
-    // Update account balance
-    setAccounts(prevAccounts => prevAccounts.map(account => {
-        if (account.id === tx.accountId) {
-            const balanceAdjustment = tx.type === 'income' ? amountDifference : -amountDifference;
-            return { ...account, balance: account.balance + balanceAdjustment };
-        }
-        return account;
-    }));
-
-    // Update the transaction
-    setTransactions(prevTxs => prevTxs.map(t => {
-        if (t.id === id) {
-            return { ...t, amount: newAmount, remarks: newRemarks, date: new Date().toISOString() };
-        }
-        return t;
-    }));
-    
+    await batch.commit();
     toast({
-        title: 'Transaction Updated',
-        description: 'The transaction has been successfully updated.',
+      title: 'Transaction Deleted',
+      description: 'The transaction has been removed and the account balance is updated.',
     });
-}, [transactions, toast]);
-
-
-  const deleteTransaction = useCallback((id: string) => {
-    const tx = transactions.find(t => t.id === id);
-    if (!tx || tx.type === 'account_creation') {
-        toast({
-            title: 'Deletion Failed',
-            description: 'Account creation events cannot be deleted.',
-            variant: 'destructive'
-        });
-        return;
-    };
-    
-    // Reverse the balance change
-    setAccounts(prevAccounts => prevAccounts.map(account => {
-        if (account.id === tx.accountId) {
-            const newBalance = tx.type === 'income'
-                ? account.balance - tx.amount
-                : account.balance + tx.amount;
-            return { ...account, balance: newBalance };
-        }
-        return account;
-    }));
-
-    // Remove the transaction
-    setTransactions(prevTxs => prevTxs.filter(t => t.id !== id));
-    
-    toast({
-        title: 'Transaction Deleted',
-        description: 'The transaction has been removed and the account balance is updated.',
-    });
-}, [transactions, toast]);
-
-  const getAccountById = useCallback((id: string) => {
-    return accounts.find(a => a.id === id);
-  }, [accounts]);
+  }, [user, transactions, accounts, toast]);
 
   const totalBalance = useMemo(
-    () => accounts.reduce((sum, account) => sum + account.balance, 0),
+    () => accounts?.reduce((sum, account) => sum + account.balance, 0) ?? null,
     [accounts]
   );
   
-  const handleSetCurrency = useCallback((newCurrency: string) => {
-    setCurrency(newCurrency);
-    toast({
-        title: 'Currency Updated',
-        description: `Currency has been set to ${newCurrency}.`
-    });
-  }, [toast]);
-  
-  const completeCurrencySetup = (selectedCurrency: string) => {
+  const completeCurrencySetup = async (selectedCurrency: string) => {
+    if (!user) return;
     try {
+        const userDocRef = doc(db, 'users', user.uid);
+        await setDoc(userDocRef, { currency: selectedCurrency, createdAt: serverTimestamp() });
         setCurrency(selectedCurrency);
-        setAccounts([]);
-        setTransactions([]);
         setNeedsCurrencySetup(false);
-
-        // Create default accounts without showing toast
-        addAccount("Cash", 0, false);
-        addAccount("Primary Bank", 0, false);
+        
+        // Create default accounts
+        await addAccount("Cash", 0);
+        await addAccount("Primary Bank", 0);
       
         toast({
           title: 'Welcome!',
@@ -290,21 +271,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
   
-  const value = {
+  const value: AssetFlowState = {
+    user,
     accounts,
     transactions,
     addAccount,
-    editAccount,
     deleteAccount,
     addTransaction,
-    editTransaction,
     deleteTransaction,
-    getAccountById,
     totalBalance,
     isInitialized,
     currency,
-    setCurrency: handleSetCurrency
   };
+
+  if (!isInitialized) {
+    return <Loading />;
+  }
+  
+  if (isInitialized && !user && pathname !== '/auth') {
+    return <Loading />;
+  }
 
   return (
     <AssetFlowContext.Provider value={value}>
@@ -312,4 +298,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       <CurrencySetupDialog open={needsCurrencySetup} onCurrencySelect={completeCurrencySetup} />
     </AssetFlowContext.Provider>
   );
+}
+
+export function useAssetFlow() {
+  const context = useContext(AssetFlowContext);
+  if (context === undefined) {
+    throw new Error('useAssetFlow must be used within an AppProvider');
+  }
+  return context;
 }

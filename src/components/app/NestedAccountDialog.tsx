@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAssetFlow } from '@/lib/store';
+import { useAssetFlow } from '@/components/app/AppProvider';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -44,8 +44,8 @@ export default function NestedAccountDialog({ open, onOpenChange, onAccountCreat
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const newAccount = addAccount(values.name, values.balance);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const newAccount = await addAccount(values.name, values.balance);
     onAccountCreated(newAccount.id);
     onOpenChange(false);
     form.reset();

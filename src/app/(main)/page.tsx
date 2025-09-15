@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAssetFlow } from '@/lib/store';
+import { useAssetFlow } from '@/components/app/AppProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowDown, ArrowUp, ChevronRight, Wallet } from 'lucide-react';
@@ -11,26 +11,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionType } from '@/lib/types';
 import AccountDialog from '@/components/app/AccountDialog';
 
+type DialogType = 'income' | 'expenditure' | 'account';
+
 export default function DashboardPage() {
-  const store = useAssetFlow();
-  const [totalBalance, setTotalBalance] = useState<number | null>(null);
-  const [currency, setCurrency] = useState<string | null>(null);
-  const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
-  const [accountDialogOpen, setAccountDialogOpen] = useState(false);
-  const [dialogType, setDialogType] = useState<TransactionType>('income');
+  const { totalBalance, currency, isInitialized } = useAssetFlow();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<DialogType>('income');
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  useEffect(() => {
-    if (store.isInitialized) {
-      setTotalBalance(store.totalBalance);
-      setCurrency(store.currency);
-    }
-  }, [store.isInitialized, store.totalBalance, store.currency]);
 
   const getBalanceCardStyle = () => {
     if (totalBalance === null) return {};
@@ -48,9 +40,9 @@ export default function DashboardPage() {
     return { backgroundColor: 'hsl(210, 80%, 70%)' };
   };
 
-  const openDialog = (type: TransactionType) => {
+  const openDialog = (type: DialogType) => {
     setDialogType(type);
-    setTransactionDialogOpen(true);
+    setDialogOpen(true);
   };
 
   return (
@@ -65,7 +57,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            {isClient && totalBalance !== null && currency ? (
+            {isClient && isInitialized && totalBalance !== null && currency ? (
               <>
                 <div className="text-4xl font-bold tracking-tighter">
                   {new Intl.NumberFormat('en-US', {
@@ -111,7 +103,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-4">
            <Button
-            onClick={() => setAccountDialogOpen(true)}
+            onClick={() => openDialog('account')}
             variant="secondary"
             className="text-base h-12 font-semibold"
           >
@@ -120,12 +112,16 @@ export default function DashboardPage() {
           </Button>
         </div>
       </div>
-      <TransactionDialog
-        open={transactionDialogOpen}
-        onOpenChange={setTransactionDialogOpen}
-        type={dialogType}
-      />
-      <AccountDialog open={accountDialogOpen} onOpenChange={setAccountDialogOpen} />
+
+      {dialogType === 'account' ? (
+          <AccountDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      ) : (
+          <TransactionDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            type={dialogType}
+          />
+      )}
     </div>
   );
 }

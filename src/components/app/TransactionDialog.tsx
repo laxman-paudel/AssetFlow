@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAssetFlow } from '@/lib/store';
+import { useAssetFlow } from '@/components/app/AppProvider';
 import { TransactionType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -65,9 +65,9 @@ export default function TransactionDialog({
     },
   });
   
-  const lastAccountId = accounts.length > 0 ? accounts[accounts.length - 1].id : '';
+  const lastAccountId = accounts && accounts.length > 0 ? accounts[accounts.length - 1].id : '';
   useEffect(() => {
-    if (accounts.length === 1 && form.getValues('accountId') === '') {
+    if (accounts && accounts.length === 1 && form.getValues('accountId') === '') {
         form.setValue('accountId', accounts[0].id);
     }
   }, [accounts, form]);
@@ -128,12 +128,12 @@ export default function TransactionDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {accounts.map((account) => (
+                      {accounts && accounts.map((account) => (
                           <SelectItem key={account.id} value={account.id}>
                             {account.name}
                           </SelectItem>
                         ))}
-                      {(accounts.length > 0) && <Separator className="my-1" />}
+                      {(accounts && accounts.length > 0) && <Separator className="my-1" />}
                       <Button
                             variant="ghost"
                             className="w-full justify-start font-normal"
