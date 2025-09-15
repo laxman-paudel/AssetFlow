@@ -35,11 +35,13 @@ import {
 import { PlusCircle } from 'lucide-react';
 import NestedAccountDialog from './NestedAccountDialog';
 import { Separator } from '../ui/separator';
+import { incomeCategories, expenseCategories } from '@/lib/categories';
 
 const formSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive.'),
   accountId: z.string().min(1, 'Please select an account.'),
   remarks: z.string().max(100, 'Remarks are too long.').optional(),
+  category: z.string().optional(),
 });
 
 interface TransactionDialogProps {
@@ -62,6 +64,7 @@ export default function TransactionDialog({
       amount: '' as any,
       accountId: '',
       remarks: '',
+      category: '',
     },
   });
   
@@ -73,9 +76,9 @@ export default function TransactionDialog({
 
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    addTransaction(type, values.amount, values.accountId, values.remarks || '');
+    addTransaction(type, values.amount, values.accountId, values.remarks || '', values.category);
     onOpenChange(false);
-    form.reset({ amount: '' as any, accountId: '', remarks: '' });
+    form.reset({ amount: '' as any, accountId: '', remarks: '', category: '' });
   };
   
   const handleAccountCreated = (newAccountId: string) => {
@@ -85,12 +88,13 @@ export default function TransactionDialog({
   
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-        form.reset({ amount: '' as any, accountId: '', remarks: '' });
+        form.reset({ amount: '' as any, accountId: '', remarks: '', category: '' });
     }
     onOpenChange(open);
   }
   
   const placeholderText = type === 'expenditure' ? "What are you spending from?" : "Where is the income going to?";
+  const categories = type === 'income' ? incomeCategories : expenseCategories;
 
   return (
     <>
@@ -159,6 +163,33 @@ export default function TransactionDialog({
                   </FormItem>
                 )}
               />
+               <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            <div className="flex items-center gap-2">
+                                <cat.icon className="h-4 w-4 text-muted-foreground" />
+                                {cat.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="remarks"
@@ -166,7 +197,7 @@ export default function TransactionDialog({
                   <FormItem>
                     <FormLabel>Remarks</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="e.g., Salary" {...field} />
+                      <Textarea placeholder="e.g., Salary, Groceries" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

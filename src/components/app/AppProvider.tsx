@@ -29,7 +29,8 @@ interface AssetFlowState {
     type: 'income' | 'expenditure',
     amount: number,
     accountId: string,
-    remarks: string
+    remarks: string,
+    category?: string
   ) => Promise<void>;
   editTransaction: (transactionId: string, updates: EditableTransaction) => Promise<void>;
   deleteTransaction: (transactionId: string) => Promise<void>;
@@ -148,7 +149,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, [toast]);
 
-  const addTransaction = useCallback(async (type: 'income' | 'expenditure', amount: number, accountId: string, remarks: string) => {
+  const addTransaction = useCallback(async (type: 'income' | 'expenditure', amount: number, accountId: string, remarks: string, category?: string) => {
     const account = accounts?.find(a => a.id === accountId);
     if (!account) throw new Error("Account not found");
 
@@ -164,6 +165,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       accountName: account.name,
       date: new Date().toISOString(),
       remarks,
+      category,
     };
     
     setTransactions(prev => [...(prev || []), newTransaction]);
@@ -255,6 +257,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               accountName: updatedAccount.name,
               remarks: updates.remarks,
               date: updates.date,
+              category: updates.category,
           } : t);
       });
 
@@ -282,7 +285,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
        console.error("Error resetting application: ", error);
        toast({ title: 'Reset Failed', description: 'Could not clear your data. Please try again.', variant: 'destructive' });
     }
-  }, [toast]);
+  }, [toast, router]);
 
   const changeCurrency = useCallback((newCurrency: string) => {
     setCurrency(newCurrency);
@@ -384,7 +387,9 @@ function AppProviderShell({ children }: { children: React.ReactNode }) {
 
     return (
         <AssetFlowContext.Provider value={value}>
-            {children}
+            <div style={{ filter: 'blur(4px)' }}>
+                {children}
+            </div>
         </AssetFlowContext.Provider>
     );
 }

@@ -35,12 +35,14 @@ import {
 import { PlusCircle } from 'lucide-react';
 import NestedAccountDialog from './NestedAccountDialog';
 import { Separator } from '../ui/separator';
+import { incomeCategories, expenseCategories } from '@/lib/categories';
 
 const formSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive.'),
   accountId: z.string().min(1, 'Please select an account.'),
   remarks: z.string().max(100, 'Remarks are too long.').optional(),
   date: z.string(),
+  category: z.string().optional(),
 });
 
 interface EditTransactionDialogProps {
@@ -64,13 +66,15 @@ export default function EditTransactionDialog({
       accountId: transaction.accountId,
       remarks: transaction.remarks,
       date: transaction.date,
+      category: transaction.category,
     },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     editTransaction(transaction.id, {
         ...values,
-        remarks: values.remarks || ""
+        remarks: values.remarks || "",
+        category: values.category || "",
     });
     onOpenChange(false);
   };
@@ -88,6 +92,7 @@ export default function EditTransactionDialog({
   }
 
   const placeholderText = transaction.type === 'expenditure' ? "What are you spending from?" : "Where is the income going to?";
+  const categories = transaction.type === 'income' ? incomeCategories : expenseCategories;
 
   return (
     <>
@@ -147,6 +152,33 @@ export default function EditTransactionDialog({
                             Create New Account
                           </Button>
                         </div>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                             <div className="flex items-center gap-2">
+                                <cat.icon className="h-4 w-4 text-muted-foreground" />
+                                {cat.name}
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

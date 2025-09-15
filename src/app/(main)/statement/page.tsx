@@ -39,6 +39,7 @@ import { format } from 'date-fns';
 import type { Transaction } from '@/lib/types';
 import EditTransactionDialog from '@/components/app/EditTransactionDialog';
 import { useCountUp } from '@/hooks/useCountUp';
+import { getCategoryById } from '@/lib/categories';
 
 export default function StatementPage() {
   const {
@@ -246,6 +247,8 @@ export default function StatementPage() {
               const isIncome = t.type === 'income';
               const isAccountCreation = t.type === 'account_creation';
               const account = accounts?.find(a => a.id === t.accountId);
+              const category = t.category ? getCategoryById(t.category) : null;
+              const CategoryIcon = category?.icon;
 
               if (isAccountCreation) {
                 return (
@@ -287,9 +290,18 @@ export default function StatementPage() {
                         </div>
                         <div className="flex-1 truncate">
                             <p className="font-semibold truncate">{t.remarks || 'Transaction'}</p>
-                            <div className="flex items-center gap-2">
-                            {getAccountIcon(account?.name)}
-                            <p className="text-sm text-muted-foreground truncate">{account?.name || 'Unknown Account'}</p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                {CategoryIcon ? (
+                                    <>
+                                        <CategoryIcon className="h-4 w-4" />
+                                        <p className="truncate">{category?.name}</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        {getAccountIcon(account?.name)}
+                                        <p className="truncate">{account?.name || 'Unknown Account'}</p>
+                                    </>
+                                )}
                             </div>
                         </div>
                         </div>
