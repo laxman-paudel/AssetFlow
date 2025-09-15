@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
 import BottomNav from '@/components/app/BottomNav';
 import { PiggyBank, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,28 +10,6 @@ export default function MainLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isNavVisible, setIsNavVisible] = useState(true);
-  const lastScrollY = useRef(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY.current && currentScrollY > 80) { // 80 is header height
-        // Scrolling down
-        setIsNavVisible(false);
-      } else {
-        // Scrolling up
-        setIsNavVisible(true);
-      }
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -54,7 +31,7 @@ export default function MainLayout({
         </div>
       </header>
       <main className="flex-1 pb-24">{children}</main>
-      <BottomNav isVisible={isNavVisible} />
+      <BottomNav />
     </div>
   );
 }
