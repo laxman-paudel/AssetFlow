@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { PlusCircle, Landmark, Wallet, CreditCard, HelpCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Landmark, Wallet, CreditCard, HelpCircle, Edit, Trash2, BookText } from 'lucide-react';
 import AccountDialog from '@/components/app/AccountDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
@@ -90,6 +90,10 @@ export default function AccountsPage() {
       setAccountToDelete(null);
       setExpandedAccountId(null);
     }
+  };
+  
+  const handleShowTransactions = (accountId: string) => {
+    router.push(`/statement?accountId=${accountId}`);
   };
 
   const accountsLoaded = isInitialized && accounts !== null;
@@ -173,6 +177,10 @@ export default function AccountsPage() {
                     {expandedAccountId === account.id && (
                     <div className="bg-muted/50 border-t transition-all">
                         <div className="px-4 py-2 flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleShowTransactions(account.id)}>
+                                <BookText className="mr-2 h-4 w-4" />
+                                Show Transactions
+                            </Button>
                             <Button variant="ghost" size="sm" onClick={() => setAccountToEdit(account)}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit

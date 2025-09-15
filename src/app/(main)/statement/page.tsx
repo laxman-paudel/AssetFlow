@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, Suspense } from 'react';
 import { useAssetFlow } from '@/components/app/AppProvider';
 import {
   ArrowDown,
@@ -33,7 +33,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import type { Transaction } from '@/lib/types';
@@ -41,7 +41,7 @@ import EditTransactionDialog from '@/components/app/EditTransactionDialog';
 import { useCountUp } from '@/hooks/useCountUp';
 import { getCategoryById } from '@/lib/categories';
 
-export default function StatementPage() {
+function StatementPageContent() {
   const {
     transactions,
     accounts,
@@ -51,6 +51,9 @@ export default function StatementPage() {
     deleteTransaction,
   } = useAssetFlow();
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
   const [showAccountCreations, setShowAccountCreations] = useState(false);
@@ -58,7 +61,15 @@ export default function StatementPage() {
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [expandedTransactionId, setExpandedTransactionId] = useState<string | null>(null);
 
-  const router = useRouter();
+  useEffect(() => {
+    const accountIdFromQuery = searchParams.get('accountId');
+    if (accountIdFromQuery) {
+      setSelectedAccounts([accountIdFromQuery]);
+      setShowAccountCreations(true);
+      // Optional: remove the query param from URL after applying it
+      // router.replace('/statement', { scroll: false });
+    }
+  }, [searchParams, router]);
   
   const animatedTotalBalance = useCountUp(totalBalance ?? 0);
 
@@ -97,7 +108,7 @@ export default function StatementPage() {
   };
 
   const handleTransactionClick = (transactionId: string) => {
-    setExpandedTransactionId(prevId => prevId === transactionId ? null : transactionId);
+    setExpandedTransactionId(prevId => prevId === transactionId ? null : prevId);
   }
 
   const formatCurrency = (amount: number) => {
@@ -376,4 +387,12 @@ export default function StatementPage() {
       </AlertDialog>
     </>
   );
+}
+
+export default function StatementPage() {
+  return (
+    <Suspense fallback={<Skeleton className="h-screen w-full" />}>
+      <StatementPageContent />
+    </Suspense>
+  )
 }
