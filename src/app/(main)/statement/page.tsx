@@ -48,25 +48,20 @@ export default function StatementPage() {
     if (!transactions) return null;
     let items = [...transactions];
 
-    if (selectedAccounts.length > 0) {
-      items = items.filter((t) => {
-        // Keep account creations if they are not meant to be hidden
-        if (t.type === 'account_creation') {
-            return showAccountCreations;
-        }
-        // Filter other transactions by selected accounts
-        return t.accountId && selectedAccounts.includes(t.accountId);
-      });
-    }
-
     if (!showAccountCreations) {
       items = items.filter((t) => t.type !== 'account_creation');
+    }
+
+    if (selectedAccounts.length > 0) {
+      items = items.filter((t) => 
+        t.type === 'account_creation' || (t.accountId && selectedAccounts.includes(t.accountId))
+      );
     }
     
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - a;
     });
 
     return items;
@@ -297,3 +292,5 @@ export default function StatementPage() {
     </div>
   );
 }
+
+    
