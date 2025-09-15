@@ -65,4 +65,15 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Add smooth transitions to interactive elements */
+  button, a, [role="button"], input, select, textarea, .transition-smooth {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  .transition-smooth {
+     transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+     transition-duration: 200ms;
+  }
 }

@@ -123,7 +123,7 @@ export default function AccountsPage() {
           <>
             <div className="block mb-6">
                 <Card 
-                    className='text-primary-foreground shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer'
+                    className='text-primary-foreground shadow-md transition-smooth hover:shadow-lg cursor-pointer'
                     style={getBalanceCardStyle()}
                     onClick={() => router.push('/')}
                 >
@@ -171,7 +171,7 @@ export default function AccountsPage() {
                     </div>
 
                     {expandedAccountId === account.id && (
-                    <div className="bg-muted/50 border-t">
+                    <div className="bg-muted/50 border-t transition-all">
                         <div className="px-4 py-2 flex justify-end gap-2">
                             <Button variant="ghost" size="sm" onClick={() => setAccountToEdit(account)}>
                                 <Edit className="mr-2 h-4 w-4" />
