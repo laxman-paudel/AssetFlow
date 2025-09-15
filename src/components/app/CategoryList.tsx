@@ -61,11 +61,9 @@ export default function CategoryList() {
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCategoryToEdit(category)}>
                         <Edit className="h-4 w-4" />
                     </Button>
-                    {!category.isDefault && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setCategoryToDelete(category)}>
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    )}
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setCategoryToDelete(category)}>
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
                     </div>
                 </div>
               );
