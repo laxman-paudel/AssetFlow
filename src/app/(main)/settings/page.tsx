@@ -1,4 +1,3 @@
-
 'use client';
 
 import ThemeSwitcher from '@/components/app/ThemeSwitcher';
