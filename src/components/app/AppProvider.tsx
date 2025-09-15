@@ -12,6 +12,7 @@ import type { Account, Transaction, EditableTransaction } from '@/lib/types';
 import { useToast } from '@/components/ui/use-toast';
 import Loading from '@/app/loading';
 import CurrencySetupDialog from './CurrencySetupDialog';
+import { useRouter } from 'next/navigation';
 
 // Local storage keys
 const CURRENCY_KEY = 'assetflow-currency';
@@ -50,6 +51,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCurrency] = useState<string | null>(null);
 
   const { toast } = useToast();
+  const router = useRouter();
 
   // Load data from local storage on initial mount
   useEffect(() => {
@@ -305,6 +307,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const bankAccount: Account = { id: 'bank', name: 'Primary Bank', balance: 0 };
         setAccounts([cashAccount, bankAccount]);
         setTransactions([]);
+
+        router.push('/');
       
         toast({
           title: 'Welcome!',
