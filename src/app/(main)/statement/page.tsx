@@ -13,19 +13,11 @@ import {
   HelpCircle,
   BookText,
   PlusSquare,
-  MoreHorizontal,
   Trash2,
   Edit,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,6 +54,7 @@ export default function StatementPage() {
   const [showAccountCreations, setShowAccountCreations] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
+  const [expandedTransactionId, setExpandedTransactionId] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -85,7 +78,7 @@ export default function StatementPage() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - a.id;
     });
 
     return items;
@@ -98,6 +91,10 @@ export default function StatementPage() {
         : [...prev, accountId]
     );
   };
+
+  const handleTransactionClick = (transactionId: string) => {
+    setExpandedTransactionId(prevId => prevId === transactionId ? null : transactionId);
+  }
 
   const formatCurrency = (amount: number) => {
     if (currency === null) return '...';
@@ -161,6 +158,7 @@ export default function StatementPage() {
     if (transactionToDelete) {
       deleteTransaction(transactionToDelete.id);
       setTransactionToDelete(null);
+      setExpandedTransactionId(null);
     }
   };
 
@@ -267,13 +265,13 @@ export default function StatementPage() {
               }
 
               return (
-                <DropdownMenu key={t.id}>
-                  <DropdownMenuTrigger asChild>
+                <div key={t.id}>
                     <Card
                       className={cn(
                         'transition-all duration-200 border-l-4 cursor-pointer hover:bg-muted/50',
                         isIncome ? 'border-l-green-500' : 'border-l-red-500'
                       )}
+                      onClick={() => handleTransactionClick(t.id)}
                     >
                       <div className='p-4 relative'>
                         <div className="flex items-start justify-between gap-4">
@@ -303,22 +301,23 @@ export default function StatementPage() {
                             <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
                           </div>
                         </div>
-                        <MoreHorizontal className="absolute top-1 right-1 h-4 w-4 text-muted-foreground" />
                       </div>
                     </Card>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem onSelect={() => setTransactionToEdit(t)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      <span>Edit</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => setTransactionToDelete(t)} className="text-destructive focus:text-destructive">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      <span>Delete</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    {expandedTransactionId === t.id && (
+                        <Card className="mt-1">
+                            <CardContent className="p-2 flex justify-end gap-2">
+                                <Button variant="ghost" size="sm" onClick={() => setTransactionToEdit(t)}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit
+                                </Button>
+                                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setTransactionToDelete(t)}>
+                                     <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
               );
             })
           ) : (
