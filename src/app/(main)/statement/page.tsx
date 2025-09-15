@@ -110,6 +110,14 @@ export default function StatementPage() {
     }).format(amount);
   };
   
+  const formatAmount = (amount: number) => {
+    if (currency === null) return '...';
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+  
   const getBalanceCardStyle = () => {
     if (totalBalance === null) return {};
     const maxAmount = 5000;
@@ -244,7 +252,7 @@ export default function StatementPage() {
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-lg text-blue-600">
-                             + {currency ? formatCurrency(t.amount) : '...'}
+                             + {currency ? formatAmount(t.amount) : '...'}
                           </p>
                           <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
                         </div>
@@ -303,7 +311,7 @@ export default function StatementPage() {
                           isIncome ? 'text-green-600' : 'text-red-600'
                         }`}
                       >
-                        {isIncome ? '+' : '-'} {currency ? formatCurrency(t.amount) : '...'}
+                        {isIncome ? '+' : '-'} {currency ? formatAmount(t.amount) : '...'}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {formatDate(t.date)}
