@@ -67,7 +67,7 @@ export default function AssetDialog({ open, onOpenChange }: AssetDialogProps) {
                 <FormItem>
                   <FormLabel>Asset Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Savings Account" {...field} />
+                    <Input placeholder="e.g. Primary bank balance, Wallet balance" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
