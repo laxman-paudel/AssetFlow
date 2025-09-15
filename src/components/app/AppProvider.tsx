@@ -343,7 +343,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   if (needsCurrencySetup) {
     return (
       <AssetFlowContext.Provider value={value}>
-        <CurrencySetupDialog open={needsCurrencySetup} onCurrencySelect={completeCurrencySetup} />
+        <div className="flex items-center justify-center min-h-screen bg-background">
+            <CurrencySetupDialog open={needsCurrencySetup} onCurrencySelect={completeCurrencySetup} />
+        </div>
       </AssetFlowContext.Provider>
     );
   }
