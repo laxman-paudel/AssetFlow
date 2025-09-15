@@ -300,9 +300,8 @@ function StatementPageContent() {
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="h-11 w-auto min-w-[110px] justify-start">
-                    <CalendarIcon className="mr-2 h-5 w-5" />
-                    <span className='truncate'>{dateFilterLabel}</span>
+                <Button variant="outline" size="icon" className="h-11 w-11">
+                    <CalendarIcon className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
