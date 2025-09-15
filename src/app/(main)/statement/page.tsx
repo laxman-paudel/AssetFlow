@@ -116,7 +116,13 @@ function StatementPageContent() {
     }
 
     if (searchTerm) {
-        items = items.filter(t => t.remarks?.toLowerCase().includes(searchTerm.toLowerCase()));
+        items = items.filter(t => {
+            const term = searchTerm.toLowerCase();
+            const remarksMatch = t.remarks?.toLowerCase().includes(term);
+            const category = t.category ? getCategoryById(t.category) : null;
+            const categoryMatch = category?.name.toLowerCase().includes(term);
+            return remarksMatch || categoryMatch;
+        });
     }
 
     if (dateRange?.from) {
@@ -265,7 +271,7 @@ function StatementPageContent() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                   placeholder='Search...'
-                  className='pl-10 pr-8 w-40 sm:w-44 search-active'
+                  className='pl-10 pr-8 w-40 sm:w-44'
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
               />
