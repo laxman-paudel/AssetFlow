@@ -160,7 +160,7 @@ export default function EditTransactionDialog({
                   <FormItem>
                     <FormLabel>Remarks</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="e.g., Purchased coffee" {...field} />
+                      <Textarea placeholder="e.g., Salary" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
