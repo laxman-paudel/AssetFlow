@@ -15,6 +15,7 @@ import {
   PlusSquare,
   Trash2,
   Edit,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -84,7 +85,10 @@ function StatementPageContent() {
     if (selectedAccounts.length > 0) {
       items = items.filter((t) => {
         if (t.accountId) {
-          return selectedAccounts.includes(t.accountId);
+          if (selectedAccounts.includes(t.accountId)) return true;
+        }
+        if (t.toAccountId) {
+            if (selectedAccounts.includes(t.toAccountId)) return true;
         }
         return false;
       });
@@ -257,7 +261,9 @@ function StatementPageContent() {
             filteredTransactions.map((t) => {
               const isIncome = t.type === 'income';
               const isAccountCreation = t.type === 'account_creation';
+              const isTransfer = t.type === 'transfer';
               const account = accounts?.find(a => a.id === t.accountId);
+              const toAccount = accounts?.find(a => a.id === t.toAccountId);
               const category = t.category ? getCategoryById(t.category) : null;
               const CategoryIcon = category?.icon;
 
@@ -278,6 +284,52 @@ function StatementPageContent() {
                       <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
                     </div>
                   </div>
+                )
+              }
+
+              if (isTransfer) {
+                return (
+                     <Card
+                        key={t.id}
+                        className={cn(
+                        'transition-all duration-200 border-l-4 overflow-hidden border-l-purple-500',
+                        expandedTransactionId === t.id ? 'bg-muted/50' : 'hover:bg-muted/50'
+                        )}
+                    >
+                        <div className='p-4 relative cursor-pointer' onClick={() => handleTransactionClick(t.id)}>
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex flex-1 items-center gap-4 truncate">
+                                    <div className="p-2 rounded-full bg-purple-100 text-purple-700">
+                                        <ArrowRightLeft className="h-5 w-5" />
+                                    </div>
+                                    <div className="flex-1 truncate">
+                                        <p className="font-semibold truncate">{t.remarks || 'Transfer'}</p>
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <p className="truncate">{t.accountName} to {t.toAccountName}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                    <p className="font-bold text-lg text-purple-600">{formatAmount(t.amount)}</p>
+                                    <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {expandedTransactionId === t.id && (
+                        <div className="bg-muted/50 border-t transition-all">
+                            <div className="px-4 py-2 flex justify-end gap-2">
+                                <Button variant="ghost" size="sm" onClick={() => setTransactionToEdit(t)}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit
+                                </Button>
+                                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setTransactionToDelete(t)}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </Button>
+                            </div>
+                        </div>
+                        )}
+                    </Card>
                 )
               }
 

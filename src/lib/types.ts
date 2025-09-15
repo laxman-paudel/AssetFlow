@@ -4,7 +4,7 @@ export type Account = {
   balance: number;
 };
 
-export type TransactionType = 'income' | 'expenditure' | 'account_creation';
+export type TransactionType = 'income' | 'expenditure' | 'account_creation' | 'transfer';
 
 export type Category = {
   id: string;
@@ -16,11 +16,13 @@ export type Transaction = {
   id: string;
   type: TransactionType;
   amount: number;
-  accountId: string;
+  accountId: string; // For income/expense, this is the account. For transfer, this is FROM account.
   accountName?: string;
   date: string; // ISO string
   remarks: string;
   category?: string; // Category ID
+  toAccountId?: string; // For transfer, this is TO account
+  toAccountName?: string;
 };
 
 export type EditableTransaction = {
@@ -29,4 +31,5 @@ export type EditableTransaction = {
   remarks: string;
   date: string;
   category?: string;
+  toAccountId?: string;
 };

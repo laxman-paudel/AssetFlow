@@ -43,6 +43,7 @@ const formSchema = z.object({
   remarks: z.string().max(100, 'Remarks are too long.').optional(),
   date: z.string(),
   category: z.string().optional(),
+  toAccountId: z.string().optional(),
 });
 
 interface EditTransactionDialogProps {
@@ -67,6 +68,7 @@ export default function EditTransactionDialog({
       remarks: transaction.remarks,
       date: transaction.date,
       category: transaction.category,
+      toAccountId: transaction.toAccountId,
     },
   });
 
@@ -75,6 +77,7 @@ export default function EditTransactionDialog({
         ...values,
         remarks: values.remarks || "",
         category: values.category || "",
+        toAccountId: values.toAccountId || "",
     });
     onOpenChange(false);
   };
@@ -91,7 +94,10 @@ export default function EditTransactionDialog({
     onOpenChange(open);
   }
 
-  const placeholderText = transaction.type === 'expenditure' ? "What are you spending from?" : "Where is the income going to?";
+  const isTransfer = transaction.type === 'transfer';
+  const fromAccountLabel = isTransfer ? "From Account" : "Account";
+  const fromAccountPlaceholder = isTransfer ? "Select source account" : "Select an account";
+
   const categories = transaction.type === 'income' ? incomeCategories : expenseCategories;
 
   return (
@@ -100,7 +106,7 @@ export default function EditTransactionDialog({
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>
-              Edit {transaction.type === 'income' ? 'Income' : 'Expense'}
+              Edit {transaction.type === 'income' ? 'Income' : transaction.type === 'expenditure' ? 'Expense' : 'Transfer'}
             </DialogTitle>
             <DialogDescription>
               Update the details of your transaction.
@@ -126,11 +132,11 @@ export default function EditTransactionDialog({
                 name="accountId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Account</FormLabel>
+                    <FormLabel>{fromAccountLabel}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={placeholderText} />
+                          <SelectValue placeholder={fromAccountPlaceholder} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -158,33 +164,63 @@ export default function EditTransactionDialog({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id}>
-                             <div className="flex items-center gap-2">
-                                <cat.icon className="h-4 w-4 text-muted-foreground" />
-                                {cat.name}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+
+              {isTransfer && (
+                <FormField
+                  control={form.control}
+                  name="toAccountId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>To Account</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select destination account" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {accounts && accounts.map((account) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              {account.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {!isTransfer && (
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              <div className="flex items-center gap-2">
+                                  <cat.icon className="h-4 w-4 text-muted-foreground" />
+                                  {cat.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="remarks"

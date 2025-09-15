@@ -5,14 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useAssetFlow } from '@/components/app/AppProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowDown, ArrowUp, ChevronRight, Wallet } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronRight, Wallet, ArrowRightLeft } from 'lucide-react';
 import TransactionDialog from '@/components/app/TransactionDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import AccountDialog from '@/components/app/AccountDialog';
 import { Separator } from '@/components/ui/separator';
 import { useCountUp } from '@/hooks/useCountUp';
+import TransferDialog from '@/components/app/TransferDialog';
 
-type DialogType = 'income' | 'expenditure' | 'account';
+type DialogType = 'income' | 'expenditure' | 'account' | 'transfer';
 
 export default function DashboardPage() {
   const { totalBalance, currency, isInitialized } = useAssetFlow();
@@ -100,24 +101,42 @@ export default function DashboardPage() {
         </div>
         
         <Separator />
-
-        <Button
-            variant="outline"
-            className="w-full h-20 flex-col gap-2 text-lg"
-            onClick={() => openDialog('account')}
-        >
-            <div className="flex items-center gap-3">
-                <div className="bg-blue-100 text-blue-700 rounded-full p-2">
-                    <Wallet className="h-5 w-5" />
+        
+        <div className="grid grid-cols-2 gap-4">
+            <Button
+                variant="outline"
+                className="w-full h-20 flex-col gap-2 text-lg"
+                onClick={() => openDialog('transfer')}
+            >
+                <div className="flex items-center gap-3">
+                    <div className="bg-purple-100 text-purple-700 rounded-full p-2">
+                        <ArrowRightLeft className="h-5 w-5" />
+                    </div>
+                    <span className="font-semibold text-purple-800">Transfer</span>
                 </div>
-                <span className="font-semibold text-blue-800">Add Account</span>
-            </div>
-        </Button>
+            </Button>
+            <Button
+                variant="outline"
+                className="w-full h-20 flex-col gap-2 text-lg"
+                onClick={() => openDialog('account')}
+            >
+                <div className="flex items-center gap-3">
+                    <div className="bg-blue-100 text-blue-700 rounded-full p-2">
+                        <Wallet className="h-5 w-5" />
+                    </div>
+                    <span className="font-semibold text-blue-800">Add Account</span>
+                </div>
+            </Button>
+        </div>
       </div>
 
-      {dialogType === 'account' ? (
+      {dialogType === 'account' && (
           <AccountDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-      ) : (
+      )}
+      {dialogType === 'transfer' && (
+            <TransferDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      )}
+      {(dialogType === 'income' || dialogType === 'expenditure') && (
           <TransactionDialog
             open={dialogOpen}
             onOpenChange={setDialogOpen}

@@ -32,6 +32,12 @@ interface AssetFlowState {
     remarks: string,
     category?: string
   ) => Promise<void>;
+  addTransfer: (
+    amount: number,
+    fromAccountId: string,
+    toAccountId: string,
+    remarks: string
+  ) => Promise<void>;
   editTransaction: (transactionId: string, updates: EditableTransaction) => Promise<void>;
   deleteTransaction: (transactionId: string) => Promise<void>;
   resetApplication: () => Promise<void>;
@@ -129,7 +135,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
     // Update account name in all related transactions
     setTransactions(prev => 
-      prev?.map(t => t.accountId === accountId ? { ...t, accountName: updates.name } : t) || []
+      prev?.map(t => {
+        if (t.accountId === accountId) {
+            t.accountName = updates.name;
+        }
+        if (t.toAccountId === accountId) {
+            t.toAccountName = updates.name;
+        }
+        return t;
+    }) || []
     );
     
     toast({
@@ -140,7 +154,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   
   const deleteAccount = useCallback(async (accountId: string) => {
     setAccounts(prev => prev?.filter(a => a.id !== accountId) || []);
-    setTransactions(prev => prev?.filter(t => t.accountId !== accountId) || []);
+    // Also delete transactions to/from this account.
+    setTransactions(prev => prev?.filter(t => t.accountId !== accountId && t.toAccountId !== accountId) || []);
     
     toast({
       title: 'Account Deleted',
@@ -175,6 +190,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       description: `Your ${type} of ${amount.toFixed(2)} has been recorded.`,
     });
   }, [accounts, toast]);
+
+    const addTransfer = useCallback(async (amount: number, fromAccountId: string, toAccountId: string, remarks: string) => {
+        const fromAccount = accounts?.find(a => a.id === fromAccountId);
+        const toAccount = accounts?.find(a => a.id === toAccountId);
+        if (!fromAccount || !toAccount) throw new Error("Account not found");
+
+        setAccounts(prev => prev?.map(a => {
+            if (a.id === fromAccountId) return { ...a, balance: a.balance - amount };
+            if (a.id === toAccountId) return { ...a, balance: a.balance + amount };
+            return a;
+        }) || []);
+        
+        const newTransaction: Transaction = {
+            id: new Date().toISOString() + Math.random(),
+            type: 'transfer',
+            amount,
+            accountId: fromAccountId,
+            accountName: fromAccount.name,
+            toAccountId: toAccountId,
+            toAccountName: toAccount.name,
+            date: new Date().toISOString(),
+            remarks,
+        };
+        
+        setTransactions(prev => [...(prev || []), newTransaction]);
+        
+        toast({
+            title: 'Transfer Recorded',
+            description: `Transfer of ${amount.toFixed(2)} from ${fromAccount.name} to ${toAccount.name} has been recorded.`,
+        });
+    }, [accounts, toast]);
   
   const deleteTransaction = useCallback(async (transactionId: string) => {
     setTransactions(prev => {
@@ -184,23 +230,46 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         setAccounts(accs => {
             const newAccounts = accs || [];
-            const accountToUpdate = newAccounts.find(a => a.id === transactionToDelete.accountId);
-            if (!accountToUpdate) return accs;
             
-            let newBalance = accountToUpdate.balance;
-            if (transactionToDelete.type === 'income') {
-                newBalance -= transactionToDelete.amount;
-            } else if (transactionToDelete.type === 'expenditure') {
-                newBalance += transactionToDelete.amount;
-            } else if (transactionToDelete.type === 'account_creation') {
-                // If we delete an account creation, we should also delete the account
-                // This might be too destructive, let's just adjust balance.
-                // For now, let's prevent deletion of account_creation transactions to be safe.
-                // Or let's revert the balance change
-                newBalance -= transactionToDelete.amount;
+            let accountToUpdate;
+            let newBalance;
+
+            switch(transactionToDelete.type) {
+                case 'income':
+                    accountToUpdate = newAccounts.find(a => a.id === transactionToDelete.accountId);
+                    if (accountToUpdate) {
+                        newBalance = accountToUpdate.balance - transactionToDelete.amount;
+                        return newAccounts.map(a => a.id === transactionToDelete.accountId ? {...a, balance: newBalance} : a);
+                    }
+                    break;
+                case 'expenditure':
+                    accountToUpdate = newAccounts.find(a => a.id === transactionToDelete.accountId);
+                     if (accountToUpdate) {
+                        newBalance = accountToUpdate.balance + transactionToDelete.amount;
+                        return newAccounts.map(a => a.id === transactionToDelete.accountId ? {...a, balance: newBalance} : a);
+                    }
+                    break;
+                case 'account_creation':
+                     accountToUpdate = newAccounts.find(a => a.id === transactionToDelete.accountId);
+                     if (accountToUpdate) {
+                        newBalance = accountToUpdate.balance - transactionToDelete.amount;
+                        return newAccounts.map(a => a.id === transactionToDelete.accountId ? {...a, balance: newBalance} : a);
+                    }
+                    break;
+                case 'transfer':
+                    const fromAccount = newAccounts.find(a => a.id === transactionToDelete.accountId);
+                    const toAccount = newAccounts.find(a => a.id === transactionToDelete.toAccountId);
+                    if(fromAccount && toAccount) {
+                         return newAccounts.map(a => {
+                            if (a.id === fromAccount.id) return {...a, balance: a.balance + transactionToDelete.amount};
+                            if (a.id === toAccount.id) return {...a, balance: a.balance - transactionToDelete.amount};
+                            return a;
+                        });
+                    }
+                    break;
             }
 
-            return newAccounts.map(a => a.id === transactionToDelete.accountId ? {...a, balance: newBalance} : a);
+            return accs;
         });
 
         return newTransactions.filter(t => t.id !== transactionId);
@@ -219,46 +288,66 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           const originalTransaction = newTransactions.find(t => t.id === transactionId);
 
           if (!originalTransaction || !accounts) return prev;
-
-          const updatedAccount = accounts.find(a => a.id === updates.accountId);
-          if (!updatedAccount) return prev;
           
           setAccounts(accs => {
               let newAccounts = [...(accs || [])];
               
-              // Revert old transaction
-              const originalAccount = newAccounts.find(a => a.id === originalTransaction.accountId);
-              if (originalAccount) {
-                  let originalBalance = originalAccount.balance;
-                   if (originalTransaction.type === 'income') {
-                      originalBalance -= originalTransaction.amount;
-                  } else if (originalTransaction.type === 'expenditure') {
-                      originalBalance += originalTransaction.amount;
-                  }
-                  newAccounts = newAccounts.map(a => a.id === originalTransaction.accountId ? {...a, balance: originalBalance} : a);
+              // Revert old transaction effect
+              switch(originalTransaction.type) {
+                case 'income':
+                    newAccounts = newAccounts.map(a => a.id === originalTransaction.accountId ? {...a, balance: a.balance - originalTransaction.amount} : a);
+                    break;
+                case 'expenditure':
+                    newAccounts = newAccounts.map(a => a.id === originalTransaction.accountId ? {...a, balance: a.balance + originalTransaction.amount} : a);
+                    break;
+                case 'transfer':
+                    newAccounts = newAccounts.map(a => {
+                        if (a.id === originalTransaction.accountId) return {...a, balance: a.balance + originalTransaction.amount};
+                        if (a.id === originalTransaction.toAccountId) return {...a, balance: a.balance - originalTransaction.amount};
+                        return a;
+                    });
+                    break;
               }
 
-              // Apply new transaction
-              let newBalance = newAccounts.find(a => a.id === updates.accountId)!.balance;
-              if (originalTransaction.type === 'income') {
-                  newBalance += updates.amount;
-              } else if (originalTransaction.type === 'expenditure') {
-                  newBalance -= updates.amount;
+              // Apply new transaction effect
+              const updatedAccount = accounts.find(a => a.id === updates.accountId);
+              switch(originalTransaction.type) {
+                  case 'income':
+                      newAccounts = newAccounts.map(a => a.id === updates.accountId ? {...a, balance: a.balance + updates.amount} : a);
+                      break;
+                  case 'expenditure':
+                      newAccounts = newAccounts.map(a => a.id === updates.accountId ? {...a, balance: a.balance - updates.amount} : a);
+                      break;
+                  case 'transfer':
+                      newAccounts = newAccounts.map(a => {
+                        if (a.id === updates.accountId) return {...a, balance: a.balance - updates.amount};
+                        if (a.id === updates.toAccountId) return {...a, balance: a.balance + updates.amount};
+                        return a;
+                    });
+                    break;
               }
-              newAccounts = newAccounts.map(a => a.id === updates.accountId ? {...a, balance: newBalance} : a);
 
               return newAccounts;
           });
 
-          return newTransactions.map(t => t.id === transactionId ? {
-              ...t,
-              amount: updates.amount,
-              accountId: updates.accountId,
-              accountName: updatedAccount.name,
-              remarks: updates.remarks,
-              date: updates.date,
-              category: updates.category,
-          } : t);
+          return newTransactions.map(t => {
+            if (t.id === transactionId) {
+                const updatedAccount = accounts.find(a => a.id === updates.accountId);
+                const updatedToAccount = t.type === 'transfer' ? accounts.find(a => a.id === updates.toAccountId) : undefined;
+                return {
+                    ...t,
+                    amount: updates.amount,
+                    accountId: updates.accountId,
+                    accountName: updatedAccount?.name || t.accountName,
+                    remarks: updates.remarks,
+                    date: updates.date,
+                    category: updates.category,
+                    toAccountId: updates.toAccountId,
+                    toAccountName: updatedToAccount?.name,
+                };
+            }
+            return t;
+          });
       });
 
       toast({
@@ -285,7 +374,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
        console.error("Error resetting application: ", error);
        toast({ title: 'Reset Failed', description: 'Could not clear your data. Please try again.', variant: 'destructive' });
     }
-  }, [toast, router]);
+  }, [toast]);
 
   const changeCurrency = useCallback((newCurrency: string) => {
     setCurrency(newCurrency);
@@ -334,6 +423,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     editAccount,
     deleteAccount,
     addTransaction,
+    addTransfer,
     editTransaction,
     deleteTransaction,
     resetApplication,
@@ -376,6 +466,7 @@ function AppProviderShell({ children }: { children: React.ReactNode }) {
         editAccount: async () => {},
         deleteAccount: async () => {},
         addTransaction: async () => {},
+        addTransfer: async () => {},
         editTransaction: async () => {},
         deleteTransaction: async () => {},
         resetApplication: async () => {},
