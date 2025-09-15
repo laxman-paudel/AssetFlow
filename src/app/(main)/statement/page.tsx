@@ -93,7 +93,7 @@ function StatementPageContent() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - a;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
     return items;
