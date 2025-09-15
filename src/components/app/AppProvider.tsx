@@ -8,7 +8,7 @@ import {
   useMemo,
   useCallback,
 } from 'react';
-import type { Account, Transaction, TransactionType } from '@/lib/types';
+import type { Account, Transaction, EditableTransaction } from '@/lib/types';
 import { useToast } from '@/components/ui/use-toast';
 import Loading from '@/app/loading';
 import CurrencySetupDialog from './CurrencySetupDialog';
@@ -29,6 +29,8 @@ interface AssetFlowState {
     accountId: string,
     remarks: string
   ) => Promise<void>;
+  editTransaction: (transactionId: string, updates: EditableTransaction) => Promise<void>;
+  deleteTransaction: (transactionId: string) => Promise<void>;
   resetApplication: () => Promise<void>;
   totalBalance: number | null;
   isInitialized: boolean;
@@ -151,6 +153,91 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, [accounts, toast]);
   
+  const deleteTransaction = useCallback(async (transactionId: string) => {
+    setTransactions(prev => {
+        const newTransactions = prev || [];
+        const transactionToDelete = newTransactions.find(t => t.id === transactionId);
+        if (!transactionToDelete || !accounts) return prev;
+
+        setAccounts(accs => {
+            const newAccounts = accs || [];
+            const accountToUpdate = newAccounts.find(a => a.id === transactionToDelete.accountId);
+            if (!accountToUpdate) return accs;
+            
+            let newBalance = accountToUpdate.balance;
+            if (transactionToDelete.type === 'income') {
+                newBalance -= transactionToDelete.amount;
+            } else if (transactionToDelete.type === 'expenditure') {
+                newBalance += transactionToDelete.amount;
+            }
+
+            return newAccounts.map(a => a.id === transactionToDelete.accountId ? {...a, balance: newBalance} : a);
+        });
+
+        return newTransactions.filter(t => t.id !== transactionId);
+    });
+
+    toast({
+        title: "Transaction Deleted",
+        description: "The transaction has been removed.",
+        variant: "destructive"
+    });
+  }, [accounts, toast]);
+
+  const editTransaction = useCallback(async (transactionId: string, updates: EditableTransaction) => {
+      setTransactions(prev => {
+          const newTransactions = prev || [];
+          const originalTransaction = newTransactions.find(t => t.id === transactionId);
+
+          if (!originalTransaction || !accounts) return prev;
+
+          const updatedAccount = accounts.find(a => a.id === updates.accountId);
+          if (!updatedAccount) return prev;
+          
+          setAccounts(accs => {
+              let newAccounts = [...(accs || [])];
+              
+              // Revert old transaction
+              const originalAccount = newAccounts.find(a => a.id === originalTransaction.accountId);
+              if (originalAccount) {
+                  let originalBalance = originalAccount.balance;
+                   if (originalTransaction.type === 'income') {
+                      originalBalance -= originalTransaction.amount;
+                  } else if (originalTransaction.type === 'expenditure') {
+                      originalBalance += originalTransaction.amount;
+                  }
+                  newAccounts = newAccounts.map(a => a.id === originalTransaction.accountId ? {...a, balance: originalBalance} : a);
+              }
+
+              // Apply new transaction
+              let newBalance = newAccounts.find(a => a.id === updates.accountId)!.balance;
+              if (originalTransaction.type === 'income') {
+                  newBalance += updates.amount;
+              } else if (originalTransaction.type === 'expenditure') {
+                  newBalance -= updates.amount;
+              }
+              newAccounts = newAccounts.map(a => a.id === updates.accountId ? {...a, balance: newBalance} : a);
+
+              return newAccounts;
+          });
+
+          return newTransactions.map(t => t.id === transactionId ? {
+              ...t,
+              amount: updates.amount,
+              accountId: updates.accountId,
+              accountName: updatedAccount.name,
+              remarks: updates.remarks,
+              date: updates.date,
+          } : t);
+      });
+
+      toast({
+          title: "Transaction Updated",
+          description: "Your transaction has been successfully updated.",
+      });
+
+  }, [accounts, toast]);
+  
   const resetApplication = async () => {
     try {
       localStorage.removeItem(CURRENCY_KEY);
@@ -158,8 +245,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem(TRANSACTIONS_KEY);
       
       setCurrency(null);
-      setAccounts(null);
-      setTransactions(null);
+      setAccounts([]);
+      setTransactions([]);
       
       setNeedsCurrencySetup(true);
 
@@ -206,6 +293,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addAccount,
     deleteAccount,
     addTransaction,
+    editTransaction,
+    deleteTransaction,
     resetApplication,
     totalBalance,
     isInitialized,

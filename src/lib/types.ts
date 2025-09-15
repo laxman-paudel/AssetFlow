@@ -15,3 +15,10 @@ export type Transaction = {
   date: string; // ISO string
   remarks: string;
 };
+
+export type EditableTransaction = {
+  amount: number;
+  accountId: string;
+  remarks: string;
+  date: string;
+};
