@@ -19,9 +19,7 @@ export default function ExportButton() {
       return;
     }
     
-    const accountIdSet = new Set(accounts?.map(a => a.id));
-
-    const header = ['Date', 'Time', 'Type', 'Amount', 'Account', 'Remarks', 'Is Orphaned'];
+    const header = ['Date', 'Time', 'Type', 'Amount', 'Account', 'Remarks'];
     const rows = transactions.map(t => {
       try {
         const date = new Date(t.date);
@@ -35,7 +33,6 @@ export default function ExportButton() {
         
         const remarks = `"${(t.remarks || '').replace(/"/g, '""')}"`;
         const accountName = `"${(t.accountName || '').replace(/"/g, '""')}"`;
-        const isOrphaned = t.type !== 'account_creation' && !accountIdSet.has(t.accountId);
 
         return [
           rowDate,
@@ -43,8 +40,7 @@ export default function ExportButton() {
           t.type,
           amount,
           accountName,
-          remarks,
-          isOrphaned
+          remarks
         ].join(',');
       } catch (e) {
         console.warn('Skipping invalid transaction record for export:', t, e);

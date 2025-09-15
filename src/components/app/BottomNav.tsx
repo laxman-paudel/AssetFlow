@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   BookText,
-  Wallet
+  Wallet,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -13,14 +14,15 @@ const navItems = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/statement', icon: BookText, label: 'Statements' },
   { href: '/assets', icon: Wallet, label: 'Accounts' },
+  { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto grid h-16 max-w-md grid-cols-3">
+    <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background/95 backdrop-blur-sm md:hidden">
+      <div className="container mx-auto grid h-16 max-w-md grid-cols-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (

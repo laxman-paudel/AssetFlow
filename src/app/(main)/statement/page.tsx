@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useAssetFlow } from '@/components/app/AppProvider';
 import {
   ArrowDown,
@@ -13,7 +13,6 @@ import {
   HelpCircle,
   BookText,
   PlusSquare,
-  AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -213,7 +212,7 @@ export default function StatementPage() {
           filteredTransactions.map((t) => {
             const isIncome = t.type === 'income';
             const isAccountCreation = t.type === 'account_creation';
-            const isOrphaned = t.type !== 'account_creation' && !accounts?.some(a => a.id === t.accountId);
+            const account = accounts?.find(a => a.id === t.accountId);
 
             if (isAccountCreation) {
                 return (
@@ -239,9 +238,8 @@ export default function StatementPage() {
               <Card
                 key={t.id}
                 className={cn(
-                  'transition-all duration-200',
-                  !isOrphaned && (isIncome ? 'border-l-green-500' : 'border-l-red-500'),
-                  isOrphaned && 'border-l-amber-500 bg-amber-50 dark:bg-amber-950/30'
+                  'transition-all duration-200 border-l-4',
+                  isIncome ? 'border-l-green-500' : 'border-l-red-500'
                 )}
               >
                 <div className='p-4'>
@@ -249,16 +247,15 @@ export default function StatementPage() {
                         <div className="flex flex-1 items-center gap-4 truncate">
                             <div className={cn(
                                 "p-2 rounded-full",
-                                !isOrphaned && (isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'),
-                                isOrphaned && 'bg-amber-100 text-amber-700'
+                                isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                             )}>
-                                {isOrphaned ? <AlertTriangle className="h-5 w-5" /> : (isIncome ? <ArrowDown className="h-5 w-5" /> : <ArrowUp className="h-5 w-5" />)}
+                                {isIncome ? <ArrowDown className="h-5 w-5" /> : <ArrowUp className="h-5 w-5" />}
                             </div>
                             <div className="flex-1 truncate">
                                 <p className="font-semibold truncate">{t.remarks || 'Transaction'}</p>
                                 <div className="flex items-center gap-2">
-                                    {getAccountIcon(t.accountName)}
-                                    <p className="text-sm text-muted-foreground truncate">{isOrphaned ? 'Original account deleted' : t.accountName}</p>
+                                    {getAccountIcon(account?.name)}
+                                    <p className="text-sm text-muted-foreground truncate">{account?.name || 'Unknown Account'}</p>
                                 </div>
                             </div>
                         </div>
@@ -266,8 +263,7 @@ export default function StatementPage() {
                         <div className="text-right flex-shrink-0">
                             <p className={cn(
                                 "font-bold text-lg",
-                                !isOrphaned && (isIncome ? 'text-green-600' : 'text-red-600'),
-                                isOrphaned && 'text-amber-600'
+                                isIncome ? 'text-green-600' : 'text-red-600'
                             )}>
                                 {isIncome ? '+' : '-'} {formatAmount(t.amount)}
                             </p>

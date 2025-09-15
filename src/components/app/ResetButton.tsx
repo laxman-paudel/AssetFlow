@@ -24,11 +24,12 @@ export default function ResetButton() {
     setIsResetting(true);
     try {
       await resetApplication();
+      // The dialog will close, and the provider will handle the state change.
     } catch (error) {
       // Toast is already handled in the provider
       console.error("Error resetting application: ", error);
     } finally {
-      // The provider will handle redirect, so we may not need to set isResetting to false
+      setIsResetting(false);
     }
   };
 
@@ -49,7 +50,7 @@ export default function ResetButton() {
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete all your
-            accounts, transactions, and settings from the cloud.
+            accounts and transactions from this browser.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
