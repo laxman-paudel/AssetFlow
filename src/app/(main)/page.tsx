@@ -64,24 +64,23 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {isClient && totalBalance !== null && currency ? (
-              <div className="text-4xl font-bold tracking-tighter">
-                {new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: currency,
-                }).format(totalBalance)}
-              </div>
-            ) : (
-              <Skeleton className="h-10 w-3/4 bg-primary-foreground/20" />
-            )}
-            <div className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
-              {isClient && totalBalance !== null ? (
-                <>
+              <>
+                <div className="text-4xl font-bold tracking-tighter">
+                  {new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: currency,
+                  }).format(totalBalance)}
+                </div>
+                <div className="text-xs text-primary-foreground/80 flex items-center gap-1 mt-2">
                   View Assets <ChevronRight className="h-3 w-3" />
-                </>
-              ) : (
-                <Skeleton className="h-4 w-20 bg-primary-foreground/20" />
-              )}
-            </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <Skeleton className="h-10 w-3/4 bg-primary-foreground/20" />
+                <Skeleton className="h-4 w-20 bg-primary-foreground/20 mt-2" />
+              </>
+            )}
           </CardContent>
         </Card>
 
