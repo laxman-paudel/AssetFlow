@@ -18,7 +18,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 function SettingsContent() {
   return (
     <div className="space-y-8">
-      {/* Appearance */}
       <Card>
         <CardHeader>
           <CardTitle>Appearance</CardTitle>
@@ -34,7 +33,6 @@ function SettingsContent() {
         </CardContent>
       </Card>
 
-      {/* General */}
       <Card>
         <CardHeader>
           <CardTitle>General</CardTitle>
@@ -50,7 +48,6 @@ function SettingsContent() {
         </CardContent>
       </Card>
 
-      {/* Data Management */}
       <Card>
         <CardHeader>
           <CardTitle>Data Management</CardTitle>
@@ -63,7 +60,6 @@ function SettingsContent() {
         </CardContent>
       </Card>
 
-      {/* Danger Zone */}
       <Card className="border-destructive">
         <CardHeader>
           <CardTitle className="text-destructive">Danger Zone</CardTitle>
@@ -129,22 +125,22 @@ function SettingsSkeleton() {
     )
 }
 
-
-export default function SettingsPage() {
+function SettingsHydrated() {
   const [isClient, setIsClient] = useState(false);
-
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  return isClient ? <SettingsContent /> : <SettingsSkeleton />;
+}
+
+export default function SettingsPage() {
   return (
     <div className="container mx-auto p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
       </div>
-      
-      {isClient ? <SettingsContent /> : <SettingsSkeleton />}
-
+      <SettingsHydrated />
     </div>
   );
 }
