@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import BottomNav from '@/components/app/BottomNav';
 import { PiggyBank, Settings } from 'lucide-react';
-import CurrencySelector from '@/components/app/CurrencySelector';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -46,7 +45,6 @@ export default function MainLayout({
             </h1>
           </Link>
           <div className="flex items-center gap-2">
-            <CurrencySelector />
             <Button asChild variant="ghost" size="icon" className="text-muted-foreground">
                <Link href="/settings">
                   <Settings className="h-4 w-4" />
