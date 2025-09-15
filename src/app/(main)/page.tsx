@@ -58,7 +58,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            {totalBalance !== null && currency !== null ? (
+            {totalBalance !== null && currency ? (
               <div className="text-4xl font-bold tracking-tighter">
                 {new Intl.NumberFormat('en-US', {
                   style: 'currency',
