@@ -140,7 +140,7 @@ export default function TransactionDialog({
                               {account.name}
                             </SelectItem>
                           ))}
-                        {(accounts && accounts.length > 0) && <Separator className="my-1" />}
+                        {accounts && accounts.length > 0 && <Separator className="my-1" />}
                         <div className="p-1">
                           <Button
                                 variant="ghost"
