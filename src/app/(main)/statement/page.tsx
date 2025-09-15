@@ -194,6 +194,14 @@ function StatementPageContent() {
     }
   }, [dateRange]);
 
+  const clearFilters = () => {
+    setSearchTerm('');
+    setDateRange(undefined);
+    setSelectedAccounts([]);
+    setDateFilterLabel('All Time');
+    setShowAccountCreations(false);
+  };
+
 
   const handleTransactionClick = (transactionId: string) => {
     setExpandedTransactionId(prevId => prevId === transactionId ? null : transactionId);
@@ -338,7 +346,10 @@ function StatementPageContent() {
               </PopoverTrigger>
               <PopoverContent className="w-80">
                 <div className="space-y-4">
-                  <h4 className="font-medium leading-none">Filters</h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium leading-none">Filters</h4>
+                    <Button variant="ghost" size="sm" onClick={clearFilters} className="-mr-2 h-7">Clear</Button>
+                  </div>
                   <Separator />
                   <div className='space-y-2'>
                     <Label>Custom Date Range</Label>
@@ -600,7 +611,7 @@ function StatementPageContent() {
               <p className="text-muted-foreground mb-4 max-w-sm">
                 No transactions match your current filters. Try broadening your search.
               </p>
-              <Button onClick={() => { setSearchTerm(''); setDateRange(undefined); setSelectedAccounts([]); setDateFilterLabel('All Time'); }}>
+              <Button onClick={clearFilters}>
                 Clear All Filters
               </Button>
             </div>
