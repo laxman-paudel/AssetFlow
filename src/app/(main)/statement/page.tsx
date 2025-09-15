@@ -80,7 +80,6 @@ function StatementPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [dateFilterLabel, setDateFilterLabel] = useState('All Time');
-  const [activeControl, setActiveControl] = useState<'date' | null>(null);
 
 
   useEffect(() => {
@@ -145,7 +144,7 @@ function StatementPageContent() {
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - a.id.localeCompare(b.id);
     });
 
     return items;
@@ -299,10 +298,11 @@ function StatementPageContent() {
 
             <StatementExportButton transactions={filteredTransactions} />
             
-            <DropdownMenu onOpenChange={(open) => open ? setActiveControl('date') : setActiveControl(null)}>
+            <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className={cn("h-11 w-11 shrink-0", activeControl === 'date' && 'border-primary ring-2 ring-primary/50')}>
-                    <CalendarIcon className="h-5 w-5" />
+                <Button variant="outline" className="h-11 w-auto min-w-[120px] justify-start">
+                    <CalendarIcon className="mr-2 h-5 w-5" />
+                    <span className='truncate'>{dateFilterLabel}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -310,22 +310,6 @@ function StatementPageContent() {
                 <DropdownMenuItem onClick={() => setDateFilter('month')}>This Month</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setDateFilter('3months')}>Last 3 Months</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setDateFilter('year')}>This Year</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                 <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant='ghost' className='w-full justify-start font-normal'>Custom Range...</Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                        <Calendar
-                        initialFocus
-                        mode="range"
-                        defaultMonth={dateRange?.from}
-                        selected={dateRange}
-                        onSelect={setDateRange}
-                        numberOfMonths={2}
-                        />
-                    </PopoverContent>
-                </Popover>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -351,31 +335,86 @@ function StatementPageContent() {
                   <Filter className="h-5 w-5" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64">
+              <PopoverContent className="w-80">
                 <div className="space-y-4">
-                  <h4 className="font-medium leading-none">Filter by Account</h4>
-                  <div className="space-y-2">
-                    {accountsLoaded && accounts && accounts.map((account) => (
-                      <div key={account.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={account.id}
-                          checked={selectedAccounts.includes(account.id)}
-                          onCheckedChange={() => handleAccountFilterChange(account.id)}
-                        />
-                        <Label htmlFor={account.id}>{account.name}</Label>
-                      </div>
-                    ))}
-                    {accountsLoaded && accounts?.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        No accounts to filter.
-                      </p>
-                    )}
-                    {!accountsLoaded && <Skeleton className="h-10 w-full" />}
+                  <h4 className="font-medium leading-none">Filters</h4>
+                  <Separator />
+                  <div className='space-y-2'>
+                    <Label>Custom Date Range</Label>
+                    <div className='flex items-center gap-2'>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !dateRange?.from && "text-muted-foreground"
+                                )}
+                                >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {dateRange?.from ? format(dateRange.from, "LLL dd, y") : <span>Start date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                mode="single"
+                                selected={dateRange?.from}
+                                onSelect={(day) => setDateRange(prev => ({...prev, from: day}))}
+                                initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+                         <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !dateRange?.to && "text-muted-foreground"
+                                )}
+                                >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {dateRange?.to ? format(dateRange.to, "LLL dd, y") : <span>End date</span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                mode="single"
+                                selected={dateRange?.to}
+                                onSelect={(day) => setDateRange(prev => ({...prev, to: day}))}
+                                disabled={{ before: dateRange?.from }}
+                                initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                  </div>
+                   <Separator />
+                  <div className='space-y-2'>
+                    <Label>Filter by Account</Label>
+                    <div className="space-y-2">
+                        {accountsLoaded && accounts && accounts.map((account) => (
+                        <div key={account.id} className="flex items-center space-x-2">
+                            <Checkbox
+                            id={account.id}
+                            checked={selectedAccounts.includes(account.id)}
+                            onCheckedChange={() => handleAccountFilterChange(account.id)}
+                            />
+                            <Label htmlFor={account.id} className="font-normal">{account.name}</Label>
+                        </div>
+                        ))}
+                        {accountsLoaded && accounts?.length === 0 && (
+                        <p className="text-sm text-muted-foreground">
+                            No accounts to filter.
+                        </p>
+                        )}
+                        {!accountsLoaded && <Skeleton className="h-10 w-full" />}
+                    </div>
                   </div>
                   <Separator />
                   <div className="flex items-center space-x-2">
                     <Checkbox id="show-account-creations" checked={showAccountCreations} onCheckedChange={(checked) => setShowAccountCreations(!!checked)} />
-                    <Label htmlFor="show-account-creations">Show Account Creations</Label>
+                    <Label htmlFor="show-account-creations" className="font-normal">Show Account Creations</Label>
                   </div>
                 </div>
               </PopoverContent>
@@ -597,5 +636,3 @@ export default function StatementPage() {
     </Suspense>
   )
 }
-
-    
