@@ -55,6 +55,7 @@ import { useCountUp } from '@/hooks/useCountUp';
 import { getCategoryById } from '@/lib/categories';
 import type { DateRange } from 'react-day-picker';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import StatementExportButton from '@/components/app/StatementExportButton';
 
 
 function StatementPageContent() {
@@ -263,8 +264,8 @@ function StatementPageContent() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                  placeholder='Search by remarks...'
-                  className='pl-10 pr-8 w-40 sm:w-56 search-active'
+                  placeholder='Search...'
+                  className='pl-10 pr-8 w-40 sm:w-44 search-active'
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -274,6 +275,8 @@ function StatementPageContent() {
                 </Button>
               )}
             </div>
+
+            <StatementExportButton transactions={filteredTransactions} />
             
             <DropdownMenu onOpenChange={(open) => open ? setActiveControl('date') : setActiveControl(null)}>
               <DropdownMenuTrigger asChild>
