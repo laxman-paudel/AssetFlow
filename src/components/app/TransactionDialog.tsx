@@ -83,6 +83,8 @@ export default function TransactionDialog({
     form.setValue('assetId', newAssetId);
     setAssetDialogOpen(false);
   }
+  
+  const placeholderText = type === 'expenditure' ? "What are you spending from?" : "Where is the income going to?";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -122,7 +124,7 @@ export default function TransactionDialog({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select an asset" />
+                        <SelectValue placeholder={placeholderText} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
