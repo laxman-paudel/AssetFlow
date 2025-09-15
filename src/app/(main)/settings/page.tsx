@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import CurrencySelector from '@/components/app/CurrencySelector';
 import ExportButton from '@/components/app/ExportButton';
 import ResetButton from '@/components/app/ResetButton';
-import { Separator } from '@/components/ui/separator';
 
 export default function SettingsPage() {
   return (
