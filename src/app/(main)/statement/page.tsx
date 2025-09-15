@@ -53,15 +53,22 @@ export default function StatementPage() {
     }
 
     if (selectedAccounts.length > 0) {
-      items = items.filter((t) => 
-        t.type === 'account_creation' || (t.accountId && selectedAccounts.includes(t.accountId))
-      );
+      items = items.filter((t) => {
+        // If it's a regular transaction, check if its account is selected
+        if (t.type === 'income' || t.type === 'expenditure') {
+          return t.accountId && selectedAccounts.includes(t.accountId);
+        }
+        // If it's an account creation, always include it if showAccountCreations is true,
+        // regardless of account filter, because they might not have a direct account link in the same way.
+        // The filtering for this type is handled by the `showAccountCreations` check above.
+        return t.type === 'account_creation';
+      });
     }
     
     items.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - a;
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
 
     return items;
