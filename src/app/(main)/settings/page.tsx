@@ -20,7 +20,7 @@ import CategoryList from '@/components/app/CategoryList';
 
 
 function SettingsContent() {
-  const { categoriesEnabled, toggleCategories } = useAssetFlow();
+  const { categoriesEnabled, toggleCategories, insightsEnabled, toggleInsights } = useAssetFlow();
   
   return (
     <div className="space-y-8">
@@ -46,11 +46,24 @@ function SettingsContent() {
             Manage your application-wide settings.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <Label>Primary Currency</Label>
-            <CurrencySelector />
-          </div>
+        <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <Label>Primary Currency</Label>
+              <CurrencySelector />
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4 gap-4">
+                <div className="flex-1">
+                    <h4 className="font-semibold">Enable Insights</h4>
+                    <p className="text-sm text-muted-foreground">
+                        Turn the financial insights page on or off.
+                    </p>
+                </div>
+                <Switch
+                    checked={insightsEnabled}
+                    onCheckedChange={toggleInsights}
+                    aria-label="Toggle insights page"
+                />
+            </div>
         </CardContent>
       </Card>
 

@@ -9,20 +9,30 @@ import {
   PieChart,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAssetFlow } from './AppProvider';
 
-const navItems = [
+const baseNavItems = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/statement', icon: BookText, label: 'Statements' },
   { href: '/assets', icon: Wallet, label: 'Accounts' },
-  { href: '/insights', icon: PieChart, label: 'Insights' },
 ];
+
+const insightsNavItem = { href: '/insights', icon: PieChart, label: 'Insights' };
+
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { insightsEnabled } = useAssetFlow();
+  
+  const navItems = insightsEnabled ? [...baseNavItems, insightsNavItem] : baseNavItems;
+
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background/95 backdrop-blur-sm md:hidden">
-      <div className="container mx-auto grid h-16 max-w-lg grid-cols-4">
+      <div className={cn(
+        "container mx-auto grid h-16 max-w-lg",
+        navItems.length === 4 ? 'grid-cols-4' : 'grid-cols-3'
+      )}>
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (

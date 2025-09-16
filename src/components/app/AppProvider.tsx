@@ -21,12 +21,15 @@ const ACCOUNTS_KEY = 'assetflow-accounts';
 const TRANSACTIONS_KEY = 'assetflow-transactions';
 const CATEGORIES_KEY = 'assetflow-categories';
 const CATEGORIES_ENABLED_KEY = 'assetflow-categories-enabled';
+const INSIGHTS_ENABLED_KEY = 'assetflow-insights-enabled';
+
 
 interface AssetFlowState {
   accounts: Account[] | null;
   transactions: Transaction[] | null;
   categories: Category[] | null;
   categoriesEnabled: boolean;
+  insightsEnabled: boolean;
   addAccount: (name: string, initialBalance: number) => Promise<Account>;
   editAccount: (account: Account, updates: { name: string; balance: number }) => Promise<void>;
   deleteAccount: (accountId: string) => Promise<void>;
@@ -49,6 +52,7 @@ interface AssetFlowState {
   editCategory: (categoryId: string, updates: { name: string, icon: string }) => Promise<void>;
   deleteCategory: (categoryId: string) => Promise<void>;
   toggleCategories: (enabled: boolean) => void;
+  toggleInsights: (enabled: boolean) => void;
   resetApplication: () => Promise<void>;
   changeCurrency: (newCurrency: string) => void;
   totalBalance: number | null;
@@ -67,6 +71,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCurrency] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [categoriesEnabled, setCategoriesEnabled] = useState(true);
+  const [insightsEnabled, setInsightsEnabled] = useState(true);
 
   const { toast } = useToast();
   const router = useRouter();
@@ -90,6 +95,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const storedCategoriesEnabled = localStorage.getItem(CATEGORIES_ENABLED_KEY);
         setCategoriesEnabled(storedCategoriesEnabled ? JSON.parse(storedCategoriesEnabled) : true);
 
+        const storedInsightsEnabled = localStorage.getItem(INSIGHTS_ENABLED_KEY);
+        setInsightsEnabled(storedInsightsEnabled ? JSON.parse(storedInsightsEnabled) : true);
+
       } else {
         setNeedsCurrencySetup(true);
       }
@@ -111,11 +119,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (transactions) localStorage.setItem(TRANSACTIONS_KEY, JSON.stringify(transactions));
       if (categories) localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
       localStorage.setItem(CATEGORIES_ENABLED_KEY, JSON.stringify(categoriesEnabled));
+      localStorage.setItem(INSIGHTS_ENABLED_KEY, JSON.stringify(insightsEnabled));
     } catch (error) {
       console.error("Failed to save data to local storage:", error);
       toast({ title: "Save Error", description: "Could not save your changes.", variant: "destructive" });
     }
-  }, [currency, accounts, transactions, categories, categoriesEnabled, isInitialized, toast]);
+  }, [currency, accounts, transactions, categories, categoriesEnabled, insightsEnabled, isInitialized, toast]);
 
   const addAccount = useCallback(async (name: string, initialBalance: number): Promise<Account> => {
     const newAccount: Account = { 
@@ -442,6 +451,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         });
     }, [toast]);
 
+    const toggleInsights = useCallback((enabled: boolean) => {
+        setInsightsEnabled(enabled);
+        toast({
+            title: `Insights ${enabled ? 'Enabled' : 'Disabled'}`,
+            description: `The Insights page has been turned ${enabled ? 'on' : 'off'}.`,
+        });
+    }, [toast]);
+
   const resetApplication = useCallback(async () => {
     try {
       localStorage.removeItem(CURRENCY_KEY);
@@ -449,6 +466,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem(TRANSACTIONS_KEY);
       localStorage.removeItem(CATEGORIES_KEY);
       localStorage.removeItem(CATEGORIES_ENABLED_KEY);
+      localStorage.removeItem(INSIGHTS_ENABLED_KEY);
       
       toast({ title: 'Application Reset', description: 'Your data has been cleared.' });
 
@@ -488,6 +506,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setTransactions([]);
         setCategories(defaultCategories);
         setCategoriesEnabled(true);
+        setInsightsEnabled(true);
 
         router.push('/');
       
@@ -510,6 +529,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     transactions,
     categories,
     categoriesEnabled,
+    insightsEnabled,
     addAccount,
     editAccount,
     deleteAccount,
@@ -521,6 +541,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     editCategory,
     deleteCategory,
     toggleCategories,
+    toggleInsights,
     resetApplication,
     changeCurrency,
     totalBalance,
@@ -559,6 +580,7 @@ function AppProviderShell({ children }: { children: React.ReactNode }) {
         transactions: [],
         categories: [],
         categoriesEnabled: true,
+        insightsEnabled: true,
         addAccount: async () => new Promise(() => {}),
         editAccount: async () => {},
         deleteAccount: async () => {},
@@ -570,6 +592,7 @@ function AppProviderShell({ children }: { children: React.ReactNode }) {
         editCategory: async () => {},
         deleteCategory: async () => {},
         toggleCategories: () => {},
+        toggleInsights: () => {},
         resetApplication: async () => {},
         changeCurrency: () => {},
         totalBalance: 0,

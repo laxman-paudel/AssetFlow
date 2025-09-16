@@ -3,16 +3,23 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useAssetFlow } from './AppProvider';
 
-const navItems = [
+const baseNavItems = [
   { href: '/', label: 'Dashboard' },
   { href: '/statement', label: 'Statements' },
   { href: '/assets', label: 'Accounts' },
-  { href: '/insights', label: 'Insights' },
 ];
+
+const insightsNavItem = { href: '/insights', label: 'Insights' };
+
 
 export default function HeaderNav() {
   const pathname = usePathname();
+  const { insightsEnabled } = useAssetFlow();
+  
+  const navItems = insightsEnabled ? [...baseNavItems, insightsNavItem] : baseNavItems;
+
 
   return (
     <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
