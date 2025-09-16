@@ -5,12 +5,23 @@ import HeaderNav from '@/components/app/HeaderNav';
 import { Button } from '@/components/ui/button';
 import { PiggyBank, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleSettingsClick = () => {
+    if (pathname === '/settings') {
+      router.back();
+    } else {
+      router.push('/settings');
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -23,11 +34,9 @@ export default function MainLayout({
             </h1>
           </Link>
           <HeaderNav />
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/settings">
-              <Settings className="h-5 w-5" />
-              <span className="sr-only">Settings</span>
-            </Link>
+          <Button variant="ghost" size="icon" onClick={handleSettingsClick}>
+            <Settings className="h-5 w-5" />
+            <span className="sr-only">Settings</span>
           </Button>
         </div>
       </header>
