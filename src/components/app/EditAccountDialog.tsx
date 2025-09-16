@@ -42,7 +42,13 @@ export default function EditAccountDialog({ open, onOpenChange, account }: EditA
 
   const hasTransactions = useMemo(() => {
     if (!transactions) return false;
-    return transactions.some(t => t.accountId === account.id && t.type !== 'account_creation');
+    return transactions.some(t => {
+      // Check if it's a regular income/expense/transfer for this account
+      if (t.accountId === account.id && t.type !== 'account_creation') return true;
+      // Check if it's a transfer *to* this account
+      if (t.toAccountId === account.id) return true;
+      return false;
+    });
   }, [transactions, account.id]);
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -54,7 +60,7 @@ export default function EditAccountDialog({ open, onOpenChange, account }: EditA
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    editAccount(account.id, values);
+    editAccount(account, values);
     onOpenChange(false);
   };
   
@@ -98,9 +104,13 @@ export default function EditAccountDialog({ open, onOpenChange, account }: EditA
                   <FormControl>
                     <Input type="number" step="0.01" {...field} disabled={hasTransactions} />
                   </FormControl>
-                  {hasTransactions && (
+                  {hasTransactions ? (
                     <FormDescriptionNew>
-                      Balance cannot be edited as transactions have been recorded for this account.
+                      Balance cannot be directly edited as transactions have been recorded. To adjust, create a new income or expense transaction.
+                    </FormDescriptionNew>
+                  ) : (
+                    <FormDescriptionNew>
+                      Set the current balance for this account. This action will be recorded.
                     </FormDescriptionNew>
                   )}
                   <FormMessage />

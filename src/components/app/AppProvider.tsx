@@ -28,7 +28,7 @@ interface AssetFlowState {
   categories: Category[] | null;
   categoriesEnabled: boolean;
   addAccount: (name: string, initialBalance: number) => Promise<Account>;
-  editAccount: (accountId: string, updates: { name: string; balance: number }) => Promise<void>;
+  editAccount: (account: Account, updates: { name: string; balance: number }) => Promise<void>;
   deleteAccount: (accountId: string) => Promise<void>;
   addTransaction: (
     type: 'income' | 'expenditure',
@@ -147,23 +147,41 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return newAccount;
   }, [toast]);
   
-  const editAccount = useCallback(async (accountId: string, updates: { name: string; balance: number }) => {
+  const editAccount = useCallback(async (account: Account, updates: { name: string; balance: number }) => {
+    const balanceDifference = updates.balance - account.balance;
+
     setAccounts(prev => 
-      prev?.map(a => a.id === accountId ? { ...a, name: updates.name, balance: updates.balance } : a) || []
+      prev?.map(a => a.id === account.id ? { ...a, name: updates.name, balance: updates.balance } : a) || []
     );
     
     // Update account name in all related transactions
-    setTransactions(prev => 
-      prev?.map(t => {
-        if (t.accountId === accountId) {
-            t.accountName = updates.name;
+    setTransactions(prev => {
+        let newTransactions = prev || [];
+        newTransactions = newTransactions.map(t => {
+            if (t.accountId === account.id) {
+                t.accountName = updates.name;
+            }
+            if (t.toAccountId === account.id) {
+                t.toAccountName = updates.name;
+            }
+            return t;
+        });
+
+        if (balanceDifference !== 0) {
+            const adjustmentTransaction: Transaction = {
+                id: new Date().toISOString() + Math.random(),
+                type: 'account_creation', // Re-using for styling.
+                amount: balanceDifference,
+                accountId: account.id,
+                accountName: updates.name,
+                date: new Date().toISOString(),
+                remarks: `Balance adjusted`,
+            };
+            newTransactions.push(adjustmentTransaction);
         }
-        if (t.toAccountId === accountId) {
-            t.toAccountName = updates.name;
-        }
-        return t;
-    }) || []
-    );
+
+        return newTransactions;
+    });
     
     toast({
       title: 'Account Updated',
