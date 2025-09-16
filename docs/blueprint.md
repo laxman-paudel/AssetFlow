@@ -19,3 +19,4 @@
 - Simple, modern icons for asset types and transaction categories.
 - Clean and intuitive layout with clear separation of income, expenditure, and asset sections.
 - Subtle animations on transaction entry and balance updates.
+abc
