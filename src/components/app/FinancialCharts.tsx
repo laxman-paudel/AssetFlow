@@ -243,7 +243,7 @@ export default function FinancialCharts() {
         if (isWithinInterval(new Date(t.date), currentMonthInterval)) {
             currentSpending[categoryName] = (currentSpending[categoryName] || 0) + t.amount;
         } else if (isWithinInterval(new Date(t.date), lastMonthInterval)) {
-            lastSpending[categoryName] = (lastSpending[name] || 0) + t.amount;
+            lastSpending[name] = (lastSpending[name] || 0) + t.amount;
         }
       }
     });
@@ -311,7 +311,7 @@ export default function FinancialCharts() {
       return (
         <div className="p-2 text-sm bg-background/90 backdrop-blur-sm rounded-lg border shadow-lg">
           <p className="font-bold">{data.name}</p>
-          <p>{formatCurrency(data.value)} ({percent.toFixed(1)}%)</p>
+          <p>{formatCurrency(data.value)} ({isFinite(percent) ? percent.toFixed(1) : 0}%)</p>
         </div>
       );
     }
