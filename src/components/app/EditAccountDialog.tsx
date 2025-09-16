@@ -21,7 +21,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription as FormDescriptionNew
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useMemo } from 'react';
@@ -42,12 +42,11 @@ export default function EditAccountDialog({ open, onOpenChange, account }: EditA
 
   const hasTransactions = useMemo(() => {
     if (!transactions) return false;
+    // Balance editing is disabled only if there are real transactions, not just the initial creation/adjustment.
     return transactions.some(t => {
-      // Check if it's a regular income/expense/transfer for this account
-      if (t.accountId === account.id && t.type !== 'account_creation') return true;
-      // Check if it's a transfer *to* this account
-      if (t.toAccountId === account.id) return true;
-      return false;
+        const isRelated = t.accountId === account.id || t.toAccountId === account.id;
+        const isModifyingTransaction = t.type === 'income' || t.type === 'expenditure' || t.type === 'transfer';
+        return isRelated && isModifyingTransaction;
     });
   }, [transactions, account.id]);
   
@@ -105,13 +104,13 @@ export default function EditAccountDialog({ open, onOpenChange, account }: EditA
                     <Input type="number" step="0.01" {...field} disabled={hasTransactions} />
                   </FormControl>
                   {hasTransactions ? (
-                    <FormDescriptionNew>
+                    <FormDescription>
                       Balance cannot be directly edited as transactions have been recorded. To adjust, create a new income or expense transaction.
-                    </FormDescriptionNew>
+                    </FormDescription>
                   ) : (
-                    <FormDescriptionNew>
+                    <FormDescription>
                       Set the current balance for this account. This action will be recorded.
-                    </FormDescriptionNew>
+                    </FormDescription>
                   )}
                   <FormMessage />
                 </FormItem>

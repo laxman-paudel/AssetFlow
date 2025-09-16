@@ -71,9 +71,3 @@
      transition-duration: 200ms;
   }
 }
-
-@layer utilities {
-  .will-change-transform {
-    will-change: transform, box-shadow;
-  }
-}

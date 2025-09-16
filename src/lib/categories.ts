@@ -3,7 +3,7 @@ import type { Category, CategoryType } from './types';
 
 // A list of icons that can be assigned to categories.
 export const assignableIcons = [
-    'Shapes', 'Gift', 'UtensilsCrossed', 'Home', 'Car', 'Heart', 'GraduationCap', 'Film', 'Plane', 'Briefcase', 'Receipt', 'Bus', 'Train', 'ShoppingBag', 'Shirt', 'Coffee', 'Pizza', 'Bone', 'Laptop', 'Gamepad2', 'Music', 'BookOpen'
+    'Shapes', 'Gift', 'UtensilsCrossed', 'Home', 'Car', 'Heart', 'GraduationCap', 'Film', 'Plane', 'Briefcase', 'Receipt', 'Bus', 'Train', 'ShoppingBag', 'Shirt', 'Coffee', 'Pizza', 'Bone', 'Laptop', 'Gamepad2', 'Music', 'BookOpen', 'TrendingUp', 'PiggyBank', 'DollarSign'
 ] as const;
 
 export type IconName = typeof assignableIcons[number];
@@ -31,6 +31,9 @@ export const iconMap: { [key in IconName]: LucideIcons.LucideIcon } = {
     Gamepad2: LucideIcons.Gamepad2,
     Music: LucideIcons.Music,
     BookOpen: LucideIcons.BookOpen,
+    TrendingUp: LucideIcons.TrendingUp,
+    PiggyBank: LucideIcons.PiggyBank,
+    DollarSign: LucideIcons.DollarSign,
 };
 
 export const getIconByName = (name: string): LucideIcons.LucideIcon => {
