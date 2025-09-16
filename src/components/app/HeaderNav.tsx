@@ -8,6 +8,7 @@ const navItems = [
   { href: '/', label: 'Dashboard' },
   { href: '/statement', label: 'Statements' },
   { href: '/assets', label: 'Accounts' },
+  { href: '/insights', label: 'Insights' },
 ];
 
 export default function HeaderNav() {
