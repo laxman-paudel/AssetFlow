@@ -176,18 +176,18 @@ export default function AccountsPage() {
 
                       {expandedAccountId === account.id && (
                       <div className="bg-muted/50 border-t transition-all">
-                          <div className="px-2 sm:px-4 py-2 flex justify-evenly">
+                          <div className="px-2 py-2 flex justify-evenly">
                               <Button variant="ghost" size="sm" onClick={() => handleShowTransactions(account.id)}>
-                                  <BookText className="mr-0 sm:mr-2 h-4 w-4" />
-                                  <span className="hidden sm:inline">Transactions</span>
+                                  <BookText className="h-4 w-4" />
+                                  <span className="hidden sm:inline ml-2">Transactions</span>
                               </Button>
                               <Button variant="ghost" size="sm" onClick={() => setAccountToEdit(account)}>
-                                  <Edit className="mr-0 sm:mr-2 h-4 w-4" />
-                                  <span className="hidden sm:inline">Edit</span>
+                                  <Edit className="h-4 w-4" />
+                                  <span className="hidden sm:inline ml-2">Edit</span>
                               </Button>
                               <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setAccountToDelete(account)}>
-                                  <Trash2 className="mr-0 sm:mr-2 h-4 w-4" />
-                                  <span className="hidden sm:inline">Delete</span>
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="hidden sm:inline ml-2">Delete</span>
                               </Button>
                           </div>
                       </div>
@@ -243,3 +243,5 @@ export default function AccountsPage() {
     </>
   );
 }
+
+    
