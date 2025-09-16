@@ -58,7 +58,7 @@ const renderActiveShape = (props: any) => {
   const displayPercent = isFinite(percent) ? (percent * 100).toFixed(1) : '0.0';
 
   return (
-    <g>
+    <g style={{ outline: 'none' }}>
       <text x={cx} y={cy} dy={-8} textAnchor="middle" fill={fill} className="font-semibold text-base truncate" width={innerRadius * 2}>
         {payload.name}
       </text>
@@ -89,13 +89,11 @@ const renderActiveShape = (props: any) => {
 
 const renderActive3DShape = (props: any) => {
   const RADIAN = Math.PI / 180;
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
   const sin = Math.sin(-RADIAN * (startAngle + (endAngle - startAngle) / 2));
   const cos = Math.cos(-RADIAN * (startAngle + (endAngle - startAngle) / 2));
-  const mx = cx + (outerRadius + 10) * cos;
-  const my = cy + (outerRadius + 10) * sin;
-  const ex = mx + (cos >= 0 ? 1 : -1) * 12;
-  const ey = my;
+  const percent = payload.percent;
+  const displayPercent = isFinite(percent) ? (percent * 100).toFixed(1) : '0.0';
 
   // This creates the 3D effect by stacking sectors
   const depth = 8;
@@ -114,10 +112,8 @@ const renderActive3DShape = (props: any) => {
     />
   ));
   
-  const displayPercent = isFinite(percent) ? (percent * 100).toFixed(1) : '0.0';
-
   return (
-    <g>
+    <g style={{ outline: 'none' }}>
       {sectors}
       <text x={cx} y={cy - depth - 10} textAnchor="middle" fill={fill} className="font-semibold text-base truncate" width={innerRadius * 2}>
         {payload.name}
