@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useRef } from 'react';
 import { useAssetFlow } from '@/components/app/AppProvider';
 import { getCategoryById } from '@/lib/categories';
 import { subMonths, format, startOfMonth, endOfMonth, isWithinInterval, getDaysInMonth } from 'date-fns';
@@ -19,6 +19,7 @@ import {
   LineChart,
   Line,
   CartesianGrid,
+  Brush,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '../ui/skeleton';
@@ -214,7 +215,8 @@ export default function FinancialCharts() {
         ? ((netIncome - lastMonthNetIncome) / Math.abs(lastMonthNetIncome)) * 100
         : netIncome > 0 ? 100 : 0;
         
-      const avgDailySpending = currentMonthExpense / getDaysInMonth(new Date());
+      const avgDailySpending = currentMonthExpense > 0 ? currentMonthExpense / getDaysInMonth(new Date()) : 0;
+
 
       return { netIncome, currentMonthIncome, currentMonthExpense, avgDailySpending, netIncomeChange, biggestExpense };
   }, [transactions, isInitialized]);
@@ -273,7 +275,7 @@ export default function FinancialCharts() {
       const data = payload[0].payload;
       const change = data.lastMonthValue !== 0 
         ? ((data.value - data.lastMonthValue) / data.lastMonthValue) * 100
-        : 100;
+        : data.value > 0 ? 100 : 0;
         
       return (
         <div className="p-2 text-sm bg-background/90 backdrop-blur-sm rounded-lg border shadow-lg">
@@ -295,20 +297,19 @@ export default function FinancialCharts() {
   
   if (!isInitialized) {
       return (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-96 w-full lg:col-span-4" />
-            <Skeleton className="h-96 w-full lg:col-span-2" />
-            <Skeleton className="h-96 w-full lg:col-span-2" />
+            <Skeleton className="h-96 w-full lg:col-span-3" />
+            <Skeleton className="h-96 w-full lg:col-span-3" />
           </div>
       )
   }
 
-  if (transactions?.length === 0) {
+  if (!transactions || transactions.length === 0) {
       return (
-        <Card className="text-center py-20 col-span-1 md:col-span-2 lg:col-span-4">
+        <Card className="text-center py-20 col-span-1 md:col-span-2 lg:col-span-3">
             <CardContent className="flex flex-col items-center justify-center">
                 <Wallet className="h-16 w-16 text-muted-foreground mb-4"/>
                 <h3 className="text-xl font-semibold mb-2">No Transaction Data</h3>
@@ -366,7 +367,7 @@ export default function FinancialCharts() {
             </>
         )}
 
-      <Card className="md:col-span-2 lg:col-span-3">
+      <Card className="md:col-span-3">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-6 w-6" />
@@ -405,19 +406,19 @@ export default function FinancialCharts() {
         </CardContent>
       </Card>
       
-      <Card className="md:col-span-2 lg:col-span-3">
+      <Card className="md:col-span-3">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <LineChartIcon className="h-6 w-6" />
             Net Flow Trend
           </CardTitle>
-          <CardDescription>Your net savings or deficit over the last 6 months.</CardDescription>
+          <CardDescription>Your net savings or deficit over time. Drag the handles to zoom.</CardDescription>
         </CardHeader>
         <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
+            <ResponsiveContainer width="100%" height={400}>
                  <LineChart
                     data={monthlySummaryData}
-                    margin={{ top: 5, right: 20, left: -10, bottom: 5, }}
+                    margin={{ top: 5, right: 20, left: -10, bottom: 60, }}
                 >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
@@ -440,13 +441,14 @@ export default function FinancialCharts() {
                     />
                     <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20px'}}/>
                     <Line type="monotone" dataKey="net" name="Net Flow" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                    <Brush dataKey="month" height={30} stroke="hsl(var(--primary))" y={320} />
                 </LineChart>
             </ResponsiveContainer>
         </CardContent>
       </Card>
       
       <div className="grid md:grid-cols-2 gap-6 lg:col-span-3">
-        {categoriesEnabled && (
+        {categoriesEnabled && spendingByCategoryData.length > 0 && (
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -456,7 +458,6 @@ export default function FinancialCharts() {
                     <CardDescription>Breakdown of expenses for {format(new Date(), 'MMMM yyyy')}.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {spendingByCategoryData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={350}>
                         <PieChart>
                         <Pie
@@ -480,27 +481,20 @@ export default function FinancialCharts() {
                         <Legend content={renderCustomizedLegend} />
                         </PieChart>
                     </ResponsiveContainer>
-                    ) : (
-                    <div className="h-[350px] flex flex-col items-center justify-center text-center text-muted-foreground p-4">
-                        <PieChartIcon className="h-12 w-12 mb-4" />
-                        <p className="font-semibold">No expenses recorded yet for this month.</p>
-                        <p className="text-sm">Your spending breakdown will appear here once you add some expenses.</p>
-                    </div>
-                    )}
                 </CardContent>
             </Card>
         )}
 
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                <Wallet className="h-6 w-6" />
-                Account Balances
-                </CardTitle>
-                <CardDescription>Distribution of your assets across accounts.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {accountBalanceData && accountBalanceData.length > 0 ? (
+        {accountBalanceData && accountBalanceData.length > 0 && (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                    <Wallet className="h-6 w-6" />
+                    Account Balances
+                    </CardTitle>
+                    <CardDescription>Distribution of your assets across accounts.</CardDescription>
+                </CardHeader>
+                <CardContent>
                     <ResponsiveContainer width="100%" height={350}>
                         <PieChart>
                             <Pie
@@ -532,18 +526,37 @@ export default function FinancialCharts() {
                             <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20px'}} />
                         </PieChart>
                     </ResponsiveContainer>
-                ) : (
-                    <div className="h-[350px] flex flex-col items-center justify-center text-center text-muted-foreground p-4">
-                        <Wallet className="h-12 w-12 mb-4" />
-                        <p className="font-semibold">No accounts with a positive balance.</p>
-                        <p className="text-sm">This chart will show your asset distribution once you have funds.</p>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+        )}
       </div>
+
+       {/* Fallback for empty states */}
+        {categoriesEnabled && spendingByCategoryData.length === 0 && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>This Month's Spending</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[350px] flex flex-col items-center justify-center text-center text-muted-foreground p-4">
+                    <PieChartIcon className="h-12 w-12 mb-4" />
+                    <p className="font-semibold">No expenses recorded yet for this month.</p>
+                    <p className="text-sm">Your spending breakdown will appear here once you add some expenses.</p>
+                </CardContent>
+            </Card>
+        )}
+        
+        {(!accountBalanceData || accountBalanceData.length === 0) && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Account Balances</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[350px] flex flex-col items-center justify-center text-center text-muted-foreground p-4">
+                     <Wallet className="h-12 w-12 mb-4" />
+                    <p className="font-semibold">No accounts with a positive balance.</p>
+                    <p className="text-sm">This chart will show your asset distribution once you have funds.</p>
+                </CardContent>
+            </Card>
+        )}
     </div>
   );
 }
-
-    
