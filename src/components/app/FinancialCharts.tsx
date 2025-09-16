@@ -439,7 +439,7 @@ export default function FinancialCharts() {
                 </CardHeader>
                 <CardContent>
                     <ResponsiveContainer width="100%" height={350}>
-                        <PieChart>
+                        <PieChart className="outline-none">
                         <Pie
                             activeIndex={pieChartActiveIndex}
                             activeShape={renderActiveShape}
