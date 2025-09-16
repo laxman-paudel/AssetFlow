@@ -149,9 +149,9 @@ export default function AccountsPage() {
                   <Skeleton key={i} className="h-28 w-full" />
                 ))
               ) : (
-                accounts.map((account, index) => (
-                  <div key={account.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}>
+                accounts.map((account) => (
                     <Card 
+                      key={account.id}
                       className={cn(
                           "transition-all duration-300 border-l-4 border-l-primary/20 overflow-hidden",
                           expandedAccountId === account.id ? 'bg-muted/50 border-l-primary/60' : 'hover:bg-muted/50 hover:shadow-lg hover:-translate-y-1 hover:border-l-primary/60'
@@ -193,7 +193,6 @@ export default function AccountsPage() {
                       </div>
                       )}
                     </Card>
-                  </div>
                 ))
               )}
               {accountsLoaded && accounts.length > 0 && (
