@@ -124,7 +124,7 @@ export default function DashboardPage() {
                     <div className="bg-blue-100 text-blue-700 rounded-full p-2">
                         <Wallet className="h-5 w-5" />
                     </div>
-                    <span className="font-semibold text-blue-800">Add Account</span>
+                    <span className="font-semibold text-blue-800">New Account</span>
                 </div>
             </Button>
         </div>

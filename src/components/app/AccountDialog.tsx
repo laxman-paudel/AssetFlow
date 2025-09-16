@@ -55,7 +55,7 @@ export default function AccountDialog({ open, onOpenChange }: AccountDialogProps
         <DialogHeader>
           <DialogTitle>Create New Account</DialogTitle>
           <DialogDescription>
-            Add a new account like a bank account or cash.
+            Add a new account like a bank account, wallet, or credit card.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -67,7 +67,7 @@ export default function AccountDialog({ open, onOpenChange }: AccountDialogProps
                 <FormItem>
                   <FormLabel>Account Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Primary bank balance, Wallet balance" {...field} />
+                    <Input placeholder="e.g. Primary Bank, Wallet" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
