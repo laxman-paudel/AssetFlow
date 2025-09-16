@@ -12,6 +12,7 @@ import AccountDialog from '@/components/app/AccountDialog';
 import { Separator } from '@/components/ui/separator';
 import { useCountUp } from '@/hooks/useCountUp';
 import TransferDialog from '@/components/app/TransferDialog';
+import { cn } from '@/lib/utils';
 
 type DialogType = 'income' | 'expenditure' | 'account' | 'transfer';
 
@@ -83,7 +84,10 @@ export default function DashboardPage() {
             className="h-28 flex-col gap-2 text-lg border-dashed border-2 hover:border-solid hover:bg-green-500/10"
             onClick={() => openDialog('income')}
           >
-            <div className="bg-green-100 text-green-700 rounded-full p-2.5">
+            <div className={cn(
+                "rounded-full p-2.5",
+                dialogOpen && dialogType === 'income' ? 'bg-green-100 text-green-700' : 'bg-green-100 text-green-700'
+            )}>
               <ArrowDown className="h-6 w-6" />
             </div>
             <span className="font-semibold text-green-800">Income</span>
@@ -93,7 +97,10 @@ export default function DashboardPage() {
             className="h-28 flex-col gap-2 text-lg border-dashed border-2 hover:border-solid hover:bg-red-500/10"
             onClick={() => openDialog('expenditure')}
           >
-            <div className="bg-red-100 text-red-700 rounded-full p-2.5">
+            <div className={cn(
+                "rounded-full p-2.5",
+                dialogOpen && dialogType === 'expenditure' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            )}>
               <ArrowUp className="h-6 w-6" />
             </div>
             <span className="font-semibold text-red-800">Expense</span>
