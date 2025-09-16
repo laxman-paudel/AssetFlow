@@ -149,50 +149,51 @@ export default function AccountsPage() {
                   <Skeleton key={i} className="h-28 w-full" />
                 ))
               ) : (
-                accounts.map((account) => (
-                  <Card 
-                    key={account.id}
-                    className={cn(
-                        "transition-all duration-300 border-l-4 border-l-primary/20 overflow-hidden",
-                        expandedAccountId === account.id ? 'bg-muted/50 border-l-primary/60' : 'hover:bg-muted/50 hover:shadow-lg hover:-translate-y-1 hover:border-l-primary/60'
-                    )}
-                  >
-                    <div className="cursor-pointer" onClick={() => handleAccountClick(account.id)}>
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <div className="flex items-center gap-4">
-                          {getAccountIcon(account.name)}
-                          <div>
-                              <CardTitle className="tracking-tight text-xl">{account.name}</CardTitle>
-                              <CardDescription>Available Balance</CardDescription>
+                accounts.map((account, index) => (
+                  <div key={account.id} className="animate-fade-in-up" style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}>
+                    <Card 
+                      className={cn(
+                          "transition-all duration-300 border-l-4 border-l-primary/20 overflow-hidden",
+                          expandedAccountId === account.id ? 'bg-muted/50 border-l-primary/60' : 'hover:bg-muted/50 hover:shadow-lg hover:-translate-y-1 hover:border-l-primary/60'
+                      )}
+                    >
+                      <div className="cursor-pointer" onClick={() => handleAccountClick(account.id)}>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                          <div className="flex items-center gap-4">
+                            {getAccountIcon(account.name)}
+                            <div>
+                                <CardTitle className="tracking-tight text-xl">{account.name}</CardTitle>
+                                <CardDescription>Available Balance</CardDescription>
+                            </div>
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pl-16">
-                          <p className="text-3xl font-bold tracking-tight">
-                            {formatCurrency(account.balance)}
-                          </p>
-                      </CardContent>
-                    </div>
+                        </CardHeader>
+                        <CardContent className="pl-16">
+                            <p className="text-3xl font-bold tracking-tight">
+                              {formatCurrency(account.balance)}
+                            </p>
+                        </CardContent>
+                      </div>
 
-                    {expandedAccountId === account.id && (
-                    <div className="bg-muted/50 border-t transition-all">
-                        <div className="px-4 py-2 flex justify-end gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => handleShowTransactions(account.id)}>
-                                <BookText className="mr-2 h-4 w-4" />
-                                Show Transactions
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => setAccountToEdit(account)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                            </Button>
-                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setAccountToDelete(account)}>
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                            </Button>
-                        </div>
-                    </div>
-                    )}
-                  </Card>
+                      {expandedAccountId === account.id && (
+                      <div className="bg-muted/50 border-t transition-all">
+                          <div className="px-4 py-2 flex justify-end gap-2">
+                              <Button variant="ghost" size="sm" onClick={() => handleShowTransactions(account.id)}>
+                                  <BookText className="mr-2 h-4 w-4" />
+                                  Show Transactions
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => setAccountToEdit(account)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit
+                              </Button>
+                              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setAccountToDelete(account)}>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                              </Button>
+                          </div>
+                      </div>
+                      )}
+                    </Card>
+                  </div>
                 ))
               )}
               {accountsLoaded && accounts.length > 0 && (
