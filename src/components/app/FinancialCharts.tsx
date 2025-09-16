@@ -24,13 +24,19 @@ import { PieChart as PieChartIcon, BarChart3, Wallet } from 'lucide-react';
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff4d4d', '#4ddbff', '#ffcce0'];
 
 
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label, currency }: any) {
   if (active && payload && payload.length) {
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency || 'USD',
+        }).format(value);
+    }
     return (
       <div className="p-2 text-sm bg-background/80 backdrop-blur-sm rounded-lg border shadow-md">
         <p className="font-bold">{label}</p>
-        <p className="text-green-600">{`Income: ${payload[0].value.toLocaleString()}`}</p>
-        <p className="text-red-600">{`Expense: ${payload[1].value.toLocaleString()}`}</p>
+        <p className="text-green-600">{`Income: ${formatCurrency(payload[0].value)}`}</p>
+        <p className="text-red-600">{`Expense: ${formatCurrency(payload[1].value)}`}</p>
       </div>
     );
   }
@@ -104,15 +110,20 @@ export default function FinancialCharts() {
     }));
   }, [transactions, categories, isInitialized, categoriesEnabled]);
 
-  const formatCurrencyForAxis = (value: number) => {
+  const formatAxisValue = (value: number) => {
+    if (value >= 1000) {
+      return `${value / 1000}K`;
+    }
+    return value;
+  };
+  
+  const formatCurrencyForTooltip = (value: number) => {
     if (!currency) return value.toString();
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
-      notation: 'compact',
-      compactDisplay: 'short',
     }).format(value);
-  };
+  }
   
   if (!isInitialized) {
       return (
@@ -149,9 +160,15 @@ export default function FinancialCharts() {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={monthlySummaryData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
               <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={formatCurrencyForAxis} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-              <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20px'}}/>
+              <YAxis 
+                fontSize={12} 
+                tickLine={false} 
+                axisLine={false} 
+                tickFormatter={formatAxisValue}
+                domain={['auto', 'auto']}
+              />
+              <Tooltip content={<CustomTooltip currency={currency} />} cursor={{ fill: 'hsl(var(--muted))' }} />
+              <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20p'}}/>
               <Bar dataKey="income" fill="hsl(var(--primary))" name="Income" radius={[4, 4, 0, 0]} />
               <Bar dataKey="expense" fill="hsl(var(--destructive))" name="Expense" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -196,7 +213,7 @@ export default function FinancialCharts() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => formatCurrencyForAxis(value)} />
+                    <Tooltip formatter={formatCurrencyForTooltip} />
                     <Legend wrapperStyle={{fontSize: "0.8rem"}}/>
                     </PieChart>
                 </ResponsiveContainer>
