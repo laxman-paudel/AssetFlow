@@ -16,14 +16,10 @@ import {
   Cell,
   Legend,
   Sector,
-  LineChart,
-  Line,
-  CartesianGrid,
-  Brush,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '../ui/skeleton';
-import { PieChart as PieChartIcon, BarChart3, Wallet, TrendingUp, TrendingDown, ArrowRightLeft, LineChart as LineChartIcon, ShoppingCart } from 'lucide-react';
+import { PieChart as PieChartIcon, BarChart3, Wallet, TrendingUp, TrendingDown, ArrowRightLeft, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import type { Transaction } from '@/lib/types';
@@ -140,16 +136,16 @@ export default function FinancialCharts() {
     setActiveIndex(index);
   }, [setActiveIndex]);
 
-  const financialData = useMemo(() => {
+  const monthlySummaryData = useMemo(() => {
     if (!isInitialized || !transactions) return null;
 
-    const data: { [key: string]: { income: number; expense: number, net: number } } = {};
+    const data: { [key: string]: { income: number; expense: number } } = {};
     const sixMonthsAgo = subMonths(new Date(), 5);
     const chartStartDate = startOfMonth(sixMonthsAgo);
 
     for (let i = 5; i >= 0; i--) {
         const month = format(subMonths(new Date(), i), 'MMM yy');
-        data[month] = { income: 0, expense: 0, net: 0 };
+        data[month] = { income: 0, expense: 0 };
     }
 
     transactions.forEach(t => {
@@ -172,11 +168,8 @@ export default function FinancialCharts() {
         month,
         income: data[month].income,
         expense: data[month].expense,
-        net: data[month].income - data[month].expense,
       }));
   }, [transactions, isInitialized]);
-
-  const monthlySummaryData = financialData;
 
   const keyMetrics = useMemo(() => {
       if (!isInitialized || !transactions) return null;
@@ -402,47 +395,6 @@ export default function FinancialCharts() {
                 <Bar yAxisId="left" dataKey="income" fill="url(#colorIncome)" name="Income" radius={[4, 4, 0, 0]} />
                 <Bar yAxisId="left" dataKey="expense" fill="url(#colorExpense)" name="Expense" radius={[4, 4, 0, 0]} />
                 </BarChart>
-            </ResponsiveContainer>
-        </CardContent>
-      </Card>
-      
-      <Card className="md:col-span-3">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LineChartIcon className="h-6 w-6" />
-            Net Flow Trend
-          </CardTitle>
-          <CardDescription>Your net savings or deficit over time. Drag the handles to zoom.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <ResponsiveContainer width="100%" height={400}>
-                 <LineChart
-                    data={monthlySummaryData}
-                    margin={{ top: 5, right: 20, left: -10, bottom: 60, }}
-                >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis 
-                        fontSize={12} 
-                        tickLine={false} 
-                        axisLine={false} 
-                        tickFormatter={formatAxisValue}
-                        domain={['auto', 'auto']}
-                    />
-                    <Tooltip 
-                        formatter={(value: number) => [formatCurrency(value), 'Net Flow']}
-                        cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
-                        contentStyle={{
-                            background: "hsl(var(--background) / 0.9)",
-                            backdropFilter: 'blur(4px)',
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: 'var(--radius)'
-                        }}
-                    />
-                    <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20px'}}/>
-                    <Line type="monotone" dataKey="net" name="Net Flow" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                    <Brush dataKey="month" height={30} stroke="hsl(var(--primary))" y={320} />
-                </LineChart>
             </ResponsiveContainer>
         </CardContent>
       </Card>
