@@ -323,9 +323,9 @@ function StatementPageContent() {
 
             <StatementExportButton transactions={filteredTransactions} />
             
-            <DropdownMenu onOpenChange={setIsDateFilterOpen}>
+            <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className={cn("h-11 w-11", (isDateFilterActive || isDateFilterOpen) && 'text-primary border-primary bg-accent')}>
+                <Button variant="outline" size="icon" className={cn("h-11 w-11", isDateFilterActive && 'text-primary border-primary')}>
                     <CalendarIcon className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -355,7 +355,7 @@ function StatementPageContent() {
 
             <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className={cn("h-11 w-11", (isAccountFilterActive || isFilterPopoverOpen) && 'text-primary border-primary bg-accent')}>
+                <Button variant="outline" size="icon" className={cn("h-11 w-11", isAccountFilterActive && 'text-primary border-primary')}>
                   <Filter className="h-5 w-5" />
                 </Button>
               </PopoverTrigger>
