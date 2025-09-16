@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 40 5% 96%; /* Softer, warmer off-white */
+    --background: 210 25% 97%; /* Azure Mist */
     --foreground: 220 10% 20%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
