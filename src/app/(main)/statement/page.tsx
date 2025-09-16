@@ -85,7 +85,7 @@ function StatementPageContent() {
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
-  const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
+  const [isDateFilterDropdownOpen, setIsDateFilterDropdownOpen] = useState(false);
 
 
   useEffect(() => {
@@ -323,9 +323,9 @@ function StatementPageContent() {
 
             <StatementExportButton transactions={filteredTransactions} />
             
-            <DropdownMenu>
+            <DropdownMenu onOpenChange={setIsDateFilterDropdownOpen}>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className={cn("h-11 w-11", isDateFilterActive && 'text-primary border-primary')}>
+                <Button variant="outline" size="icon" className={cn("h-11 w-11", (isDateFilterActive && 'text-primary border-primary'), (isDateFilterDropdownOpen && 'bg-accent'))}>
                     <CalendarIcon className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -355,7 +355,7 @@ function StatementPageContent() {
 
             <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className={cn("h-11 w-11", isAccountFilterActive && 'text-primary border-primary')}>
+                <Button variant="outline" size="icon" className={cn("h-11 w-11", (isAccountFilterActive && 'text-primary border-primary'), (isFilterPopoverOpen && 'bg-accent'))}>
                   <Filter className="h-5 w-5" />
                 </Button>
               </PopoverTrigger>
@@ -670,3 +670,5 @@ export default function StatementPage() {
     </Suspense>
   )
 }
+
+    
