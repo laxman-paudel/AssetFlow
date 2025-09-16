@@ -150,7 +150,7 @@ export default function AccountsPage() {
                 ))
               ) : (
                 accounts.map((account) => (
-                  <div key={account.id} className='animate-fade-in-up'>
+                  <div key={account.id}>
                     <Card 
                       className={cn(
                           "transition-all duration-300 border-l-4 overflow-hidden border-l-primary/20",
@@ -162,13 +162,13 @@ export default function AccountsPage() {
                           <div className="flex items-center gap-4">
                             {getAccountIcon(account.name)}
                             <div>
-                                <CardTitle className="tracking-tight text-xl">{account.name}</CardTitle>
+                                <CardTitle className="tracking-tight text-base sm:text-xl">{account.name}</CardTitle>
                                 <CardDescription>Available Balance</CardDescription>
                             </div>
                           </div>
                         </CardHeader>
                         <CardContent className="pl-16">
-                            <p className="text-2xl sm:text-3xl font-bold tracking-tight">
+                            <p className="text-xl sm:text-3xl font-bold tracking-tight">
                               {formatCurrency(account.balance)}
                             </p>
                         </CardContent>
@@ -176,10 +176,10 @@ export default function AccountsPage() {
 
                       {expandedAccountId === account.id && (
                       <div className="bg-muted/50 border-t transition-all">
-                          <div className="px-4 py-2 flex flex-col sm:flex-row sm:justify-end gap-2">
+                          <div className="px-2 sm:px-4 py-2 flex justify-evenly">
                               <Button variant="ghost" size="sm" onClick={() => handleShowTransactions(account.id)}>
                                   <BookText className="mr-2 h-4 w-4" />
-                                  Show Transactions
+                                  Transactions
                               </Button>
                               <Button variant="ghost" size="sm" onClick={() => setAccountToEdit(account)}>
                                   <Edit className="mr-2 h-4 w-4" />
@@ -203,6 +203,7 @@ export default function AccountsPage() {
                     </div>
                     <h3 className="text-xl font-semibold mb-2">Add Another Account</h3>
                     <p className="text-muted-foreground mb-4">You can add more accounts, like credit cards or other savings.</p>
+
                     <Button onClick={() => setDialogOpen(true)}>
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Create New Account
