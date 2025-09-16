@@ -41,12 +41,7 @@ export default function RootLayout({
           ptSans.variable
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider>
           <AppProvider>{children}</AppProvider>
           <Toaster />
         </ThemeProvider>

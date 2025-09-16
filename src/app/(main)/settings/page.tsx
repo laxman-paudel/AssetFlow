@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import ThemeSwitcher from '@/components/app/ThemeSwitcher';
+import ThemeSelector from '@/components/app/ThemeSelector';
 import {
   Card,
   CardContent,
@@ -34,7 +34,7 @@ function SettingsContent() {
         <CardContent>
           <div className="space-y-4">
             <Label>Theme</Label>
-            <ThemeSwitcher />
+            <ThemeSelector />
           </div>
         </CardContent>
       </Card>
