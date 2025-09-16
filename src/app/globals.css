@@ -3,8 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  :root,
-  .theme-forest {
+  :root {
     --background: 220 15% 96%;
     --foreground: 220 10% 20%;
     --card: 0 0% 100%;
@@ -31,7 +30,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.75rem;
   }
-  .dark.theme-forest {
+  .dark {
     --background: 240 5% 12%;
     --foreground: 0 0% 98%;
     --card: 240 5% 16%;
@@ -51,98 +50,6 @@
     --border: 240 3.7% 25.9%;
     --input: 240 3.7% 25.9%;
     --ring: 155 35% 55%;
-  }
-
-  .theme-mint {
-    --background: 150 25% 96%;
-    --foreground: 150 10% 20%;
-    --card: 150 10% 100%;
-    --card-foreground: 150 10% 3.9%;
-    --primary: 165 65% 45%; /* Vibrant Mint */
-    --primary-foreground: 165 20% 98%;
-    --accent: 80 60% 88%; /* Soft Lime */
-    --accent-foreground: 80 20% 15%;
-    --ring: 165 65% 45%;
-  }
-  .dark.theme-mint {
-    --background: 150 10% 12%;
-    --foreground: 150 10% 98%;
-    --card: 150 10% 16%;
-    --card-foreground: 150 10% 98%;
-    --primary: 160 70% 60%;
-    --primary-foreground: 160 20% 10%;
-    --accent: 80 40% 20%;
-    --accent-foreground: 80 20% 95%;
-    --ring: 160 70% 60%;
-  }
-
-  .theme-ocean {
-    --background: 210 25% 96%;
-    --foreground: 210 15% 20%;
-    --card: 210 10% 100%;
-    --card-foreground: 210 15% 3.9%;
-    --primary: 220 70% 50%; /* Deep Blue */
-    --primary-foreground: 220 20% 98%;
-    --accent: 200 65% 90%; /* Airy Blue */
-    --accent-foreground: 200 20% 15%;
-    --ring: 220 70% 50%;
-  }
-  .dark.theme-ocean {
-    --background: 210 15% 12%;
-    --foreground: 210 15% 98%;
-    --card: 210 15% 16%;
-    --card-foreground: 210 15% 98%;
-    --primary: 220 75% 65%;
-    --primary-foreground: 220 20% 10%;
-    --accent: 200 35% 22%;
-    --accent-foreground: 200 20% 95%;
-    --ring: 220 75% 65%;
-  }
-
-  .theme-sunset {
-    --background: 30 30% 96%;
-    --foreground: 30 10% 20%;
-    --card: 30 15% 100%;
-    --card-foreground: 30 10% 3.9%;
-    --primary: 18 85% 55%; /* Terracotta Orange */
-    --primary-foreground: 18 20% 98%;
-    --accent: 35 65% 90%; /* Soft Sand */
-    --accent-foreground: 35 20% 15%;
-    --ring: 18 85% 55%;
-  }
-  .dark.theme-sunset {
-    --background: 30 10% 12%;
-    --foreground: 30 10% 98%;
-    --card: 30 10% 16%;
-    --card-foreground: 30 10% 98%;
-    --primary: 25 80% 65%;
-    --primary-foreground: 25 20% 10%;
-    --accent: 35 40% 24%;
-    --accent-foreground: 35 20% 95%;
-    --ring: 25 80% 65%;
-  }
-
-  .theme-graphite {
-    --background: 240 5% 96%;
-    --foreground: 240 10% 10%;
-    --card: 240 5% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --primary: 240 5% 35%; /* Dark Slate */
-    --primary-foreground: 240 5% 98%;
-    --accent: 240 5% 88%; /* Light Gray */
-    --accent-foreground: 240 10% 10%;
-    --ring: 240 5% 35%;
-  }
-  .dark.theme-graphite {
-    --background: 240 5% 10%;
-    --foreground: 240 5% 98%;
-    --card: 240 5% 14%;
-    --card-foreground: 240 5% 98%;
-    --primary: 240 5% 75%;
-    --primary-foreground: 240 5% 10%;
-    --accent: 240 5% 25%;
-    --accent-foreground: 240 5% 98%;
-    --ring: 240 5% 75%;
   }
 }
 

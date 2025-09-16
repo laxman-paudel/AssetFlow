@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import ThemeSelector from '@/components/app/ThemeSelector';
 import {
   Card,
   CardContent,
@@ -17,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useAssetFlow } from '@/components/app/AppProvider';
 import CategoryList from '@/components/app/CategoryList';
+import ThemeToggle from '@/components/app/ThemeToggle';
 
 
 function SettingsContent() {
@@ -34,7 +34,7 @@ function SettingsContent() {
         <CardContent>
           <div className="space-y-4">
             <Label>Theme</Label>
-            <ThemeSelector />
+            <ThemeToggle />
           </div>
         </CardContent>
       </Card>
