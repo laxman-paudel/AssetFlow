@@ -329,11 +329,11 @@ function StatementPageContent() {
                   variant="outline" 
                   size="icon" 
                   className={cn("h-11 w-11",
-                    isDateFilterActive && "border-primary",
+                    isDateFilterActive && !isDateFilterDropdownOpen && "border-primary",
                     isDateFilterDropdownOpen && "bg-accent",
                   )}
                 >
-                    <CalendarIcon className={cn("h-5 w-5", isDateFilterActive && "text-primary")} />
+                    <CalendarIcon className={cn("h-5 w-5", isDateFilterActive && !isDateFilterDropdownOpen && "text-primary")} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -366,11 +366,11 @@ function StatementPageContent() {
                   variant="outline" 
                   size="icon" 
                   className={cn("h-11 w-11",
-                    isAccountFilterActive && "border-primary",
+                    isAccountFilterActive && !isFilterPopoverOpen && "border-primary",
                     isFilterPopoverOpen && "bg-accent",
                   )}
                 >
-                  <Filter className={cn("h-5 w-5", isAccountFilterActive && "text-primary")} />
+                  <Filter className={cn("h-5 w-5", isAccountFilterActive && !isFilterPopoverOpen && "text-primary")} />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80">
