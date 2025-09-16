@@ -198,8 +198,8 @@ export default function AccountsPage() {
               )}
               {accountsLoaded && accounts.length > 0 && (
                 <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
-                    <div className="p-4 bg-secondary rounded-full mb-4">
-                        <PlusCircle className="h-10 w-10 text-muted-foreground" />
+                    <div className="p-4 bg-primary/10 rounded-full mb-4">
+                        <PlusCircle className="h-10 w-10 text-primary" />
                     </div>
                     <h3 className="text-xl font-semibold mb-2">Add Another Account</h3>
                     <p className="text-muted-foreground mb-4">You can add more accounts, like credit cards or other savings.</p>

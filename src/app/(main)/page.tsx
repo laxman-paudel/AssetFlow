@@ -116,10 +116,10 @@ export default function DashboardPage() {
             onClick={() => openDialog('transfer')}
           >
             <div className="flex items-center gap-3">
-              <div className="bg-primary/10 text-primary rounded-full p-2">
+              <div className="bg-purple-100 text-purple-700 rounded-full p-2">
                 <ArrowRightLeft className="h-5 w-5" />
               </div>
-              <span className="font-semibold text-primary">Transfer</span>
+              <span className="font-semibold text-purple-800">Transfer</span>
             </div>
           </Button>
           <Button
@@ -128,10 +128,10 @@ export default function DashboardPage() {
             onClick={() => openDialog('account')}
           >
             <div className="flex items-center gap-3">
-              <div className="bg-primary/10 text-primary rounded-full p-2">
+              <div className="bg-blue-100 text-blue-700 rounded-full p-2">
                 <Wallet className="h-5 w-5" />
               </div>
-              <span className="font-semibold text-primary">New Account</span>
+              <span className="font-semibold text-blue-800">New Account</span>
             </div>
           </Button>
         </div>
