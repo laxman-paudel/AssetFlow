@@ -126,27 +126,22 @@ export default function AccountsPage() {
         ) : (
           <>
             <div className="block mb-6">
-                <div 
-                    className="opacity-0 animate-fade-in-up"
-                    style={{animationFillMode: 'forwards'}}
+                <Card 
+                    className='text-primary-foreground shadow-md transition-smooth hover:shadow-lg cursor-pointer'
+                    style={getBalanceCardStyle()}
+                    onClick={() => router.push('/')}
                 >
-                  <Card 
-                      className='text-primary-foreground shadow-md transition-smooth hover:shadow-lg cursor-pointer'
-                      style={getBalanceCardStyle()}
-                      onClick={() => router.push('/')}
-                  >
-                      <CardContent className="p-3 flex items-center justify-between">
-                          <p className="text-sm font-medium">Total Balance</p>
-                          {accountsLoaded && totalBalance !== null ? (
-                            <p className="text-lg font-bold tracking-tighter">
-                                {formatCurrency(animatedTotalBalance)}
-                            </p>
-                          ) : (
-                            <Skeleton className="h-6 w-24 bg-primary-foreground/20" />
-                          )}
-                      </CardContent>
-                  </Card>
-                </div>
+                    <CardContent className="p-3 flex items-center justify-between">
+                        <p className="text-sm font-medium">Total Balance</p>
+                        {accountsLoaded && totalBalance !== null ? (
+                          <p className="text-lg font-bold tracking-tighter">
+                              {formatCurrency(animatedTotalBalance)}
+                          </p>
+                        ) : (
+                          <Skeleton className="h-6 w-24 bg-primary-foreground/20" />
+                        )}
+                    </CardContent>
+                </Card>
             </div>
             <div className="space-y-4">
               {!accountsLoaded ? (
@@ -154,74 +149,64 @@ export default function AccountsPage() {
                   <Skeleton key={i} className="h-28 w-full" />
                 ))
               ) : (
-                accounts.map((account, index) => (
-                  <div
-                      key={account.id}
-                      className="opacity-0 animate-fade-in-up"
-                      style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}
-                   >
-                    <Card 
-                      className={cn(
-                          "transition-all duration-300 border-l-4 border-l-primary/20 overflow-hidden",
-                          expandedAccountId === account.id ? 'bg-muted/50 border-l-primary/60' : 'hover:bg-muted/50 hover:shadow-lg hover:-translate-y-1 hover:border-l-primary/60'
-                      )}
-                    >
-                      <div className="cursor-pointer" onClick={() => handleAccountClick(account.id)}>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                          <div className="flex items-center gap-4">
-                            {getAccountIcon(account.name)}
-                            <div>
-                                <CardTitle className="tracking-tight text-xl">{account.name}</CardTitle>
-                                <CardDescription>Available Balance</CardDescription>
-                            </div>
+                accounts.map((account) => (
+                  <Card 
+                    key={account.id}
+                    className={cn(
+                        "transition-all duration-300 border-l-4 border-l-primary/20 overflow-hidden",
+                        expandedAccountId === account.id ? 'bg-muted/50 border-l-primary/60' : 'hover:bg-muted/50 hover:shadow-lg hover:-translate-y-1 hover:border-l-primary/60'
+                    )}
+                  >
+                    <div className="cursor-pointer" onClick={() => handleAccountClick(account.id)}>
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <div className="flex items-center gap-4">
+                          {getAccountIcon(account.name)}
+                          <div>
+                              <CardTitle className="tracking-tight text-xl">{account.name}</CardTitle>
+                              <CardDescription>Available Balance</CardDescription>
                           </div>
-                        </CardHeader>
-                        <CardContent className="pl-16">
-                            <p className="text-3xl font-bold tracking-tight">
-                              {formatCurrency(account.balance)}
-                            </p>
-                        </CardContent>
-                      </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pl-16">
+                          <p className="text-3xl font-bold tracking-tight">
+                            {formatCurrency(account.balance)}
+                          </p>
+                      </CardContent>
+                    </div>
 
-                      {expandedAccountId === account.id && (
-                      <div className="bg-muted/50 border-t transition-all">
-                          <div className="px-4 py-2 flex justify-end gap-2">
-                              <Button variant="ghost" size="sm" onClick={() => handleShowTransactions(account.id)}>
-                                  <BookText className="mr-2 h-4 w-4" />
-                                  Show Transactions
-                              </Button>
-                              <Button variant="ghost" size="sm" onClick={() => setAccountToEdit(account)}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit
-                              </Button>
-                              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setAccountToDelete(account)}>
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete
-                              </Button>
-                          </div>
-                      </div>
-                      )}
-                    </Card>
-                  </div>
+                    {expandedAccountId === account.id && (
+                    <div className="bg-muted/50 border-t transition-all">
+                        <div className="px-4 py-2 flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleShowTransactions(account.id)}>
+                                <BookText className="mr-2 h-4 w-4" />
+                                Show Transactions
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => setAccountToEdit(account)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                            </Button>
+                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setAccountToDelete(account)}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                    )}
+                  </Card>
                 ))
               )}
               {accountsLoaded && accounts.length > 0 && (
-                  <div
-                      className="opacity-0 animate-fade-in-up"
-                      style={{ animationDelay: `${accounts.length * 100}ms`, animationFillMode: 'forwards' }}
-                   >
-                    <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
-                        <div className="p-4 bg-secondary rounded-full mb-4">
-                            <PlusCircle className="h-10 w-10 text-muted-foreground" />
-                        </div>
-                        <h3 className="text-xl font-semibold mb-2">Add Another Account</h3>
-                        <p className="text-muted-foreground mb-4">You can add more accounts, like credit cards or other savings.</p>
-                        <Button onClick={() => setDialogOpen(true)}>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Create New Account
-                        </Button>
+                <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
+                    <div className="p-4 bg-secondary rounded-full mb-4">
+                        <PlusCircle className="h-10 w-10 text-muted-foreground" />
                     </div>
-                  </div>
+                    <h3 className="text-xl font-semibold mb-2">Add Another Account</h3>
+                    <p className="text-muted-foreground mb-4">You can add more accounts, like credit cards or other savings.</p>
+                    <Button onClick={() => setDialogOpen(true)}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Create New Account
+                    </Button>
+                </div>
               )}
             </div>
           </>
