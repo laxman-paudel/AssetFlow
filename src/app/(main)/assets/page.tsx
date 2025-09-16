@@ -153,7 +153,7 @@ export default function AccountsPage() {
                     <Card 
                       key={account.id}
                       className={cn(
-                          "transition-all duration-300 border-l-4 border-l-primary/20 overflow-hidden",
+                          "transition-all duration-300 border-l-4 border-l-primary/20",
                           expandedAccountId === account.id ? 'bg-muted/50 border-l-primary/60' : 'hover:bg-muted/50 hover:shadow-lg hover:-translate-y-1 hover:border-l-primary/60'
                       )}
                     >
