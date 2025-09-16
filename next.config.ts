@@ -6,9 +6,6 @@ const pwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
-  // By setting manifest to false, we prevent next-pwa from generating a manifest file,
-  // allowing our custom public/manifest.json to be used without conflict.
-  manifest: false, 
 });
 
 const nextConfig: NextConfig = {
@@ -40,10 +37,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-    appDir: true,
-  },
-  optimizeFonts: false,
 };
 
 export default pwaConfig(nextConfig);
