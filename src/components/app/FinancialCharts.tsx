@@ -484,7 +484,7 @@ export default function FinancialCharts() {
           </CardTitle>
           <CardDescription>The historical progression of your total balance over time.</CardDescription>
         </CardHeader>
-        <CardContent className='pl-2 pr-6'>
+        <CardContent className='pr-6'>
           <Tabs value={balanceHistoryScale} onValueChange={(value) => setBalanceHistoryScale(value as any)} className="w-full">
             <div className="flex justify-end">
               <TabsList>
@@ -495,7 +495,7 @@ export default function FinancialCharts() {
             <TabsContent value="monthly" className="mt-4">
               <ResponsiveContainer width="100%" height={350}>
                 {balanceHistoryData.length > 0 ? (
-                  <AreaChart data={balanceHistoryData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                  <AreaChart data={balanceHistoryData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                     <defs>
                       <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
@@ -519,7 +519,7 @@ export default function FinancialCharts() {
             <TabsContent value="daily" className="mt-4">
                <ResponsiveContainer width="100%" height={350}>
                 {balanceHistoryData.length > 1 ? (
-                  <AreaChart data={balanceHistoryData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                  <AreaChart data={balanceHistoryData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                      <defs>
                       <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
