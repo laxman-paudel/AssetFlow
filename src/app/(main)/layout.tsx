@@ -40,7 +40,9 @@ export default function MainLayout({
           </Button>
         </div>
       </header>
-      <main className="flex-1 pb-24 md:pb-8">{children}</main>
+      <main key={pathname} className="flex-1 pb-24 md:pb-8 animate-fade-in-up">
+        {children}
+      </main>
       <BottomNav />
     </div>
   );
