@@ -16,7 +16,7 @@ export default function ThemeSwitcher() {
   ];
 
   return (
-    <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 rounded-lg bg-muted p-1">
+    <div className="flex items-center space-x-2 rounded-lg bg-muted p-1">
       {themes.map((t) => (
         <Button
           key={t.value}
