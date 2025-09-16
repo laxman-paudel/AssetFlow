@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 
 type Theme = 'light' | 'dark';
-type ColorTheme = 'theme-default' | 'theme-mint' | 'theme-ocean' | 'theme-sunset' | 'theme-graphite';
+type ColorTheme = 'theme-forest' | 'theme-mint' | 'theme-ocean' | 'theme-sunset' | 'theme-graphite';
 
 interface ThemeContextProps {
   theme: Theme;
@@ -19,7 +19,7 @@ const COLOR_THEME_KEY = 'assetflow-color-theme';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('light');
-  const [colorTheme, setColorThemeState] = useState<ColorTheme>('theme-default');
+  const [colorTheme, setColorThemeState] = useState<ColorTheme>('theme-forest');
 
   useEffect(() => {
     const storedTheme = localStorage.getItem(THEME_KEY) as Theme | null;
@@ -27,7 +27,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const initialTheme = storedTheme || (prefersDark ? 'dark' : 'light');
-    const initialColorTheme = storedColorTheme || 'theme-default';
+    const initialColorTheme = storedColorTheme || 'theme-forest';
 
     setThemeState(initialTheme);
     setColorThemeState(initialColorTheme);
@@ -42,7 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   
   useEffect(() => {
     const root = window.document.documentElement;
-    const themes: ColorTheme[] = ['theme-default', 'theme-mint', 'theme-ocean', 'theme-sunset', 'theme-graphite'];
+    const themes: ColorTheme[] = ['theme-forest', 'theme-mint', 'theme-ocean', 'theme-sunset', 'theme-graphite'];
     root.classList.remove(...themes);
     root.classList.add(colorTheme);
     localStorage.setItem(COLOR_THEME_KEY, colorTheme);

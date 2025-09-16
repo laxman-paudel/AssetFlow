@@ -13,11 +13,11 @@ import {
 } from '@/components/ui/tooltip';
 
 const themes = [
-  { name: 'Default', value: 'theme-default', colors: ['bg-green-400', 'bg-blue-300'] },
-  { name: 'Mint', value: 'theme-mint', colors: ['bg-emerald-500', 'bg-lime-300'] },
-  { name: 'Ocean', value: 'theme-ocean', colors: ['bg-blue-500', 'bg-cyan-300'] },
-  { name: 'Sunset', value: 'theme-sunset', colors: ['bg-orange-500', 'bg-yellow-300'] },
-  { name: 'Graphite', value: 'theme-graphite', colors: ['bg-slate-500', 'bg-slate-300'] },
+  { name: 'Forest', value: 'theme-forest', colors: ['bg-[#5f937c]', 'bg-[#f2eadf]'] },
+  { name: 'Mint', value: 'theme-mint', colors: ['bg-[#50b892]', 'bg-[#e2f5d8]'] },
+  { name: 'Ocean', value: 'theme-ocean', colors: ['bg-[#407BFF]', 'bg-[#dce9ff]'] },
+  { name: 'Sunset', value: 'theme-sunset', colors: ['bg-[#f07144]', 'bg-[#fae6d7]'] },
+  { name: 'Graphite', value: 'theme-graphite', colors: ['bg-[#4d4d5c]', 'bg-[#dfe0e2]'] },
 ] as const;
 
 export default function ThemeSelector() {
