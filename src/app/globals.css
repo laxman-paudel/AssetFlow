@@ -96,6 +96,6 @@
   }
 
   .will-change-transform {
-    will-change: transform;
+    will-change: transform, box-shadow;
   }
 }
