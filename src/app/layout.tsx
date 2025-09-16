@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   title: 'AssetFlow',
   description: 'Track your income, expenditures, and assets with ease.',
   manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/favicon.ico?v=1', sizes: 'any' },
+      { url: '/icon.svg?v=1', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png?v=1',
+  },
 };
 
 export default function RootLayout({
@@ -26,10 +33,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#8FBC8F" />
       </head>
       <body
