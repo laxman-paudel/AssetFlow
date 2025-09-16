@@ -10,11 +10,10 @@ const pwaConfig = withPWA({
   runtimeCaching: [],
   // Disable manifest generation
   dynamicStartUrl: false,
-  // manifest: false, // This is another way but it might disable PWA features
+  manifest: false,
 });
 
 const nextConfig: NextConfig = {
-  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -43,6 +42,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    appDir: true,
+  },
+  optimizeFonts: false,
 };
 
 const withPwaConfig = pwaConfig(nextConfig);
@@ -73,6 +76,7 @@ const finalPwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
+  manifest: false,
   // By providing an empty manifest object, we can sometimes prevent generation,
   // but the best way is to ensure it doesn't overwrite our file.
   // Let's rely on the fact that a file in /public is served directly.
