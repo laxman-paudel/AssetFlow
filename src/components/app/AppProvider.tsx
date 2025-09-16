@@ -154,9 +154,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       prev?.map(a => a.id === account.id ? { ...a, name: updates.name, balance: updates.balance } : a) || []
     );
     
-    // Update account name in all related transactions
     setTransactions(prev => {
         let newTransactions = prev || [];
+        // Update account name in all related transactions
         newTransactions = newTransactions.map(t => {
             if (t.accountId === account.id) {
                 t.accountName = updates.name;
@@ -167,6 +167,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             return t;
         });
 
+        // If balance was changed, create an adjustment transaction
         if (balanceDifference !== 0) {
             const adjustmentTransaction: Transaction = {
                 id: new Date().toISOString() + Math.random(),
