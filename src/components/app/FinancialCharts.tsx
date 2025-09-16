@@ -22,7 +22,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '../ui/skeleton';
-import { PieChart as PieChartIcon, BarChart3, Wallet, TrendingUp, TrendingDown, ArrowRight, ArrowLeftRight } from 'lucide-react';
+import { PieChart as PieChartIcon, BarChart3, Wallet, TrendingUp, TrendingDown, ArrowRight, ArrowLeftRight, LineChart as LineChartIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 
@@ -342,16 +342,15 @@ export default function FinancialCharts() {
             </>
         )}
 
-      <Card className="lg:col-span-4">
+      <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-6 w-6" />
-            Cash Flow Summary
+            Income vs Expense
           </CardTitle>
-          <CardDescription>Income, Expense, and Net Flow for the last 6 months.</CardDescription>
+          <CardDescription>Comparison for the last 6 months.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          <div className="md:col-span-3">
+        <CardContent>
             <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={monthlySummaryData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                     <defs>
@@ -379,8 +378,18 @@ export default function FinancialCharts() {
                 <Bar yAxisId="left" dataKey="expense" fill="url(#colorExpense)" name="Expense" radius={[4, 4, 0, 0]} />
                 </BarChart>
             </ResponsiveContainer>
-          </div>
-           <div className="md:col-span-2">
+        </CardContent>
+      </Card>
+      
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LineChartIcon className="h-6 w-6" />
+            Net Flow Trend
+          </CardTitle>
+          <CardDescription>Monthly net cash flow for the last 6 months.</CardDescription>
+        </CardHeader>
+        <CardContent>
             <ResponsiveContainer width="100%" height={350}>
                  <LineChart
                     data={monthlySummaryData}
@@ -409,7 +418,6 @@ export default function FinancialCharts() {
                     <Line type="monotone" dataKey="net" name="Net Flow" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                 </LineChart>
             </ResponsiveContainer>
-          </div>
         </CardContent>
       </Card>
       
