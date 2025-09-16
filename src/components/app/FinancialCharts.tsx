@@ -54,6 +54,8 @@ function CustomBarTooltip({ active, payload, label, currency }: any) {
 
 const renderActiveShape = (props: any) => {
   const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
+  const percent = payload.percent;
+  const displayPercent = isFinite(percent) ? (percent * 100).toFixed(1) : '0.0';
 
   return (
     <g>
@@ -61,7 +63,7 @@ const renderActiveShape = (props: any) => {
         {payload.name}
       </text>
       <text x={cx} y={cy} dy={12} textAnchor="middle" fill="hsl(var(--muted-foreground))" className="text-sm">
-        {((payload.percent) * 100).toFixed(1)}%
+        {displayPercent}%
       </text>
       <Sector
         cx={cx}
@@ -96,7 +98,7 @@ const renderCustomizedLegend = (props: any) => {
             {payload.map((entry: any, index: number) => (
                 <li key={`item-${index}`} className="flex items-center gap-2">
                     <span style={{ backgroundColor: entry.color, width: '10px', height: '10px', borderRadius: '50%', display: 'inline-block' }}></span>
-                    <span>{entry.value} ({((entry.payload.value / total) * 100).toFixed(0)}%)</span>
+                    <span>{entry.value} ({total > 0 ? ((entry.payload.value / total) * 100).toFixed(0) : 0}%)</span>
                 </li>
             ))}
         </ul>
@@ -305,7 +307,7 @@ export default function FinancialCharts() {
     if (active && payload && payload.length) {
       const data = payload[0];
       const total = accountBalanceData.reduce((sum, entry) => sum + entry.value, 0);
-      const percent = (data.value / total) * 100;
+      const percent = total > 0 ? (data.value / total) * 100 : 0;
       return (
         <div className="p-2 text-sm bg-background/90 backdrop-blur-sm rounded-lg border shadow-lg">
           <p className="font-bold">{data.name}</p>
