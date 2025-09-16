@@ -57,8 +57,11 @@ const renderActiveShape = (props: any) => {
 
   return (
     <g>
-      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill} className="font-semibold text-lg truncate" width={innerRadius * 2}>
+      <text x={cx} y={cy} dy={-8} textAnchor="middle" fill={fill} className="font-semibold text-base truncate" width={innerRadius * 2}>
         {payload.name}
+      </text>
+      <text x={cx} y={cy} dy={12} textAnchor="middle" fill="hsl(var(--muted-foreground))" className="text-sm">
+        {((payload.percent) * 100).toFixed(1)}%
       </text>
       <Sector
         cx={cx}
@@ -74,8 +77,8 @@ const renderActiveShape = (props: any) => {
         cy={cy}
         startAngle={startAngle}
         endAngle={endAngle}
-        innerRadius={outerRadius + 6}
-        outerRadius={outerRadius + 10}
+        innerRadius={outerRadius + 4}
+        outerRadius={outerRadius + 8}
         fill={fill}
       />
     </g>
@@ -130,12 +133,18 @@ const KeyMetricCard = ({ title, value, change, description, currency, icon: Icon
 )
 
 export default function FinancialCharts() {
-  const { transactions, categories, currency, isInitialized, categoriesEnabled, accounts } = useAssetFlow();
+  const { transactions, categories, currency, isInitialized, categoriesEnabled, accounts, totalBalance } = useAssetFlow();
   const [pieChartActiveIndex, setPieChartActiveIndex] = useState(0);
+  const [accountChartActiveIndex, setAccountChartActiveIndex] = useState(0);
+
 
   const onPieEnter = useCallback((_: any, index: number) => {
     setPieChartActiveIndex(index);
   }, [setPieChartActiveIndex]);
+
+  const onAccountPieEnter = useCallback((_: any, index: number) => {
+    setAccountChartActiveIndex(index);
+  }, [setAccountChartActiveIndex]);
 
   const financialData = useMemo(() => {
     if (!isInitialized || !transactions) return null;
@@ -292,6 +301,21 @@ export default function FinancialCharts() {
     return null;
   };
   
+  const AccountTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0];
+      const total = accountBalanceData.reduce((sum, entry) => sum + entry.value, 0);
+      const percent = (data.value / total) * 100;
+      return (
+        <div className="p-2 text-sm bg-background/90 backdrop-blur-sm rounded-lg border shadow-lg">
+          <p className="font-bold">{data.name}</p>
+          <p>{formatCurrency(data.value)} ({percent.toFixed(1)}%)</p>
+        </div>
+      );
+    }
+    return null;
+  };
+  
   if (!isInitialized) {
       return (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -420,8 +444,8 @@ export default function FinancialCharts() {
                             data={spendingByCategoryData}
                             cx="50%"
                             cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
+                            innerRadius={70}
+                            outerRadius={90}
                             fill="hsl(var(--primary))"
                             dataKey="value"
                             nameKey="name"
@@ -451,32 +475,42 @@ export default function FinancialCharts() {
                 <CardContent>
                     <ResponsiveContainer width="100%" height={350}>
                         <PieChart>
-                            <Pie
+                             <Pie
+                                activeIndex={accountChartActiveIndex}
+                                activeShape={renderActiveShape}
                                 data={accountBalanceData}
                                 cx="50%"
                                 cy="50%"
-                                labelLine={false}
-                                label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-                                    const RADIAN = Math.PI / 180;
-                                    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                                    return ( (percent * 100) > 5 ? 
-                                        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-                                            {` ${(percent * 100).toFixed(0)}%`}
-                                        </text> : null
-                                    );
-                                }}
-                                outerRadius={100}
+                                innerRadius={70}
+                                outerRadius={90}
                                 fill="hsl(var(--primary))"
                                 dataKey="value"
                                 nameKey="name"
+                                onMouseEnter={onAccountPieEnter}
                             >
                                 {accountBalanceData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
-                            <Tooltip formatter={formatCurrency} />
+                            <text
+                                x="50%"
+                                y="45%"
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                                className="text-sm fill-muted-foreground"
+                            >
+                                Total Balance
+                            </text>
+                            <text
+                                x="50%"
+                                y="55%"
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                                className="text-2xl font-bold fill-foreground"
+                            >
+                                {formatCurrency(totalBalance ?? 0)}
+                            </text>
+                            <Tooltip content={<AccountTooltip />} />
                             <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20px'}} />
                         </PieChart>
                     </ResponsiveContainer>
