@@ -1,8 +1,7 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo } from 'react';
 import { useAssetFlow } from '@/components/app/AppProvider';
-import { getCategoryById } from '@/lib/categories';
 import { subMonths, format, startOfMonth, endOfMonth, isWithinInterval, getDaysInMonth } from 'date-fns';
 import {
   ResponsiveContainer,
@@ -11,11 +10,7 @@ import {
   YAxis,
   Tooltip,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
   Legend,
-  Sector,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '../ui/skeleton';
@@ -24,8 +19,6 @@ import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import type { Transaction } from '@/lib/types';
 
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff4d4d', '#4ddbff', '#ffcce0'];
 
 function CustomBarTooltip({ active, payload, label, currency }: any) {
   if (active && payload && payload.length) {
@@ -51,98 +44,6 @@ function CustomBarTooltip({ active, payload, label, currency }: any) {
   }
   return null;
 };
-
-const renderActiveShape = (props: any) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
-  const percent = payload.percent;
-  const displayPercent = isFinite(percent) ? (percent * 100).toFixed(1) : '0.0';
-
-  return (
-    <g style={{ outline: 'none' }}>
-      <text x={cx} y={cy} dy={-8} textAnchor="middle" fill={fill} className="font-semibold text-base truncate" width={innerRadius * 2}>
-        {payload.name}
-      </text>
-      <text x={cx} y={cy} dy={12} textAnchor="middle" fill="hsl(var(--muted-foreground))" className="text-sm">
-        {displayPercent}%
-      </text>
-      <Sector
-        cx={cx}
-        cy={cy}
-        innerRadius={innerRadius}
-        outerRadius={outerRadius}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        fill={fill}
-      />
-      <Sector
-        cx={cx}
-        cy={cy}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        innerRadius={outerRadius + 4}
-        outerRadius={outerRadius + 8}
-        fill={fill}
-      />
-    </g>
-  );
-};
-
-const renderActive3DShape = (props: any) => {
-  const RADIAN = Math.PI / 180;
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload } = props;
-  const sin = Math.sin(-RADIAN * (startAngle + (endAngle - startAngle) / 2));
-  const cos = Math.cos(-RADIAN * (startAngle + (endAngle - startAngle) / 2));
-  const percent = payload.percent;
-  const displayPercent = isFinite(percent) ? (percent * 100).toFixed(1) : '0.0';
-
-  // This creates the 3D effect by stacking sectors
-  const depth = 8;
-  const sectors = Array.from({ length: depth }).map((_, i) => (
-    <Sector
-      key={i}
-      cx={cx}
-      cy={cy - i}
-      innerRadius={innerRadius}
-      outerRadius={outerRadius}
-      startAngle={startAngle}
-      endAngle={endAngle}
-      fill={fill}
-      stroke={fill}
-      opacity={1 - (i * 0.1)}
-    />
-  ));
-  
-  return (
-    <g style={{ outline: 'none' }}>
-      {sectors}
-      <text x={cx} y={cy - depth - 10} textAnchor="middle" fill={fill} className="font-semibold text-base truncate" width={innerRadius * 2}>
-        {payload.name}
-      </text>
-      <text x={cx} y={cy - depth + 4} textAnchor="middle" fill="hsl(var(--muted-foreground))" className="text-sm">
-        {displayPercent}%
-      </text>
-    </g>
-  );
-};
-
-
-const renderCustomizedLegend = (props: any) => {
-    const { payload } = props;
-    if (!payload || payload.length === 0) return null;
-    
-    const total = payload.reduce((sum: number, entry: any) => sum + entry.payload.value, 0);
-
-    return (
-        <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground mt-4">
-            {payload.map((entry: any, index: number) => (
-                <li key={`item-${index}`} className="flex items-center gap-2">
-                    <span style={{ backgroundColor: entry.color, width: '10px', height: '10px', borderRadius: '50%', display: 'inline-block' }}></span>
-                    <span>{entry.value} ({total > 0 ? ((entry.payload.value / total) * 100).toFixed(0) : 0}%)</span>
-                </li>
-            ))}
-        </ul>
-    );
-}
 
 const KeyMetricCard = ({ title, value, change, description, currency, icon: Icon, colorClass, children }: any) => (
     <Card>
@@ -174,18 +75,7 @@ const KeyMetricCard = ({ title, value, change, description, currency, icon: Icon
 )
 
 export default function FinancialCharts() {
-  const { transactions, categories, currency, isInitialized, categoriesEnabled, accounts, totalBalance } = useAssetFlow();
-  const [pieChartActiveIndex, setPieChartActiveIndex] = useState(0);
-  const [accountChartActiveIndex, setAccountChartActiveIndex] = useState(0);
-
-
-  const onPieEnter = useCallback((_: any, index: number) => {
-    setPieChartActiveIndex(index);
-  }, [setPieChartActiveIndex]);
-
-  const onAccountPieEnter = useCallback((_: any, index: number) => {
-    setAccountChartActiveIndex(index);
-  }, [setAccountChartActiveIndex]);
+  const { transactions, currency, isInitialized } = useAssetFlow();
 
   const financialData = useMemo(() => {
     if (!isInitialized || !transactions) return null;
@@ -265,40 +155,6 @@ export default function FinancialCharts() {
       return { netIncome, currentMonthIncome, currentMonthExpense, avgDailySpending, netIncomeChange, biggestExpense };
   }, [transactions, isInitialized]);
 
-  const spendingByCategoryData = useMemo(() => {
-    if (!isInitialized || !transactions || !categoriesEnabled) return [];
-
-    const currentMonthInterval = { start: startOfMonth(new Date()), end: endOfMonth(new Date()) };
-    const lastMonthInterval = { start: startOfMonth(subMonths(new Date(), 1)), end: endOfMonth(subMonths(new Date(), 1)) };
-
-    const currentSpending: { [key: string]: number } = {};
-    const lastSpending: { [key: string]: number } = {};
-
-    transactions.forEach(t => {
-      if (t.type === 'expenditure' && t.category) {
-        const category = getCategoryById(t.category, categories || []);
-        const categoryName = category ? category.name : 'Uncategorized';
-        
-        if (isWithinInterval(new Date(t.date), currentMonthInterval)) {
-            currentSpending[categoryName] = (currentSpending[categoryName] || 0) + t.amount;
-        } else if (isWithinInterval(new Date(t.date), lastMonthInterval)) {
-            lastSpending[name] = (lastSpending[name] || 0) + t.amount;
-        }
-      }
-    });
-
-    return Object.keys(currentSpending).map(name => ({
-      name,
-      value: currentSpending[name],
-      lastMonthValue: lastSpending[name] || 0,
-    })).sort((a, b) => b.value - a.value);
-  }, [transactions, categories, isInitialized, categoriesEnabled]);
-
-  const accountBalanceData = useMemo(() => {
-      if (!isInitialized || !accounts) return [];
-      return accounts.map(acc => ({ name: acc.name, value: acc.balance })).filter(acc => acc.value > 0);
-  }, [accounts, isInitialized]);
-
   const formatAxisValue = (value: number) => {
     if (Math.abs(value) >= 1000000) {
       return `${(value / 1000000).toFixed(1)}M`;
@@ -317,53 +173,12 @@ export default function FinancialCharts() {
     }).format(value);
   }
   
-  const CategoryTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      const change = data.lastMonthValue !== 0 
-        ? ((data.value - data.lastMonthValue) / data.lastMonthValue) * 100
-        : data.value > 0 ? 100 : 0;
-        
-      return (
-        <div className="p-2 text-sm bg-background/90 backdrop-blur-sm rounded-lg border shadow-lg">
-          <p className="font-bold mb-1">{data.name}: {formatCurrency(data.value)}</p>
-          <div className="flex items-center text-xs text-muted-foreground gap-1">
-                {isFinite(change) && (
-                    <Badge variant={change >= 0 ? 'destructive' : 'default'} className='flex gap-1 items-center'>
-                        {change >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                        {change.toFixed(1)}%
-                    </Badge>
-                )}
-                <span>vs last month</span>
-            </div>
-        </div>
-      );
-    }
-    return null;
-  };
-  
-  const AccountTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0];
-      const total = accountBalanceData.reduce((sum, entry) => sum + entry.value, 0);
-      const percent = total > 0 ? (data.value / total) * 100 : 0;
-      return (
-        <div className="p-2 text-sm bg-background/90 backdrop-blur-sm rounded-lg border shadow-lg">
-          <p className="font-bold">{data.name}</p>
-          <p>{formatCurrency(data.value)} ({isFinite(percent) ? percent.toFixed(1) : 0}%)</p>
-        </div>
-      );
-    }
-    return null;
-  };
-  
   if (!isInitialized) {
       return (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-96 w-full lg:col-span-3" />
             <Skeleton className="h-96 w-full lg:col-span-3" />
           </div>
       )
@@ -465,132 +280,6 @@ export default function FinancialCharts() {
             </ResponsiveContainer>
         </CardContent>
       </Card>
-      
-      <div className="grid md:grid-cols-2 gap-6">
-        {categoriesEnabled && spendingByCategoryData.length > 0 && (
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                    <PieChartIcon className="h-6 w-6" />
-                    This Month's Spending
-                    </CardTitle>
-                    <CardDescription>Breakdown of expenses for {format(new Date(), 'MMMM yyyy')}.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ResponsiveContainer width="100%" height={350}>
-                        <PieChart className="outline-none">
-                        <Pie
-                            activeIndex={pieChartActiveIndex}
-                            activeShape={renderActiveShape}
-                            data={spendingByCategoryData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={70}
-                            outerRadius={90}
-                            fill="hsl(var(--primary))"
-                            dataKey="value"
-                            nameKey="name"
-                            onMouseEnter={onPieEnter}
-                        >
-                            {spendingByCategoryData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Pie>
-                        <Tooltip content={<CategoryTooltip />} />
-                        <Legend content={renderCustomizedLegend} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-        )}
-
-        {accountBalanceData && accountBalanceData.length > 0 && (
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                    <Wallet className="h-6 w-6" />
-                    Account Balances
-                    </CardTitle>
-                    <CardDescription>Distribution of your assets across accounts.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ResponsiveContainer width="100%" height={350}>
-                        <PieChart className="outline-none">
-                             <Pie
-                                activeIndex={accountChartActiveIndex}
-                                activeShape={renderActive3DShape}
-                                data={accountBalanceData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={100}
-                                fill="hsl(var(--primary))"
-                                dataKey="value"
-                                nameKey="name"
-                                onMouseEnter={onAccountPieEnter}
-                                onMouseLeave={() => setAccountChartActiveIndex(0)}
-                            >
-                                {accountBalanceData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            {accountChartActiveIndex === 0 && (
-                                <>
-                                    <text
-                                        x="50%"
-                                        y="45%"
-                                        textAnchor="middle"
-                                        dominantBaseline="middle"
-                                        className="text-sm fill-muted-foreground"
-                                    >
-                                        Total Balance
-                                    </text>
-                                    <text
-                                        x="50%"
-                                        y="55%"
-                                        textAnchor="middle"
-                                        dominantBaseline="middle"
-                                        className="text-2xl font-bold fill-foreground"
-                                    >
-                                        {formatCurrency(totalBalance ?? 0)}
-                                    </text>
-                                </>
-                            )}
-                            <Tooltip content={<AccountTooltip />} />
-                            <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20px'}} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
-        )}
-      </div>
-
-       {/* Fallback for empty states */}
-        {categoriesEnabled && spendingByCategoryData.length === 0 && (
-            <Card>
-                <CardHeader>
-                    <CardTitle>This Month's Spending</CardTitle>
-                </CardHeader>
-                <CardContent className="h-[350px] flex flex-col items-center justify-center text-center text-muted-foreground p-4">
-                    <PieChartIcon className="h-12 w-12 mb-4" />
-                    <p className="font-semibold">No expenses recorded yet for this month.</p>
-                    <p className="text-sm">Your spending breakdown will appear here once you add some expenses.</p>
-                </CardContent>
-            </Card>
-        )}
-        
-        {(!accountBalanceData || accountBalanceData.length === 0) && (
-            <Card>
-                <CardHeader>
-                    <CardTitle>Account Balances</CardTitle>
-                </CardHeader>
-                <CardContent className="h-[350px] flex flex-col items-center justify-center text-center text-muted-foreground p-4">
-                     <Wallet className="h-12 w-12 mb-4" />
-                    <p className="font-semibold">No accounts with a positive balance.</p>
-                    <p className="text-sm">This chart will show your asset distribution once you have funds.</p>
-                </CardContent>
-            </Card>
-        )}
     </div>
   );
 }
