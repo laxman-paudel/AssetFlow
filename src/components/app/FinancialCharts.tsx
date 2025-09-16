@@ -487,29 +487,34 @@ export default function FinancialCharts() {
                                 dataKey="value"
                                 nameKey="name"
                                 onMouseEnter={onAccountPieEnter}
+                                onMouseLeave={() => setAccountChartActiveIndex(0)}
                             >
                                 {accountBalanceData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
-                            <text
-                                x="50%"
-                                y="45%"
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                                className="text-sm fill-muted-foreground"
-                            >
-                                Total Balance
-                            </text>
-                            <text
-                                x="50%"
-                                y="55%"
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                                className="text-2xl font-bold fill-foreground"
-                            >
-                                {formatCurrency(totalBalance ?? 0)}
-                            </text>
+                            {accountChartActiveIndex === 0 && (
+                                <>
+                                    <text
+                                        x="50%"
+                                        y="45%"
+                                        textAnchor="middle"
+                                        dominantBaseline="middle"
+                                        className="text-sm fill-muted-foreground"
+                                    >
+                                        Total Balance
+                                    </text>
+                                    <text
+                                        x="50%"
+                                        y="55%"
+                                        textAnchor="middle"
+                                        dominantBaseline="middle"
+                                        className="text-2xl font-bold fill-foreground"
+                                    >
+                                        {formatCurrency(totalBalance ?? 0)}
+                                    </text>
+                                </>
+                            )}
                             <Tooltip content={<AccountTooltip />} />
                             <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20px'}} />
                         </PieChart>
