@@ -28,18 +28,18 @@ export default function ThemeSelector() {
       <div className="space-y-4">
         <div className="flex items-center space-x-2 rounded-lg bg-muted p-1">
           <Button
-            variant={theme === 'light' ? 'outline' : 'ghost'}
+            variant={theme === 'light' ? 'secondary' : 'ghost'}
             size="sm"
-            className={`w-full justify-center ${theme === 'light' ? 'bg-background shadow-sm' : ''}`}
+            className="w-full justify-center"
             onClick={() => setTheme('light')}
           >
             <Sun className="mr-2 h-4 w-4" />
             Light
           </Button>
           <Button
-            variant={theme === 'dark' ? 'outline' : 'ghost'}
+            variant={theme === 'dark' ? 'secondary' : 'ghost'}
             size="sm"
-            className={`w-full justify-center ${theme === 'dark' ? 'bg-background shadow-sm' : ''}`}
+            className="w-full justify-center"
             onClick={() => setTheme('dark')}
           >
             <Moon className="mr-2 h-4 w-4" />
