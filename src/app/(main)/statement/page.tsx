@@ -282,6 +282,9 @@ function StatementPageContent() {
       setExpandedTransactionId(null);
     }
   };
+  
+  const isDateFilterActive = dateFilterLabel !== 'All Time';
+  const isAccountFilterActive = selectedAccounts.length > 0 || showAccountCreations;
 
   const transactionsLoaded = isInitialized && filteredTransactions !== null;
   const accountsLoaded = isInitialized && accounts !== null;
@@ -320,7 +323,7 @@ function StatementPageContent() {
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" className={cn(isDateFilterActive && 'text-primary border-primary')}>
                     <CalendarIcon className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -337,7 +340,7 @@ function StatementPageContent() {
                 <Button
                     variant="outline"
                     size="icon"
-                    className="h-11 w-11"
+                    className={cn("h-11 w-11", sortOrder === 'asc' && 'text-primary border-primary')}
                     onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                     >
                     <ArrowDownUp className="h-5 w-5" />
@@ -350,7 +353,7 @@ function StatementPageContent() {
 
             <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className="h-11 w-11">
+                <Button variant="outline" size="icon" className={cn("h-11 w-11", isAccountFilterActive && 'text-primary border-primary')}>
                   <Filter className="h-5 w-5" />
                 </Button>
               </PopoverTrigger>
