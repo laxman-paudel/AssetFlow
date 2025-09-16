@@ -28,7 +28,6 @@ import type { Account } from '@/lib/types';
 import EditAccountDialog from '@/components/app/EditAccountDialog';
 import { cn } from '@/lib/utils';
 import { useCountUp } from '@/hooks/useCountUp';
-import AnimateIn from '@/components/app/AnimateIn';
 
 
 export default function AccountsPage() {
@@ -127,7 +126,10 @@ export default function AccountsPage() {
         ) : (
           <>
             <div className="block mb-6">
-              <AnimateIn>
+                <div 
+                    className="opacity-0 animate-fade-in-up"
+                    style={{animationFillMode: 'forwards'}}
+                >
                   <Card 
                       className='text-primary-foreground shadow-md transition-smooth hover:shadow-lg cursor-pointer'
                       style={getBalanceCardStyle()}
@@ -144,7 +146,7 @@ export default function AccountsPage() {
                           )}
                       </CardContent>
                   </Card>
-                </AnimateIn>
+                </div>
             </div>
             <div className="space-y-4">
               {!accountsLoaded ? (
@@ -153,7 +155,11 @@ export default function AccountsPage() {
                 ))
               ) : (
                 accounts.map((account, index) => (
-                  <AnimateIn key={account.id} style={{ animationDelay: `${index * 100}ms` }}>
+                  <div
+                      key={account.id}
+                      className="opacity-0 animate-fade-in-up"
+                      style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}
+                   >
                     <Card 
                       className={cn(
                           "transition-all duration-300 border-l-4 border-l-primary/20 overflow-hidden",
@@ -196,11 +202,14 @@ export default function AccountsPage() {
                       </div>
                       )}
                     </Card>
-                  </AnimateIn>
+                  </div>
                 ))
               )}
               {accountsLoaded && accounts.length > 0 && (
-                  <AnimateIn>
+                  <div
+                      className="opacity-0 animate-fade-in-up"
+                      style={{ animationDelay: `${accounts.length * 100}ms`, animationFillMode: 'forwards' }}
+                   >
                     <div className="flex flex-col items-center justify-center text-center py-10 border-2 border-dashed rounded-lg">
                         <div className="p-4 bg-secondary rounded-full mb-4">
                             <PlusCircle className="h-10 w-10 text-muted-foreground" />
@@ -212,7 +221,7 @@ export default function AccountsPage() {
                             Create New Account
                         </Button>
                     </div>
-                  </AnimateIn>
+                  </div>
               )}
             </div>
           </>
