@@ -22,7 +22,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '../ui/skeleton';
-import { PieChart as PieChartIcon, BarChart3, Wallet, TrendingUp, TrendingDown, ArrowRight, ArrowLeftRight, LineChart as LineChartIcon } from 'lucide-react';
+import { PieChart as PieChartIcon, BarChart3, Wallet, TrendingUp, TrendingDown, ArrowRightLeft, LineChart as LineChartIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 
@@ -105,14 +105,14 @@ const KeyMetricCard = ({ title, value, change, description, currency, icon: Icon
     <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{title}</CardTitle>
-            {Icon && <Icon className={`h-5 w-5 ${colorClass ?? 'text-muted-foreground'}`} />}
+            {Icon && <Icon className={cn('h-5 w-5', colorClass ?? 'text-muted-foreground')} />}
         </CardHeader>
         <CardContent>
             <div className="text-2xl font-bold">
                 {new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }).format(value)}
             </div>
             <div className="flex items-center text-xs text-muted-foreground gap-1">
-                {typeof change === 'number' && (
+                {typeof change === 'number' && isFinite(change) && (
                     <Badge variant={change >= 0 ? 'default' : 'destructive'} className='flex gap-1 items-center'>
                         {change >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                         {change.toFixed(1)}%
@@ -283,8 +283,7 @@ export default function FinancialCharts() {
   if (!isInitialized) {
       return (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full md:col-span-2" />
             <Skeleton className="h-96 w-full lg:col-span-2" />
             <Skeleton className="h-96 w-full lg:col-span-2" />
           </div>
@@ -304,33 +303,17 @@ export default function FinancialCharts() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-6 md:grid-cols-2">
         {keyMetrics && (
             <>
                 <KeyMetricCard 
                     title="This Month's Net Income"
                     value={keyMetrics.netIncome}
                     change={keyMetrics.netIncomeChange}
-                    description="from last month"
+                    description="vs. last month"
                     currency={currency}
-                    icon={keyMetrics.netIncome >= 0 ? TrendingUp : TrendingDown}
+                    icon={ArrowRightLeft}
                     colorClass={keyMetrics.netIncome >= 0 ? 'text-green-500' : 'text-red-500'}
-                />
-                 <KeyMetricCard 
-                    title="Total Income"
-                    value={keyMetrics.currentMonthIncome}
-                    description={`this month`}
-                    currency={currency}
-                    icon={ArrowRight}
-                    colorClass="text-green-500"
-                />
-                 <KeyMetricCard 
-                    title="Total Expenses"
-                    value={keyMetrics.currentMonthExpense}
-                    description={`this month`}
-                    currency={currency}
-                    icon={ArrowLeftRight}
-                    colorClass="text-red-500"
                 />
                 <KeyMetricCard 
                     title="Avg. Daily Spend"
@@ -338,17 +321,18 @@ export default function FinancialCharts() {
                     description={`in ${format(new Date(), 'MMMM')}`}
                     currency={currency}
                     icon={PieChartIcon}
+                    colorClass="text-blue-500"
                 />
             </>
         )}
 
-      <Card className="lg:col-span-2">
+      <Card className="md:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-6 w-6" />
             Income vs Expense
           </CardTitle>
-          <CardDescription>Comparison for the last 6 months.</CardDescription>
+          <CardDescription>A summary of your cash flow for the last 6 months.</CardDescription>
         </CardHeader>
         <CardContent>
             <ResponsiveContainer width="100%" height={350}>
@@ -381,13 +365,13 @@ export default function FinancialCharts() {
         </CardContent>
       </Card>
       
-      <Card className="lg:col-span-2">
+      <Card className="md:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <LineChartIcon className="h-6 w-6" />
             Net Flow Trend
           </CardTitle>
-          <CardDescription>Monthly net cash flow for the last 6 months.</CardDescription>
+          <CardDescription>Your net savings or deficit over the last 6 months.</CardDescription>
         </CardHeader>
         <CardContent>
             <ResponsiveContainer width="100%" height={350}>
@@ -422,7 +406,7 @@ export default function FinancialCharts() {
       </Card>
       
       {categoriesEnabled && (
-        <Card className="lg:col-span-2">
+        <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                 <PieChartIcon className="h-6 w-6" />
@@ -466,7 +450,7 @@ export default function FinancialCharts() {
         </Card>
       )}
 
-      <Card className="lg:col-span-2">
+      <Card>
         <CardHeader>
             <CardTitle className="flex items-center gap-2">
             <Wallet className="h-6 w-6" />
@@ -490,7 +474,7 @@ export default function FinancialCharts() {
                                 const y = cy + radius * Math.sin(-midAngle * RADIAN);
                                 return ( (percent * 100) > 5 ? 
                                     <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-                                        {`${(percent * 100).toFixed(0)}%`}
+                                        {` ${(percent * 100).toFixed(0)}%`}
                                     </text> : null
                                 );
                             }}
