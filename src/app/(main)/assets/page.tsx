@@ -178,16 +178,16 @@ export default function AccountsPage() {
                       <div className="bg-muted/50 border-t transition-all">
                           <div className="px-2 sm:px-4 py-2 flex justify-evenly">
                               <Button variant="ghost" size="sm" onClick={() => handleShowTransactions(account.id)}>
-                                  <BookText className="mr-2 h-4 w-4" />
-                                  Transactions
+                                  <BookText className="mr-0 sm:mr-2 h-4 w-4" />
+                                  <span className="hidden sm:inline">Transactions</span>
                               </Button>
                               <Button variant="ghost" size="sm" onClick={() => setAccountToEdit(account)}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit
+                                  <Edit className="mr-0 sm:mr-2 h-4 w-4" />
+                                  <span className="hidden sm:inline">Edit</span>
                               </Button>
                               <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setAccountToDelete(account)}>
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete
+                                  <Trash2 className="mr-0 sm:mr-2 h-4 w-4" />
+                                  <span className="hidden sm:inline">Delete</span>
                               </Button>
                           </div>
                       </div>
