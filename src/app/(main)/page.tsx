@@ -102,10 +102,10 @@ export default function DashboardPage() {
         
         <Separator />
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-wrap justify-center gap-4">
             <Button
                 variant="outline"
-                className="w-full h-20 flex-col gap-2 text-lg"
+                className="h-20 flex-1 min-w-[150px] flex-col gap-2 text-lg"
                 onClick={() => openDialog('transfer')}
             >
                 <div className="flex items-center gap-3">
@@ -117,13 +117,15 @@ export default function DashboardPage() {
             </Button>
             <Button
                 variant="outline"
-                className="w-full h-20 flex flex-col items-center justify-center text-center p-2"
+                className="h-20 flex-1 min-w-[150px] flex-col gap-2 text-lg"
                 onClick={() => openDialog('account')}
             >
-                <div className="bg-blue-100 text-blue-700 rounded-full p-2 mb-1">
-                    <Wallet className="h-5 w-5" />
+                <div className="flex items-center gap-3">
+                    <div className="bg-blue-100 text-blue-700 rounded-full p-2">
+                        <Wallet className="h-5 w-5" />
+                    </div>
+                    <span className="font-semibold text-blue-800">New Account</span>
                 </div>
-                <span className="font-semibold text-blue-800 text-sm leading-tight">New Account</span>
             </Button>
         </div>
       </div>
