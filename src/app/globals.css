@@ -94,4 +94,8 @@
     animation: fade-in-up 0.5s ease-out forwards;
     opacity: 0;
   }
+
+  .will-change-transform {
+    will-change: transform;
+  }
 }
