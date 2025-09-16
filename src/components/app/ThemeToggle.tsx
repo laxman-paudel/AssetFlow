@@ -21,7 +21,7 @@ export default function ThemeToggle() {
       {options.map((option) => (
         <Button
           key={option.value}
-          variant={theme === option.value ? "secondary" : "ghost"}
+          variant={theme === option.value ? "default" : "ghost"}
           size="sm"
           className="flex-1 justify-center gap-2"
           onClick={() => setTheme(option.value)}
