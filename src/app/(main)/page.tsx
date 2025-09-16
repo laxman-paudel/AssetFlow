@@ -117,15 +117,13 @@ export default function DashboardPage() {
             </Button>
             <Button
                 variant="outline"
-                className="w-full h-20 flex-col gap-2 text-lg"
+                className="w-full h-20 flex flex-col items-center justify-center text-center p-2"
                 onClick={() => openDialog('account')}
             >
-                <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 text-blue-700 rounded-full p-2">
-                        <Wallet className="h-5 w-5" />
-                    </div>
-                    <span className="font-semibold text-blue-800">New Account</span>
+                <div className="bg-blue-100 text-blue-700 rounded-full p-2 mb-1">
+                    <Wallet className="h-5 w-5" />
                 </div>
+                <span className="font-semibold text-blue-800 text-sm leading-tight">New Account</span>
             </Button>
         </div>
       </div>
