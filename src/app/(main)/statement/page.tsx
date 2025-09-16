@@ -511,7 +511,15 @@ function StatementPageContent() {
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold">{t.remarks}</p>
-                      <p className="text-sm text-muted-foreground">{isAdjustment ? 'Balance Adjustment' : 'Initial Balance'}</p>
+                      <div className="text-xs text-muted-foreground space-y-1 mt-1">
+                          {t.accountName && (
+                              <div className="flex items-center gap-1.5">
+                                  {React.cloneElement(getAccountIcon(t.accountName), {className: "h-3 w-3 text-muted-foreground"})}
+                                  <span>{t.accountName}</span>
+                              </div>
+                          )}
+                           <p>{isAdjustment ? 'Balance Adjustment' : 'Initial Balance'}</p>
+                      </div>
                     </div>
                     <div className="text-right">
                        <p className={cn(
