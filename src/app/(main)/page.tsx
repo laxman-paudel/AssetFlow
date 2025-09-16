@@ -58,7 +58,7 @@ export default function DashboardPage() {
           <CardContent>
             {isInitialized && totalBalance !== null && currency ? (
               <>
-                <div className="text-4xl font-bold tracking-tighter">
+                <div className="text-3xl sm:text-4xl font-bold tracking-tighter">
                   {new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: currency,
@@ -103,30 +103,30 @@ export default function DashboardPage() {
         <Separator />
         
         <div className="flex flex-wrap justify-center gap-4">
-            <Button
-                variant="outline"
-                className="h-20 flex-1 min-w-[150px] flex-col gap-2 text-lg"
-                onClick={() => openDialog('transfer')}
-            >
-                <div className="flex items-center gap-3">
-                    <div className="bg-purple-100 text-purple-700 rounded-full p-2">
-                        <ArrowRightLeft className="h-5 w-5" />
-                    </div>
-                    <span className="font-semibold text-purple-800">Transfer</span>
-                </div>
-            </Button>
-            <Button
-                variant="outline"
-                className="h-20 flex-1 min-w-[150px] flex-col gap-2 text-lg"
-                onClick={() => openDialog('account')}
-            >
-                <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 text-blue-700 rounded-full p-2">
-                        <Wallet className="h-5 w-5" />
-                    </div>
-                    <span className="font-semibold text-blue-800">New Account</span>
-                </div>
-            </Button>
+          <Button
+            variant="outline"
+            className="h-20 flex-1 min-w-[150px] flex-col gap-1 text-base sm:text-lg"
+            onClick={() => openDialog('transfer')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="bg-purple-100 text-purple-700 rounded-full p-2">
+                <ArrowRightLeft className="h-5 w-5" />
+              </div>
+              <span className="font-semibold text-purple-800">Transfer</span>
+            </div>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-20 flex-1 min-w-[150px] flex-col gap-1 text-base sm:text-lg"
+            onClick={() => openDialog('account')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 text-blue-700 rounded-full p-2">
+                <Wallet className="h-5 w-5" />
+              </div>
+              <span className="font-semibold text-blue-800">New Account</span>
+            </div>
+          </Button>
         </div>
       </div>
 

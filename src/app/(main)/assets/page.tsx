@@ -101,7 +101,7 @@ export default function AccountsPage() {
   return (
     <>
       <div className="container mx-auto p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold tracking-tight">My Accounts</h1>
           <Button onClick={() => setDialogOpen(true)} className='h-11'>
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -150,10 +150,10 @@ export default function AccountsPage() {
                 ))
               ) : (
                 accounts.map((account) => (
+                  <div key={account.id} className='animate-fade-in-up'>
                     <Card 
-                      key={account.id}
                       className={cn(
-                          "transition-all duration-300 border-l-4 border-l-primary/20",
+                          "transition-all duration-300 border-l-4 overflow-hidden border-l-primary/20",
                           expandedAccountId === account.id ? 'bg-muted/50 border-l-primary/60' : 'hover:bg-muted/50 hover:shadow-lg hover:-translate-y-1 hover:border-l-primary/60'
                       )}
                     >
@@ -168,7 +168,7 @@ export default function AccountsPage() {
                           </div>
                         </CardHeader>
                         <CardContent className="pl-16">
-                            <p className="text-3xl font-bold tracking-tight">
+                            <p className="text-2xl sm:text-3xl font-bold tracking-tight">
                               {formatCurrency(account.balance)}
                             </p>
                         </CardContent>
@@ -176,7 +176,7 @@ export default function AccountsPage() {
 
                       {expandedAccountId === account.id && (
                       <div className="bg-muted/50 border-t transition-all">
-                          <div className="px-4 py-2 flex justify-end gap-2">
+                          <div className="px-4 py-2 flex flex-col sm:flex-row sm:justify-end gap-2">
                               <Button variant="ghost" size="sm" onClick={() => handleShowTransactions(account.id)}>
                                   <BookText className="mr-2 h-4 w-4" />
                                   Show Transactions
@@ -193,6 +193,7 @@ export default function AccountsPage() {
                       </div>
                       )}
                     </Card>
+                  </div>
                 ))
               )}
               {accountsLoaded && accounts.length > 0 && (

@@ -62,8 +62,8 @@ function SettingsContent() {
               </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4 gap-4">
+                  <div className="flex-1">
                       <h4 className="font-semibold">Enable Categories</h4>
                       <p className="text-sm text-muted-foreground">
                           Turn transaction categorization on or off globally.

@@ -292,7 +292,7 @@ function StatementPageContent() {
       <div className="container mx-auto p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold">Statements</h1>
-          <div className="flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-2 flex-wrap">
             
             <div className="relative flex-1 sm:flex-initial">
                 <Tooltip>
@@ -300,7 +300,7 @@ function StatementPageContent() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input
                             placeholder="Search..."
-                            className={cn('pl-10 pr-8 w-full sm:w-40')}
+                            className={cn('pl-10 pr-8 w-full sm:w-40 md:w-56')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
