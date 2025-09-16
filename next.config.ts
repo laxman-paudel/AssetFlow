@@ -37,6 +37,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    transpilePackages: ['recharts'],
+  },
 };
 
 export default pwaConfig(nextConfig);

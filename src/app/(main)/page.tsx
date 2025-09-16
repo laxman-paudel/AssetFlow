@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCountUp } from '@/hooks/useCountUp';
 import TransferDialog from '@/components/app/TransferDialog';
 import { cn } from '@/lib/utils';
+import FinancialCharts from '@/components/app/FinancialCharts';
 
 type DialogType = 'income' | 'expenditure' | 'account' | 'transfer';
 
@@ -106,6 +107,10 @@ export default function DashboardPage() {
             <span className="font-semibold text-red-800">Expense</span>
           </Button>
         </div>
+        
+        <Separator />
+
+        <FinancialCharts />
         
         <Separator />
         
