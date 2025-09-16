@@ -92,13 +92,20 @@ function StatementPageContent() {
     const accountIdFromQuery = searchParams.get('accountId');
     if (accountIdFromQuery) {
       setSelectedAccounts([accountIdFromQuery]);
-      setShowAccountCreations(true);
       // Optional: remove the query param from URL after applying it
       // router.replace('/statement', { scroll: false });
     }
   }, [searchParams, router]);
   
-  const animatedTotalBalance = useCountUp(totalBalance ?? 0);
+  const singleAccountFilter = useMemo(() => {
+    if (selectedAccounts.length !== 1 || !accounts) return null;
+    return accounts.find(a => a.id === selectedAccounts[0]) || null;
+  }, [selectedAccounts, accounts]);
+
+  const balanceToShow = singleAccountFilter ? singleAccountFilter.balance : totalBalance;
+  const animatedBalance = useCountUp(balanceToShow ?? 0);
+  const balanceLabel = singleAccountFilter ? `${singleAccountFilter.name} Balance` : 'Total Balance';
+
 
   const filteredTransactions = useMemo(() => {
     if (!transactions) return [];
@@ -235,15 +242,15 @@ function StatementPageContent() {
   };
 
   const getBalanceCardStyle = () => {
-    if (totalBalance === null) return {};
+    if (balanceToShow === null) return {};
     const maxAmount = 5000;
-    const intensity = Math.min(Math.abs(totalBalance) / maxAmount, 1);
+    const intensity = Math.min(Math.abs(balanceToShow) / maxAmount, 1);
 
-    if (totalBalance > 0) {
+    if (balanceToShow > 0) {
       const lightness = 80 - intensity * 30;
       return { backgroundColor: `hsl(120, 60%, ${lightness}%)` };
     }
-    if (totalBalance < 0) {
+    if (balanceToShow < 0) {
       const lightness = 80 - intensity * 25;
       return { backgroundColor: `hsl(0, 70%, ${lightness}%)` };
     }
@@ -471,22 +478,25 @@ function StatementPageContent() {
         </div>
 
         <div className="block mb-6">
-          <Card
-            className='text-primary-foreground shadow-md transition-smooth hover:shadow-lg cursor-pointer'
-            style={getBalanceCardStyle()}
-            onClick={() => router.push('/')}
-          >
-            <CardContent className="p-3 flex items-center justify-between">
-              <p className="text-sm font-medium">Total Balance</p>
-              {transactionsLoaded && totalBalance !== null ? (
-                <p className="text-lg font-bold tracking-tighter">
-                  {formatCurrency(animatedTotalBalance)}
-                </p>
-              ) : (
-                <Skeleton className="h-6 w-24 bg-primary-foreground/20" />
-              )}
-            </CardContent>
-          </Card>
+            <Card
+                className={cn(
+                    'text-primary-foreground shadow-md',
+                    singleAccountFilter ? 'cursor-pointer hover:shadow-lg' : ''
+                )}
+                style={getBalanceCardStyle()}
+                onClick={() => singleAccountFilter && router.push('/assets')}
+            >
+                <CardContent className="p-3 flex items-center justify-between">
+                <p className="text-sm font-medium">{balanceLabel}</p>
+                {isInitialized ? (
+                    <p className="text-lg font-bold tracking-tighter">
+                    {formatCurrency(animatedBalance)}
+                    </p>
+                ) : (
+                    <Skeleton className="h-6 w-24 bg-primary-foreground/20" />
+                )}
+                </CardContent>
+            </Card>
         </div>
 
         <div className="space-y-3">
