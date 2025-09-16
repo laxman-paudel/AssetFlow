@@ -87,6 +87,49 @@ const renderActiveShape = (props: any) => {
   );
 };
 
+const renderActive3DShape = (props: any) => {
+  const RADIAN = Math.PI / 180;
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  const sin = Math.sin(-RADIAN * (startAngle + (endAngle - startAngle) / 2));
+  const cos = Math.cos(-RADIAN * (startAngle + (endAngle - startAngle) / 2));
+  const mx = cx + (outerRadius + 10) * cos;
+  const my = cy + (outerRadius + 10) * sin;
+  const ex = mx + (cos >= 0 ? 1 : -1) * 12;
+  const ey = my;
+
+  // This creates the 3D effect by stacking sectors
+  const depth = 8;
+  const sectors = Array.from({ length: depth }).map((_, i) => (
+    <Sector
+      key={i}
+      cx={cx}
+      cy={cy - i}
+      innerRadius={innerRadius}
+      outerRadius={outerRadius}
+      startAngle={startAngle}
+      endAngle={endAngle}
+      fill={fill}
+      stroke={fill}
+      opacity={1 - (i * 0.1)}
+    />
+  ));
+  
+  const displayPercent = isFinite(percent) ? (percent * 100).toFixed(1) : '0.0';
+
+  return (
+    <g>
+      {sectors}
+      <text x={cx} y={cy - depth - 10} textAnchor="middle" fill={fill} className="font-semibold text-base truncate" width={innerRadius * 2}>
+        {payload.name}
+      </text>
+      <text x={cx} y={cy - depth + 4} textAnchor="middle" fill="hsl(var(--muted-foreground))" className="text-sm">
+        {displayPercent}%
+      </text>
+    </g>
+  );
+};
+
+
 const renderCustomizedLegend = (props: any) => {
     const { payload } = props;
     if (!payload || payload.length === 0) return null;
@@ -479,12 +522,12 @@ export default function FinancialCharts() {
                         <PieChart className="outline-none">
                              <Pie
                                 activeIndex={accountChartActiveIndex}
-                                activeShape={renderActiveShape}
+                                activeShape={renderActive3DShape}
                                 data={accountBalanceData}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={70}
-                                outerRadius={90}
+                                innerRadius={60}
+                                outerRadius={100}
                                 fill="hsl(var(--primary))"
                                 dataKey="value"
                                 nameKey="name"
