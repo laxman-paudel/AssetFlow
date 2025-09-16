@@ -40,7 +40,7 @@ export default function MainLayout({
           </Button>
         </div>
       </header>
-      <main key={pathname} className="flex-1 pb-24 md:pb-8 animate-fade-in">
+      <main className="flex-1 pb-24 md:pb-8">
         {children}
       </main>
       <BottomNav />
