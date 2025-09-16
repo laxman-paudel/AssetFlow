@@ -32,7 +32,7 @@ function SettingsContent() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
+          <div className="space-y-4">
             <Label>Theme</Label>
             <ThemeSwitcher />
           </div>
