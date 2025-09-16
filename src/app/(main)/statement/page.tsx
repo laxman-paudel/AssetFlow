@@ -85,6 +85,7 @@ function StatementPageContent() {
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
+  const [isDateFilterOpen, setIsDateFilterOpen] = useState(false);
 
 
   useEffect(() => {
@@ -285,6 +286,7 @@ function StatementPageContent() {
   
   const isDateFilterActive = dateFilterLabel !== 'All Time';
   const isAccountFilterActive = selectedAccounts.length > 0 || showAccountCreations;
+  const isSortActive = sortOrder !== 'desc';
 
   const transactionsLoaded = isInitialized && filteredTransactions !== null;
   const accountsLoaded = isInitialized && accounts !== null;
@@ -321,9 +323,9 @@ function StatementPageContent() {
 
             <StatementExportButton transactions={filteredTransactions} />
             
-            <DropdownMenu>
+            <DropdownMenu onOpenChange={setIsDateFilterOpen}>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className={cn(isDateFilterActive && 'text-primary border-primary')}>
+                <Button variant="outline" size="icon" className={cn("h-11 w-11", (isDateFilterActive || isDateFilterOpen) && 'text-primary border-primary bg-accent')}>
                     <CalendarIcon className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -340,7 +342,7 @@ function StatementPageContent() {
                 <Button
                     variant="outline"
                     size="icon"
-                    className={cn("h-11 w-11", sortOrder === 'asc' && 'text-primary border-primary')}
+                    className={cn("h-11 w-11", isSortActive && 'text-primary border-primary')}
                     onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                     >
                     <ArrowDownUp className="h-5 w-5" />
@@ -353,7 +355,7 @@ function StatementPageContent() {
 
             <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className={cn("h-11 w-11", isAccountFilterActive && 'text-primary border-primary')}>
+                <Button variant="outline" size="icon" className={cn("h-11 w-11", (isAccountFilterActive || isFilterPopoverOpen) && 'text-primary border-primary bg-accent')}>
                   <Filter className="h-5 w-5" />
                 </Button>
               </PopoverTrigger>
