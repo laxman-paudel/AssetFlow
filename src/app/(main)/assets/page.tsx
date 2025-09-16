@@ -153,8 +153,8 @@ export default function AccountsPage() {
                   <div key={account.id}>
                     <Card 
                       className={cn(
-                          "transition-smooth duration-300 overflow-hidden border-l-4 border-l-primary/20 will-change-transform",
-                          expandedAccountId === account.id ? 'bg-muted/50 border-l-primary/60' : 'hover:bg-muted/50 hover:shadow-lg hover:-translate-y-1 hover:border-l-primary/60'
+                          "transition-all duration-200 overflow-hidden border-l-4",
+                          expandedAccountId === account.id ? 'bg-muted/50 border-l-primary' : 'border-l-transparent hover:bg-muted/50'
                       )}
                     >
                       <div className="cursor-pointer" onClick={() => handleAccountClick(account.id)}>
