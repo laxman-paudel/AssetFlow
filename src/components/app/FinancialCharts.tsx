@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo, useState, useCallback, useRef } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useAssetFlow } from '@/components/app/AppProvider';
 import { getCategoryById } from '@/lib/categories';
-import { subMonths, format, startOfMonth, endOfMonth, isWithinInterval, getDaysInMonth, eachDayOfInterval, lastDayOfMonth, parseISO, startOfDay, subDays } from 'date-fns';
+import { subMonths, format, startOfMonth, endOfMonth, isWithinInterval, getDaysInMonth } from 'date-fns';
 import {
   ResponsiveContainer,
   BarChart,
@@ -16,19 +16,13 @@ import {
   Cell,
   Legend,
   Sector,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  ReferenceLine,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '../ui/skeleton';
-import { PieChart as PieChartIcon, BarChart3, Wallet, TrendingUp, TrendingDown, ArrowRightLeft, ShoppingCart, Activity } from 'lucide-react';
+import { PieChart as PieChartIcon, BarChart3, Wallet, TrendingUp, TrendingDown, ArrowRightLeft, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import type { Transaction } from '@/lib/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff4d4d', '#4ddbff', '#ffcce0'];
@@ -136,9 +130,8 @@ const KeyMetricCard = ({ title, value, change, description, currency, icon: Icon
 )
 
 export default function FinancialCharts() {
-  const { transactions, categories, currency, isInitialized, categoriesEnabled, accounts, totalBalance } = useAssetFlow();
+  const { transactions, categories, currency, isInitialized, categoriesEnabled, accounts } = useAssetFlow();
   const [pieChartActiveIndex, setPieChartActiveIndex] = useState(0);
-  const [balanceHistoryScale, setBalanceHistoryScale] = useState<'monthly' | 'daily'>('monthly');
 
   const onPieEnter = useCallback((_: any, index: number) => {
     setPieChartActiveIndex(index);
@@ -178,97 +171,6 @@ export default function FinancialCharts() {
 
     return { monthlySummaryData };
   }, [transactions, isInitialized]);
-
-  const balanceHistoryData = useMemo(() => {
-    if (!isInitialized || !transactions || totalBalance === null) return [];
-    
-    const sortedTransactions = [...transactions].sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
-
-    if (balanceHistoryScale === 'monthly') {
-        const totalChange = sortedTransactions.reduce((acc, t) => {
-            switch (t.type) {
-                case 'income': return acc + t.amount;
-                case 'expenditure': return acc - t.amount;
-                case 'account_creation': return acc + t.amount;
-                default: return acc;
-            }
-        }, 0);
-        const startingBalance = totalBalance - totalChange;
-        
-        const history: { [key: string]: number } = {};
-        let currentBalance = startingBalance;
-        
-        sortedTransactions.forEach(t => {
-            const monthKey = format(parseISO(t.date), 'yyyy-MM');
-            if (t.type === 'income') currentBalance += t.amount;
-            else if (t.type === 'expenditure') currentBalance -= t.amount;
-            else if (t.type === 'account_creation') currentBalance += t.amount;
-            history[monthKey] = currentBalance;
-        });
-
-        return Object.entries(history).map(([date, balance]) => ({
-            date: format(parseISO(`${date}-01`), 'MMM yy'),
-            balance,
-        }));
-    } else { // daily
-        const today = startOfDay(new Date());
-        const thirtyDaysAgo = subDays(today, 30);
-        
-        const changeBefore30Days = sortedTransactions
-            .filter(t => parseISO(t.date) < thirtyDaysAgo)
-            .reduce((acc, t) => {
-                switch (t.type) {
-                    case 'income': return acc + t.amount;
-                    case 'expenditure': return acc - t.amount;
-                    case 'account_creation': return acc + t.amount;
-                    default: return acc;
-                }
-            }, 0);
-
-        const totalChange = sortedTransactions.reduce((acc, t) => {
-            switch (t.type) {
-                case 'income': return acc + t.amount;
-                case 'expenditure': return acc - t.amount;
-                case 'account_creation': return acc + t.amount;
-                default: return acc;
-            }
-        }, 0);
-
-        const initialBalance = totalBalance - totalChange;
-        let startingBalanceForPeriod = initialBalance + changeBefore30Days;
-        
-        const transactionsInLast30Days = sortedTransactions.filter(t => parseISO(t.date) >= thirtyDaysAgo);
-        
-        const datePoints: { [key: string]: number } = {};
-
-        let currentBalance = startingBalanceForPeriod;
-        let transactionIndex = 0;
-        
-        const days = eachDayOfInterval({start: thirtyDaysAgo, end: today});
-        if (days.length === 0 && transactionsInLast30Days.length === 0) return [];
-        if (days.length === 0 && transactionsInLast30Days.length > 0) {
-           days.push(today);
-        }
-
-        for (const day of days) {
-            const dayKey = format(day, 'yyyy-MM-dd');
-            while(transactionIndex < transactionsInLast30Days.length && startOfDay(parseISO(transactionsInLast30Days[transactionIndex].date)).getTime() === day.getTime()) {
-                const t = transactionsInLast30Days[transactionIndex];
-                 if (t.type === 'income') currentBalance += t.amount;
-                 else if (t.type === 'expenditure') currentBalance -= t.amount;
-                 else if (t.type === 'account_creation') currentBalance += t.amount;
-                 transactionIndex++;
-            }
-            datePoints[dayKey] = currentBalance;
-        }
-
-        return Object.entries(datePoints).map(([date, balance]) => ({
-            date: format(parseISO(date), 'MMM d'),
-            balance
-        }));
-    }
-
-  }, [transactions, isInitialized, totalBalance, balanceHistoryScale]);
 
   const keyMetrics = useMemo(() => {
       if (!isInitialized || !transactions) return null;
@@ -365,20 +267,6 @@ export default function FinancialCharts() {
     }).format(value);
   }
   
-  const LineChartTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="p-2 text-sm bg-background/90 backdrop-blur-sm rounded-lg border shadow-lg">
-          <p className="font-bold mb-1">{label}</p>
-          <p className="font-medium">
-            Balance: <span className="font-bold">{formatCurrency(payload[0].value)}</span>
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
   const CategoryTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -476,113 +364,44 @@ export default function FinancialCharts() {
             </div>
         )}
         
-      <Card>
+      <Card className="col-span-1 lg:col-span-3">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Activity className="h-6 w-6" />
-            Balance History
+            <BarChart3 className="h-6 w-6" />
+            Income vs Expense
           </CardTitle>
-          <CardDescription>The historical progression of your total balance over time.</CardDescription>
+          <CardDescription>A summary of your cash flow for the last 6 months.</CardDescription>
         </CardHeader>
-        <CardContent className='pr-6'>
-          <Tabs value={balanceHistoryScale} onValueChange={(value) => setBalanceHistoryScale(value as any)} className="w-full">
-            <div className="flex justify-end">
-              <TabsList>
-                <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                <TabsTrigger value="daily">Last 30 Days</TabsTrigger>
-              </TabsList>
-            </div>
-            <TabsContent value="monthly" className="mt-4">
-              <ResponsiveContainer width="100%" height={350}>
-                {balanceHistoryData.length > 0 ? (
-                  <AreaChart data={balanceHistoryData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+        <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={financialData?.monthlySummaryData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                     <defs>
-                      <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                      </linearGradient>
+                        <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
+                        </linearGradient>
+                        <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.2}/>
+                        </linearGradient>
                     </defs>
-                    <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                    <YAxis 
-                      fontSize={12} 
-                      tickLine={false} 
-                      axisLine={false} 
-                      tickFormatter={formatAxisValue}
-                      domain={['dataMin - 1000', 'dataMax + 1000']}
-                    />
-                    <Tooltip content={<LineChartTooltip />} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }} />
-                    <Area type="monotone" dataKey="balance" stroke="hsl(var(--primary))" fill="url(#colorBalance)" strokeWidth={2} />
-                  </AreaChart>
-                ) : <p className="text-center text-muted-foreground pt-10">Not enough data for a monthly view.</p>}
-              </ResponsiveContainer>
-            </TabsContent>
-            <TabsContent value="daily" className="mt-4">
-               <ResponsiveContainer width="100%" height={350}>
-                {balanceHistoryData.length > 1 ? (
-                  <AreaChart data={balanceHistoryData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                     <defs>
-                      <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                    <YAxis 
-                      fontSize={12} 
-                      tickLine={false} 
-                      axisLine={false} 
-                      tickFormatter={formatAxisValue}
-                      domain={['dataMin - 1000', 'dataMax + 1000']}
-                    />
-                    <Tooltip content={<LineChartTooltip />} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }} />
-                    <Area type="monotone" dataKey="balance" stroke="hsl(var(--primary))" fill="url(#colorBalance)" strokeWidth={2} />
-                  </AreaChart>
-                 ) : <p className="text-center text-muted-foreground pt-10">Not enough data for a daily view.</p>}
-              </ResponsiveContainer>
-            </TabsContent>
-          </Tabs>
+                <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    tickFormatter={formatAxisValue}
+                />
+                <Tooltip content={<CustomBarTooltip currency={currency} />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20px'}}/>
+                <Bar dataKey="income" fill="url(#colorIncome)" name="Income" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expense" fill="url(#colorExpense)" name="Expense" radius={[4, 4, 0, 0]} />
+                </BarChart>
+            </ResponsiveContainer>
         </CardContent>
       </Card>
       
       <div className="grid md:grid-cols-2 gap-6">
-        <Card>
-            <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-6 w-6" />
-                Income vs Expense
-            </CardTitle>
-            <CardDescription>A summary of your cash flow for the last 6 months.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={financialData?.monthlySummaryData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                        <defs>
-                            <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
-                            </linearGradient>
-                            <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.2}/>
-                            </linearGradient>
-                        </defs>
-                    <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis 
-                        fontSize={12} 
-                        tickLine={false} 
-                        axisLine={false} 
-                        tickFormatter={formatAxisValue}
-                        domain={['auto', 'auto']}
-                    />
-                    <Tooltip content={<CustomBarTooltip currency={currency} />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                    <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20px'}}/>
-                    <Bar dataKey="income" fill="url(#colorIncome)" name="Income" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="expense" fill="url(#colorExpense)" name="Expense" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-        
         {categoriesEnabled && spendingByCategoryData.length > 0 && (
             <Card>
                 <CardHeader>
