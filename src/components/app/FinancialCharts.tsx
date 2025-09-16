@@ -22,9 +22,10 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '../ui/skeleton';
-import { PieChart as PieChartIcon, BarChart3, Wallet, TrendingUp, TrendingDown, ArrowRightLeft, LineChart as LineChartIcon } from 'lucide-react';
+import { PieChart as PieChartIcon, BarChart3, Wallet, TrendingUp, TrendingDown, ArrowRightLeft, LineChart as LineChartIcon, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
+import type { Transaction } from '@/lib/types';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#ff4d4d', '#4ddbff', '#ffcce0'];
 
@@ -101,25 +102,31 @@ const renderCustomizedLegend = (props: any) => {
     );
 }
 
-const KeyMetricCard = ({ title, value, change, description, currency, icon: Icon, colorClass }: any) => (
+const KeyMetricCard = ({ title, value, change, description, currency, icon: Icon, colorClass, children }: any) => (
     <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{title}</CardTitle>
             {Icon && <Icon className={cn('h-5 w-5', colorClass ?? 'text-muted-foreground')} />}
         </CardHeader>
         <CardContent>
-            <div className="text-2xl font-bold">
-                {new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }).format(value)}
-            </div>
-            <div className="flex items-center text-xs text-muted-foreground gap-1">
-                {typeof change === 'number' && isFinite(change) && (
-                    <Badge variant={change >= 0 ? 'default' : 'destructive'} className='flex gap-1 items-center'>
-                        {change >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                        {change.toFixed(1)}%
-                    </Badge>
-                )}
-                <span>{description}</span>
-            </div>
+            {children ? (
+                children
+            ) : (
+                <>
+                <div className="text-2xl font-bold">
+                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }).format(value)}
+                </div>
+                <div className="flex items-center text-xs text-muted-foreground gap-1">
+                    {typeof change === 'number' && isFinite(change) && (
+                        <Badge variant={change >= 0 ? 'default' : 'destructive'} className='flex gap-1 items-center'>
+                            {change >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                            {change.toFixed(1)}%
+                        </Badge>
+                    )}
+                    <span>{description}</span>
+                </div>
+                </>
+            )}
         </CardContent>
     </Card>
 )
@@ -180,13 +187,19 @@ export default function FinancialCharts() {
       let currentMonthExpense = 0;
       let lastMonthIncome = 0;
       let lastMonthExpense = 0;
+      let biggestExpense: Transaction | null = null;
       
       transactions.forEach(t => {
           const tDate = new Date(t.date);
           if (t.type === 'income' || t.type === 'expenditure') {
               if (isWithinInterval(tDate, currentMonthInterval)) {
                   if(t.type === 'income') currentMonthIncome += t.amount;
-                  else currentMonthExpense += t.amount;
+                  else {
+                      currentMonthExpense += t.amount;
+                      if (!biggestExpense || t.amount > biggestExpense.amount) {
+                          biggestExpense = t;
+                      }
+                  }
               } else if (isWithinInterval(tDate, lastMonthInterval)) {
                   if(t.type === 'income') lastMonthIncome += t.amount;
                   else lastMonthExpense += t.amount;
@@ -203,7 +216,7 @@ export default function FinancialCharts() {
         
       const avgDailySpending = currentMonthExpense / getDaysInMonth(new Date());
 
-      return { netIncome, currentMonthIncome, currentMonthExpense, avgDailySpending, netIncomeChange };
+      return { netIncome, currentMonthIncome, currentMonthExpense, avgDailySpending, netIncomeChange, biggestExpense };
   }, [transactions, isInitialized]);
 
   const spendingByCategoryData = useMemo(() => {
@@ -283,7 +296,10 @@ export default function FinancialCharts() {
   if (!isInitialized) {
       return (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Skeleton className="h-32 w-full md:col-span-2" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-96 w-full lg:col-span-4" />
             <Skeleton className="h-96 w-full lg:col-span-2" />
             <Skeleton className="h-96 w-full lg:col-span-2" />
           </div>
@@ -303,7 +319,7 @@ export default function FinancialCharts() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {keyMetrics && (
             <>
                 <KeyMetricCard 
@@ -323,10 +339,34 @@ export default function FinancialCharts() {
                     icon={PieChartIcon}
                     colorClass="text-blue-500"
                 />
+                <KeyMetricCard
+                    title="Biggest Expense"
+                    icon={ShoppingCart}
+                    colorClass="text-orange-500"
+                    currency={currency}
+                >
+                    {keyMetrics.biggestExpense ? (
+                        <div>
+                            <div className="text-2xl font-bold">
+                               {formatCurrency(keyMetrics.biggestExpense.amount)}
+                            </div>
+                            <p className="text-xs text-muted-foreground truncate">
+                                {keyMetrics.biggestExpense.remarks || 'Unspecified Expense'}
+                            </p>
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="text-2xl font-bold">
+                                {formatCurrency(0)}
+                            </div>
+                            <p className="text-xs text-muted-foreground">No expenses yet this month.</p>
+                        </div>
+                    )}
+                </KeyMetricCard>
             </>
         )}
 
-      <Card className="md:col-span-2">
+      <Card className="md:col-span-2 lg:col-span-3">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-6 w-6" />
@@ -365,7 +405,7 @@ export default function FinancialCharts() {
         </CardContent>
       </Card>
       
-      <Card className="md:col-span-2">
+      <Card className="md:col-span-2 lg:col-span-3">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <LineChartIcon className="h-6 w-6" />
@@ -405,101 +445,105 @@ export default function FinancialCharts() {
         </CardContent>
       </Card>
       
-      {categoriesEnabled && (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                <PieChartIcon className="h-6 w-6" />
-                This Month's Spending
-                </CardTitle>
-                <CardDescription>Breakdown of expenses for {format(new Date(), 'MMMM yyyy')}.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {spendingByCategoryData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={350}>
-                    <PieChart>
-                    <Pie
-                        activeIndex={activeIndex}
-                        activeShape={renderActiveShape}
-                        data={spendingByCategoryData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        fill="hsl(var(--primary))"
-                        dataKey="value"
-                        nameKey="name"
-                        onMouseEnter={onPieEnter}
-                    >
-                        {spendingByCategoryData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                    </Pie>
-                    <Tooltip content={<CategoryTooltip />} />
-                    <Legend content={renderCustomizedLegend} />
-                    </PieChart>
-                </ResponsiveContainer>
-                ) : (
-                <div className="h-[350px] flex flex-col items-center justify-center text-center text-muted-foreground p-4">
-                    <PieChartIcon className="h-12 w-12 mb-4" />
-                    <p className="font-semibold">No expenses recorded yet for this month.</p>
-                    <p className="text-sm">Your spending breakdown will appear here once you add some expenses.</p>
-                </div>
-                )}
-            </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-            <Wallet className="h-6 w-6" />
-            Account Balances
-            </CardTitle>
-            <CardDescription>Distribution of your assets across accounts.</CardDescription>
-        </CardHeader>
-        <CardContent>
-             {accountBalanceData && accountBalanceData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={350}>
-                    <PieChart>
+      <div className="grid md:grid-cols-2 gap-6 lg:col-span-3">
+        {categoriesEnabled && (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                    <PieChartIcon className="h-6 w-6" />
+                    This Month's Spending
+                    </CardTitle>
+                    <CardDescription>Breakdown of expenses for {format(new Date(), 'MMMM yyyy')}.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {spendingByCategoryData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={350}>
+                        <PieChart>
                         <Pie
-                            data={accountBalanceData}
+                            activeIndex={activeIndex}
+                            activeShape={renderActiveShape}
+                            data={spendingByCategoryData}
                             cx="50%"
                             cy="50%"
-                            labelLine={false}
-                            label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-                                const RADIAN = Math.PI / 180;
-                                const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                                const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                                const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                                return ( (percent * 100) > 5 ? 
-                                    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-                                        {` ${(percent * 100).toFixed(0)}%`}
-                                    </text> : null
-                                );
-                            }}
-                            outerRadius={100}
+                            innerRadius={60}
+                            outerRadius={80}
                             fill="hsl(var(--primary))"
                             dataKey="value"
                             nameKey="name"
+                            onMouseEnter={onPieEnter}
                         >
-                            {accountBalanceData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            {spendingByCategoryData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
-                        <Tooltip formatter={formatCurrency} />
-                        <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20px'}} />
-                    </PieChart>
-                </ResponsiveContainer>
-             ) : (
-                <div className="h-[350px] flex flex-col items-center justify-center text-center text-muted-foreground p-4">
-                    <Wallet className="h-12 w-12 mb-4" />
-                    <p className="font-semibold">No accounts with a positive balance.</p>
-                    <p className="text-sm">This chart will show your asset distribution once you have funds.</p>
-                </div>
-             )}
-        </CardContent>
-      </Card>
+                        <Tooltip content={<CategoryTooltip />} />
+                        <Legend content={renderCustomizedLegend} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    ) : (
+                    <div className="h-[350px] flex flex-col items-center justify-center text-center text-muted-foreground p-4">
+                        <PieChartIcon className="h-12 w-12 mb-4" />
+                        <p className="font-semibold">No expenses recorded yet for this month.</p>
+                        <p className="text-sm">Your spending breakdown will appear here once you add some expenses.</p>
+                    </div>
+                    )}
+                </CardContent>
+            </Card>
+        )}
+
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                <Wallet className="h-6 w-6" />
+                Account Balances
+                </CardTitle>
+                <CardDescription>Distribution of your assets across accounts.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {accountBalanceData && accountBalanceData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={350}>
+                        <PieChart>
+                            <Pie
+                                data={accountBalanceData}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+                                    const RADIAN = Math.PI / 180;
+                                    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                                    return ( (percent * 100) > 5 ? 
+                                        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+                                            {` ${(percent * 100).toFixed(0)}%`}
+                                        </text> : null
+                                    );
+                                }}
+                                outerRadius={100}
+                                fill="hsl(var(--primary))"
+                                dataKey="value"
+                                nameKey="name"
+                            >
+                                {accountBalanceData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip formatter={formatCurrency} />
+                            <Legend iconSize={10} wrapperStyle={{fontSize: "0.8rem", paddingTop: '20px'}} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                ) : (
+                    <div className="h-[350px] flex flex-col items-center justify-center text-center text-muted-foreground p-4">
+                        <Wallet className="h-12 w-12 mb-4" />
+                        <p className="font-semibold">No accounts with a positive balance.</p>
+                        <p className="text-sm">This chart will show your asset distribution once you have funds.</p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
+
+    
