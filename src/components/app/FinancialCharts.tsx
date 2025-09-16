@@ -502,7 +502,7 @@ export default function FinancialCharts() {
                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} />
+                    <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                     <YAxis 
                       fontSize={12} 
                       tickLine={false} 
@@ -526,7 +526,7 @@ export default function FinancialCharts() {
                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} />
+                    <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                     <YAxis 
                       fontSize={12} 
                       tickLine={false} 
