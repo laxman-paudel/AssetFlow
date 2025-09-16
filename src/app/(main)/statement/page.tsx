@@ -325,8 +325,15 @@ function StatementPageContent() {
             
             <DropdownMenu onOpenChange={setIsDateFilterDropdownOpen}>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className={cn("h-11 w-11", (isDateFilterActive && 'text-primary border-primary'), (isDateFilterDropdownOpen && 'bg-accent'))}>
-                    <CalendarIcon className="h-5 w-5" />
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className={cn("h-11 w-11",
+                    isDateFilterActive && "border-primary",
+                    isDateFilterDropdownOpen && "bg-accent",
+                  )}
+                >
+                    <CalendarIcon className={cn("h-5 w-5", isDateFilterActive && "text-primary")} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -355,8 +362,15 @@ function StatementPageContent() {
 
             <Popover open={isFilterPopoverOpen} onOpenChange={setIsFilterPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className={cn("h-11 w-11", (isAccountFilterActive && 'text-primary border-primary'), (isFilterPopoverOpen && 'bg-accent'))}>
-                  <Filter className="h-5 w-5" />
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className={cn("h-11 w-11",
+                    isAccountFilterActive && "border-primary",
+                    isFilterPopoverOpen && "bg-accent",
+                  )}
+                >
+                  <Filter className={cn("h-5 w-5", isAccountFilterActive && "text-primary")} />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80">
