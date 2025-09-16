@@ -3,7 +3,7 @@
 import { useMemo, useState, useCallback, useRef } from 'react';
 import { useAssetFlow } from '@/components/app/AppProvider';
 import { getCategoryById } from '@/lib/categories';
-import { subMonths, format, startOfMonth, endOfMonth, isWithinInterval, getDaysInMonth, eachDayOfInterval, lastDayOfMonth, parseISO, startOfDay } from 'date-fns';
+import { subMonths, format, startOfMonth, endOfMonth, isWithinInterval, getDaysInMonth, eachDayOfInterval, lastDayOfMonth, parseISO, startOfDay, subDays } from 'date-fns';
 import {
   ResponsiveContainer,
   BarChart,
@@ -184,17 +184,17 @@ export default function FinancialCharts() {
     
     const sortedTransactions = [...transactions].sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
 
-    const totalChange = sortedTransactions.reduce((acc, t) => {
-        switch (t.type) {
-            case 'income': return acc + t.amount;
-            case 'expenditure': return acc - t.amount;
-            case 'account_creation': return acc + t.amount;
-            default: return acc;
-        }
-    }, 0);
-    const startingBalance = totalBalance - totalChange;
-
     if (balanceHistoryScale === 'monthly') {
+        const totalChange = sortedTransactions.reduce((acc, t) => {
+            switch (t.type) {
+                case 'income': return acc + t.amount;
+                case 'expenditure': return acc - t.amount;
+                case 'account_creation': return acc + t.amount;
+                default: return acc;
+            }
+        }, 0);
+        const startingBalance = totalBalance - totalChange;
+        
         const history: { [key: string]: number } = {};
         let currentBalance = startingBalance;
         
@@ -211,21 +211,49 @@ export default function FinancialCharts() {
             balance,
         }));
     } else { // daily
-        if (sortedTransactions.length === 0) return [];
+        const today = startOfDay(new Date());
+        const thirtyDaysAgo = subDays(today, 30);
+        
+        const changeBefore30Days = sortedTransactions
+            .filter(t => parseISO(t.date) < thirtyDaysAgo)
+            .reduce((acc, t) => {
+                switch (t.type) {
+                    case 'income': return acc + t.amount;
+                    case 'expenditure': return acc - t.amount;
+                    case 'account_creation': return acc + t.amount;
+                    default: return acc;
+                }
+            }, 0);
 
-        const startDate = startOfDay(parseISO(sortedTransactions[0].date));
-        const endDate = startOfDay(new Date());
+        const totalChange = sortedTransactions.reduce((acc, t) => {
+            switch (t.type) {
+                case 'income': return acc + t.amount;
+                case 'expenditure': return acc - t.amount;
+                case 'account_creation': return acc + t.amount;
+                default: return acc;
+            }
+        }, 0);
+
+        const initialBalance = totalBalance - totalChange;
+        let startingBalanceForPeriod = initialBalance + changeBefore30Days;
+        
+        const transactionsInLast30Days = sortedTransactions.filter(t => parseISO(t.date) >= thirtyDaysAgo);
+        
         const datePoints: { [key: string]: number } = {};
 
-        let currentBalance = startingBalance;
+        let currentBalance = startingBalanceForPeriod;
         let transactionIndex = 0;
         
-        const days = eachDayOfInterval({start: startDate, end: endDate});
+        const days = eachDayOfInterval({start: thirtyDaysAgo, end: today});
+        if (days.length === 0 && transactionsInLast30Days.length === 0) return [];
+        if (days.length === 0 && transactionsInLast30Days.length > 0) {
+           days.push(today);
+        }
 
         for (const day of days) {
             const dayKey = format(day, 'yyyy-MM-dd');
-            while(transactionIndex < sortedTransactions.length && startOfDay(parseISO(sortedTransactions[transactionIndex].date)).getTime() === day.getTime()) {
-                const t = sortedTransactions[transactionIndex];
+            while(transactionIndex < transactionsInLast30Days.length && startOfDay(parseISO(transactionsInLast30Days[transactionIndex].date)).getTime() === day.getTime()) {
+                const t = transactionsInLast30Days[transactionIndex];
                  if (t.type === 'income') currentBalance += t.amount;
                  else if (t.type === 'expenditure') currentBalance -= t.amount;
                  else if (t.type === 'account_creation') currentBalance += t.amount;
@@ -461,7 +489,7 @@ export default function FinancialCharts() {
             <div className="flex justify-end">
               <TabsList>
                 <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                <TabsTrigger value="daily">Daily</TabsTrigger>
+                <TabsTrigger value="daily">Last 30 Days</TabsTrigger>
               </TabsList>
             </div>
             <TabsContent value="monthly" className="mt-4">
