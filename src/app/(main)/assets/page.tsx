@@ -153,7 +153,7 @@ export default function AccountsPage() {
                   <div key={account.id}>
                     <Card 
                       className={cn(
-                          "transition-all duration-300 border-l-4 border-l-primary/20",
+                          "transition-all duration-300 overflow-hidden border-l-4 border-l-primary/20",
                           expandedAccountId === account.id ? 'bg-muted/50 border-l-primary/60' : 'hover:bg-muted/50 hover:shadow-lg hover:-translate-y-1 hover:border-l-primary/60'
                       )}
                     >
@@ -179,15 +179,15 @@ export default function AccountsPage() {
                           <div className="px-2 py-2 flex justify-evenly">
                               <Button variant="ghost" size="sm" onClick={() => handleShowTransactions(account.id)}>
                                   <BookText className="h-4 w-4" />
-                                  <span className="hidden sm:inline ml-2">Transactions</span>
+                                  <span className="ml-2">Transactions</span>
                               </Button>
                               <Button variant="ghost" size="sm" onClick={() => setAccountToEdit(account)}>
                                   <Edit className="h-4 w-4" />
-                                  <span className="hidden sm:inline ml-2">Edit</span>
+                                  <span className="ml-2">Edit</span>
                               </Button>
                               <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setAccountToDelete(account)}>
                                   <Trash2 className="h-4 w-4" />
-                                  <span className="hidden sm:inline ml-2">Delete</span>
+                                  <span className="ml-2">Delete</span>
                               </Button>
                           </div>
                       </div>
@@ -243,5 +243,3 @@ export default function AccountsPage() {
     </>
   );
 }
-
-    
