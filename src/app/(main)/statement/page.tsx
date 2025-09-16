@@ -252,10 +252,17 @@ function StatementPageContent() {
 
   const formatDate = (dateString: string) => {
     try {
-      const date = new Date(dateString);
-      return format(date, 'MMM d, yyyy, h:mm a');
+      return format(new Date(dateString), 'MMM d, yyyy');
     } catch {
       return 'Invalid date';
+    }
+  };
+  
+  const formatTime = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'h:mm a');
+    } catch {
+      return 'Invalid time';
     }
   };
 
@@ -329,8 +336,8 @@ function StatementPageContent() {
                   variant="outline" 
                   size="icon" 
                   className={cn("h-11 w-11",
-                    isDateFilterActive && !isDateFilterDropdownOpen && "border-primary",
                     isDateFilterDropdownOpen && "bg-accent",
+                    isDateFilterActive && !isDateFilterDropdownOpen && "border-primary",
                   )}
                 >
                     <CalendarIcon className={cn("h-5 w-5", isDateFilterActive && !isDateFilterDropdownOpen && "text-primary")} />
@@ -366,8 +373,8 @@ function StatementPageContent() {
                   variant="outline" 
                   size="icon" 
                   className={cn("h-11 w-11",
-                    isAccountFilterActive && !isFilterPopoverOpen && "border-primary",
                     isFilterPopoverOpen && "bg-accent",
+                    isAccountFilterActive && !isFilterPopoverOpen && "border-primary",
                   )}
                 >
                   <Filter className={cn("h-5 w-5", isAccountFilterActive && !isFilterPopoverOpen && "text-primary")} />
@@ -515,7 +522,10 @@ function StatementPageContent() {
                       <p className="font-bold text-lg text-blue-600">
                         + {formatAmount(t.amount)}
                       </p>
-                      <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                      <div className="text-xs text-muted-foreground">
+                        <p>{formatDate(t.date)}</p>
+                        <p>{formatTime(t.date)}</p>
+                      </div>
                     </div>
                   </div>
                 )
@@ -545,7 +555,10 @@ function StatementPageContent() {
                                 </div>
                                 <div className="text-right flex-shrink-0">
                                     <p className="font-bold text-lg text-purple-600">{formatAmount(t.amount)}</p>
-                                    <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                                    <div className="text-xs text-muted-foreground">
+                                        <p>{formatDate(t.date)}</p>
+                                        <p>{formatTime(t.date)}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -611,7 +624,10 @@ function StatementPageContent() {
                         )}>
                             {isIncome ? '+' : '-'} {formatAmount(t.amount)}
                         </p>
-                        <p className="text-xs text-muted-foreground">{formatDate(t.date)}</p>
+                        <div className="text-xs text-muted-foreground">
+                           <p>{formatDate(t.date)}</p>
+                           <p>{formatTime(t.date)}</p>
+                        </div>
                         </div>
                     </div>
                     </div>
