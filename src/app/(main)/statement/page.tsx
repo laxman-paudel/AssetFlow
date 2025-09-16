@@ -335,10 +335,7 @@ function StatementPageContent() {
                 <Button 
                   variant="outline" 
                   size="icon" 
-                  className={cn("h-11 w-11",
-                    isDateFilterDropdownOpen && "bg-accent",
-                    isDateFilterActive && !isDateFilterDropdownOpen && "border-primary",
-                  )}
+                  className={cn("h-11 w-11", isDateFilterDropdownOpen && "bg-accent")}
                 >
                     <CalendarIcon className={cn("h-5 w-5", isDateFilterActive && !isDateFilterDropdownOpen && "text-primary")} />
                 </Button>
@@ -372,10 +369,7 @@ function StatementPageContent() {
                 <Button 
                   variant="outline" 
                   size="icon" 
-                  className={cn("h-11 w-11",
-                    isFilterPopoverOpen && "bg-accent",
-                    isAccountFilterActive && !isFilterPopoverOpen && "border-primary",
-                  )}
+                  className={cn("h-11 w-11", isFilterPopoverOpen && "bg-accent")}
                 >
                   <Filter className={cn("h-5 w-5", isAccountFilterActive && !isFilterPopoverOpen && "text-primary")} />
                 </Button>
@@ -509,6 +503,7 @@ function StatementPageContent() {
               const CategoryIcon = category ? getIconByName(category.icon) : HelpCircle;
 
               if (isAccountCreation) {
+                const isAdjustment = t.remarks.startsWith('Balance adjusted to');
                 return (
                   <div key={t.id} className="flex items-center gap-4 p-4 rounded-lg bg-card border border-l-4 border-l-blue-500">
                     <div className="p-2 rounded-full bg-blue-100 text-blue-700">
@@ -516,12 +511,15 @@ function StatementPageContent() {
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold">{t.remarks}</p>
-                      <p className="text-sm text-muted-foreground">Initial Balance</p>
+                      <p className="text-sm text-muted-foreground">{isAdjustment ? 'Balance Adjustment' : 'Initial Balance'}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg text-blue-600">
-                        + {formatAmount(t.amount)}
-                      </p>
+                       <p className={cn(
+                          "font-bold text-lg",
+                          t.amount >= 0 ? 'text-blue-600' : 'text-red-600'
+                        )}>
+                          {t.amount >= 0 ? '+' : '-'} {formatAmount(Math.abs(t.amount))}
+                        </p>
                       <div className="text-xs text-muted-foreground">
                         <p>{formatDate(t.date)}</p>
                         <p>{formatTime(t.date)}</p>

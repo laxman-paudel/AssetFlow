@@ -176,7 +176,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 accountId: account.id,
                 accountName: updates.name,
                 date: new Date().toISOString(),
-                remarks: `Balance adjusted`,
+                remarks: `Balance adjusted to ${updates.balance}`,
             };
             newTransactions.push(adjustmentTransaction);
         }
